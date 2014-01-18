@@ -1,0 +1,222 @@
+#
+# Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013-2014
+# https://github.com/nesro/sparse-matrices
+# 
+
+OBJECTS=utils.o \
+	dense_matrix.o \
+	csr_matrix.o \
+	qt_matrix.o \
+	mmio.o \
+	coo_matrix.o \
+	vector.o \
+	generator.o
+
+TESTS=csr_unroll_test \
+	utils_test \
+	test_quadtree
+
+BINARY=./main
+
+# csr MM Loop UnRolling
+ifdef MMLUR
+	CFLAGS += -DMMLUR=1
+endif
+
+# csr MV Loop UnRolling
+ifdef MVLUR
+	CFLAGS += -DMVLUR=1
+endif
+
+ifdef TEST_EIA_MVM
+	CFLAGS += -DTEST_EIA_MVM=1
+endif
+
+CC=gcc
+LD=gcc
+CLIBS=-lm -fopenmp
+CFLAGS=-std=c99 -Wall -pedantic
+
+SOURCE_DIR=./src/
+
+SRC=./src
+BUILD=./build
+
+TEST_DIR=./tests
+TEST_SRC=./tests
+TEST_BIN=./tests/bin
+TEST_BUILD=./tests/build
+
+USERNAME=$$( if [ `whoami` = sandra ]; then echo tatarsan; else echo nesrotom; fi )
+
+
+
+ifdef DEBUG
+	CFLAGS += -O0 -ggdb #-Wextra
+else
+	CFLAGS += -O3
+endif
+
+ifdef OMP_THREADS
+	CFLAGS += -DOMP_THREADS=$(OMP_THREADS)
+endif
+
+# set up GCC Optimalizations
+#ifndef GCCOP
+#	CFLAGS += -O0
+#else ifeq (1, $(GCCOP))
+#	CFLAGS += -O2
+#else ifeq (2, $(GCCOP))
+#	CFLAGS += -O3    
+#else ifeq (3, $(GCCOP))
+#	CFLAGS += -O3 -msse -msse2 -msse3 -msse4.2 -mfpmath=sse -ftree-vectorizer-verbose=5
+#endif
+
+#-------------------------------------------------------------------------------
+
+all: $(OBJECTS) $(BINARY)
+
+.PHONY: run
+run: all
+	$(BINARY)
+
+.PHONY: tests
+tests: $(TESTS)
+
+.PHONY: runtests
+runtests: tests
+	$(TEST_DIR)/run.sh $(TEST_SUITE)
+
+.PHONY: clean
+clean:
+	find . -type f -and \( -name "*.o" -or -name "*~" -or -name "valgrind_*" \) -delete
+	rm -fr \
+		$(BINARY) \
+		$(TEST_BIN)/* \
+		./queue*sh.e \
+		./queue*sh.o \
+		./queue*sh.pe \
+		./queue*sh.po \
+		./cachegrind* \
+		./*.png \
+		./*.txt \
+		./*.html
+
+.PHONY: fullclean
+fullclean: clean
+	find . -type f -and \( -name "*.html" -or -name "*.html" \) -delete
+	rm -fr ./*.png
+	rm -fr ./res_from_star/*
+	rm -fr *.star.sh
+
+#-------------------------------------------------------------------------------
+
+$(BINARY): ./main.o $(OBJECTS)
+	$(LD) $(CFLAGS) $(addprefix $(BUILD)/, main.o) $(addprefix $(BUILD)/, $(OBJECTS)) -o $(BINARY) $(CLIBS)
+
+main.o: $(SOURCE_DIR)main.c $(SOURCE_DIR)utils.h $(SOURCE_DIR)csr_matrix.h $(SOURCE_DIR)vector.h $(SOURCE_DIR)coo_matrix.h $(SOURCE_DIR)dense_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+utils.o: $(SOURCE_DIR)utils.c $(SOURCE_DIR)utils.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+csr_matrix.o: $(SOURCE_DIR)csr_matrix.c $(SOURCE_DIR)csr_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+qt_matrix.o: $(SOURCE_DIR)qt_matrix.c $(SOURCE_DIR)qt_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+mmio.o: $(SOURCE_DIR)mmio.c $(SOURCE_DIR)mmio.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+coo_matrix.o: $(SOURCE_DIR)coo_matrix.c $(SOURCE_DIR)coo_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+dense_matrix.o: $(SOURCE_DIR)dense_matrix.c $(SOURCE_DIR)dense_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+vector.o: $(SOURCE_DIR)vector.c $(SOURCE_DIR)vector.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+generator.o: $(SOURCE_DIR)generator.c $(SOURCE_DIR)generator.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+#-------------------------------------------------------------------------------
+
+csr_unroll_test: all csr_unroll_test.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/csr_unroll_test.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+
+csr_unroll_test.o: $(TEST_SRC)/csr_unroll_test.c $(TEST_SRC)/test_framework.h $(SRC)/csr_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
+# ---
+
+test_quadtree: all test_quadtree.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_quadtree.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+
+test_quadtree.o: $(TEST_SRC)/test_quadtree.c $(TEST_SRC)/test_framework.h $(SRC)/qt_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
+# ---
+
+utils_test: all utils_test.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/utils_test.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+
+utils_test.o: $(TEST_SRC)/utils_test.c $(TEST_SRC)/test_framework.h $(SRC)/utils.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
+#-------------------------------------------------------------------------------
+# STAR.fit.cvut.cz
+
+USERNAME=nesrotom
+
+deploy: fullclean
+	rsync -ave ssh --delete ../eiaapp $(USERNAME)@star.fit.cvut.cz:/home/$(USERNAME)/
+
+qrun:
+	/opt/bin/qrun.sh 12c 1 1slots_per_host ./star/csr_mmm_mvm.sh
+#	/opt/bin/qrun.sh 12c 1 1slots_per_host ./star/queue_12c_1slots_per_host_job.sh
+
+qmmmrep:
+	/opt/bin/qrun.sh 12c 1 1slots_per_host ./star/kkIllrepeat.sh
+
+qrunmmm:
+	/opt/bin/qrun.sh 12c 1 1slots_per_host ./star/yaycsrmmm.sh
+
+qrunmvm:
+	/opt/bin/qrun.sh 12c 1 1slots_per_host ./star/yaycsrmvm.sh
+	
+qruncg:
+	/opt/bin/qrun.sh 12c 1 1slots_per_host ./star/cachegrind.sh
+
+qeia:
+	/opt/bin/qrun.sh 12c 1 1slots_per_host ./star/eia.sh
+
+graph:
+	./gnuplot.sh
+
+watch:
+	watch -n 1 qstat
+
+qdelall:
+	qstat | grep nesrotom | cut -d' ' -f2 | xargs qdel
+
+qdelres:
+	rm -f /mnt/data/nesrotom/*
+
+qres:
+	cat /mnt/data/nesrotom/*
+
+#------------------------------------------------------------------------------
+
+gp-local:
+	./tests/eia/eia.sh $(METHOD) $(START) $(STEP) $(MAX) $(THREADS)
+
+gp-star:
+	./tests/eia/star.sh $(METHOD) $(START) $(STEP) $(MAX) $(THREADS)
+
+#------------------------------------------------------------------------------
+
+
+
+

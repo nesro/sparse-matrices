@@ -1,0 +1,120 @@
+% options:
+% thesis=B bachelor's thesis
+% thesis=M master's thesis
+% czech thesis in Czech language
+% english thesis in English language
+% hidelinks remove colour boxes around hyperlinks
+
+\documentclass[thesis=B,english]{FITthesis}[2012/10/20]
+
+% \usepackage[utf8]{inputenc} % LaTeX source encoded as UTF-8
+% \usepackage[latin2]{inputenc} % LaTeX source encoded as ISO-8859-2
+% \usepackage[cp1250]{inputenc} % LaTeX source encoded as Windows-1250
+
+\usepackage{graphicx} %graphics files inclusion
+% \usepackage{subfig} %subfigures
+% \usepackage{amsmath} %advanced maths
+% \usepackage{amssymb} %additional math symbols
+
+\usepackage{dirtree} %directory tree visualisation
+
+% % list of acronyms
+% \usepackage[acronym,nonumberlist,toc,numberedsection=autolabel]{glossaries}
+% \iflanguage{czech}{\renewcommand*{\acronymname}{Seznam pou{\v z}it{\' y}ch zkratek}}{}
+% \makeglossaries
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% EDIT THIS
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\department{Department of Theoretical Computer Science}
+\title{Impact of sparse matrix storage format on efficiency of multiplication of sparse matrices}
+\authorGN{Tom{\' a}{\v s}} %author's given name/names
+\authorFN{Nesrovnal} %author's surname
+\author{Tom{\' a}{\v s} Nesrovnal} %author's name without academic degrees
+\authorWithDegrees{Tom{\' a}{\v s} Nesrovnal} %author's name with academic degrees
+\supervisor{Ivan Šimeček}
+\acknowledgements{THANKS}
+\abstractEN{Summarize the contents and contribution of your work in a few sentences in English language.}
+\abstractCS{V n{\v e}kolika v{\v e}t{\' a}ch shr{\v n}te obsah a p{\v r}{\' i}nos t{\' e}to pr{\' a}ce v {\v c}esk{\' e}m jazyce.}
+\placeForDeclarationOfAuthenticity{Prague}
+\keywordsCS{Replace with comma-separated list of keywords in Czech.}
+\keywordsEN{Replace with comma-separated list of keywords in English.}
+\declarationOfAuthenticityOption{1} %select as appropriate, according to the desired license (integer 1-6)
+
+
+\begin{document}
+
+% \newacronym{CVUT}{{\v C}VUT}{{\v C}esk{\' e} vysok{\' e} u{\v c}en{\' i} technick{\' e} v Praze}
+% \newacronym{FIT}{FIT}{Fakulta informa{\v c}n{\' i}ch technologi{\' i}}
+
+\setsecnumdepth{part}
+\chapter{Introduction}
+
+\section{Matrix multiplication}
+
+Matrix multiplication is one of the basic  linear algebra operations.
+
+\setsecnumdepth{all}
+\chapter{State-of-the-art}
+
+\chapter{Analysis and design}
+
+\chapter{Sparse matrices}
+
+\section{Sparsity}
+
+A matrix is called sparse, when contains a lot of zero elements.
+
+When working with sparse matrices, we can take in advantage its zero elements. In case of sparse matrix multiplication, we can use sparsity in two ways. First, a sparse matrix storage format doesn't have to store zero elements. Second, we can skip multiplying by zero elements.
+
+The disadvantage of sparse matrix storage formats is we cannot directly get a single element by its x and y coordinate.
+
+\section{Coordinate format}
+
+\section{Compressed sparse rows}
+
+\section{Block Sparse Rows}
+
+\section{Quadtree}
+
+
+
+\chapter{Realisation}
+
+\setsecnumdepth{part}
+\chapter{Conclusion}
+
+
+\bibliographystyle{iso690}
+\bibliography{mybibliographyfile}
+
+\setsecnumdepth{all}
+\appendix
+
+\chapter{Acronyms}
+% \printglossaries
+\begin{description}
+	\item[SpMMM] Sparse matrix-matrix multiplication
+	\item[SpMVM] Sparse matrix-vector multiplication
+\end{description}
+
+
+\chapter{Contents of enclosed CD}
+
+%change appropriately
+
+\begin{figure}
+	\dirtree{%
+		.1 readme.txt\DTcomment{the file with CD contents description}.
+		.1 exe\DTcomment{the directory with executables}.
+		.1 src\DTcomment{the directory of source codes}.
+		.2 wbdcm\DTcomment{implementation sources}.
+		.2 thesis\DTcomment{the directory of \LaTeX{} source codes of the thesis}.
+		.1 text\DTcomment{the thesis text directory}.
+		.2 thesis.pdf\DTcomment{the thesis text in PDF format}.
+		.2 thesis.ps\DTcomment{the thesis text in PS format}.
+	}
+\end{figure}
+
+\end{document}

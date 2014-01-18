@@ -1,0 +1,18 @@
+\select@language {UKenglish}
+\select@language {UKenglish}
+\select@language {UKenglish}
+\contentsline {subsection}{Citation of this thesis}{viii}{section*.1}
+\contentsline {chapter}{Introduction}{1}{chapter*.5}
+\contentsline {section}{Matrix multiplication}{1}{section*.6}
+\contentsline {chapter}{\chapternumberline {1}State-of-the-art}{3}{chapter.1}
+\contentsline {chapter}{\chapternumberline {2}Analysis and design}{5}{chapter.2}
+\contentsline {chapter}{\chapternumberline {3}Sparse matrices}{7}{chapter.3}
+\contentsline {section}{\numberline {3.1}Sparsity}{7}{section.3.1}
+\contentsline {section}{\numberline {3.2}Coordinate format}{7}{section.3.2}
+\contentsline {section}{\numberline {3.3}Compressed sparse rows}{7}{section.3.3}
+\contentsline {section}{\numberline {3.4}Block Sparse Rows}{7}{section.3.4}
+\contentsline {section}{\numberline {3.5}Quadtree}{7}{section.3.5}
+\contentsline {chapter}{\chapternumberline {4}Realisation}{9}{chapter.4}
+\contentsline {chapter}{Conclusion}{11}{chapter*.7}
+\contentsline {appendix}{\chapternumberline {A}Acronyms}{13}{appendix.A}
+\contentsline {appendix}{\chapternumberline {B}Contents of enclosed CD}{15}{appendix.B}
