@@ -137,70 +137,70 @@ void sort(int *col_idx, double *a, int start, int end) {
 	}
 }
 
-void coo_to_csr(coo_matrix_t *coo_matrix, csr_matrix_t *csr_matrix) {
-
-	int row;
-	int col;
-
-	csr_matrix_init(csr_matrix, coo_matrix->info.nnz, coo_matrix->info.w,
-		coo_matrix->info.h);
-
-	/*EIA reset row_pointers EIA*/
-	for (row = 0; row < csr_matrix->info.h; row++) {
-		csr_matrix->rp[row] = 0;
-	}
-
-	/*EIA pocet prvku v row EIA*/
-	for (row = 0; row < csr_matrix->info.nnz; row++) {
-		csr_matrix->rp[coo_matrix->row[row] + 1]++;
-	}
-
-	/*EIA posunuti prvku v poli EIA*/
-	for (row = 0; row < csr_matrix->info.h; row++) {
-		csr_matrix->rp[row + 1] += csr_matrix->rp[row];
-	}
-
-	for (col = 0; col < coo_matrix->info.nnz; col++) {
-		row = csr_matrix->rp[coo_matrix->row[col]];
-		csr_matrix->v[row] = coo_matrix->values[col];
-		csr_matrix->ci[row] = coo_matrix->col[col];
-		csr_matrix->rp[coo_matrix->row[col]]++;
-	}
-
-	/* shift back row_start */
-	for (row = csr_matrix->info.h; row > 0; row--)
-		csr_matrix->rp[row] = csr_matrix->rp[row - 1];
-
-	csr_matrix->rp[0] = 0;
-
-	/* FIXME: is this necessary? */
-	/*for (row = 0; row < csr_matrix->info.height; row++) {
-	 int i;
-	 int j;
-	 int it;
-	 double dt;
-
-	 for (i = csr_matrix->row_pointers[row + 1] - 1;
-	 i > csr_matrix->row_pointers[row]; i--) {
-	 for (j = csr_matrix->row_pointers[row]; j < i; j++) {
-	 if (csr_matrix->col_indicies[j]
-	 > csr_matrix->col_indicies[j + 1]) {
-	 if (csr_matrix->values) {
-	 dt = csr_matrix->values[j];
-	 csr_matrix->values[j] = csr_matrix->values[j + 1];
-	 csr_matrix->values[j + 1] = dt;
-	 }
-
-	 it = csr_matrix->col_indicies[j];
-	 csr_matrix->col_indicies[j] =
-	 csr_matrix->col_indicies[j + 1];
-	 csr_matrix->col_indicies[j + 1] = it;
-	 }
-	 }
-	 }
-
-	 }*/
-}
+//void coo_to_csr(coo_matrix_t *coo_matrix, csr_t *csr_matrix) {
+//
+//	int row;
+//	int col;
+//
+//	csr_matrix_init(csr_matrix, coo_matrix->info.nnz, coo_matrix->info.w,
+//		coo_matrix->info.h);
+//
+//	/*EIA reset row_pointers EIA*/
+//	for (row = 0; row < csr_matrix->info.h; row++) {
+//		csr_matrix->rp[row] = 0;
+//	}
+//
+//	/*EIA pocet prvku v row EIA*/
+//	for (row = 0; row < csr_matrix->info.nnz; row++) {
+//		csr_matrix->rp[coo_matrix->row[row] + 1]++;
+//	}
+//
+//	/*EIA posunuti prvku v poli EIA*/
+//	for (row = 0; row < csr_matrix->info.h; row++) {
+//		csr_matrix->rp[row + 1] += csr_matrix->rp[row];
+//	}
+//
+//	for (col = 0; col < coo_matrix->info.nnz; col++) {
+//		row = csr_matrix->rp[coo_matrix->row[col]];
+//		csr_matrix->v[row] = coo_matrix->values[col];
+//		csr_matrix->ci[row] = coo_matrix->col[col];
+//		csr_matrix->rp[coo_matrix->row[col]]++;
+//	}
+//
+//	/* shift back row_start */
+//	for (row = csr_matrix->info.h; row > 0; row--)
+//		csr_matrix->rp[row] = csr_matrix->rp[row - 1];
+//
+//	csr_matrix->rp[0] = 0;
+//
+//	/* FIXME: is this necessary? */
+//	/*for (row = 0; row < csr_matrix->info.height; row++) {
+//	 int i;
+//	 int j;
+//	 int it;
+//	 double dt;
+//
+//	 for (i = csr_matrix->row_pointers[row + 1] - 1;
+//	 i > csr_matrix->row_pointers[row]; i--) {
+//	 for (j = csr_matrix->row_pointers[row]; j < i; j++) {
+//	 if (csr_matrix->col_indicies[j]
+//	 > csr_matrix->col_indicies[j + 1]) {
+//	 if (csr_matrix->values) {
+//	 dt = csr_matrix->values[j];
+//	 csr_matrix->values[j] = csr_matrix->values[j + 1];
+//	 csr_matrix->values[j + 1] = dt;
+//	 }
+//
+//	 it = csr_matrix->col_indicies[j];
+//	 csr_matrix->col_indicies[j] =
+//	 csr_matrix->col_indicies[j + 1];
+//	 csr_matrix->col_indicies[j + 1] = it;
+//	 }
+//	 }
+//	 }
+//
+//	 }*/
+//}
 
 void coo_to_vector(coo_matrix_t *coo_matrix, vector_t *vector) {
 
@@ -213,11 +213,13 @@ void coo_to_vector(coo_matrix_t *coo_matrix, vector_t *vector) {
 	}
 }
 
-void coo_to_dense(coo_matrix_t *coo_matrix, dense_matrix_t *dense_matrix) {
+void coo_to_dense(coo_matrix_t *coo_matrix, den_matrix_t *dense_matrix) {
 
 	int i;
 
-	dense_matrix_init(dense_matrix, coo_matrix->info.w, coo_matrix->info.h);
+//	FIXME:
+//	den_matrix_init(&dense_matrix, (den_matrix_init_t ) { coo_matrix->info.w,
+//			coo_matrix->info.h, 1 });
 
 	for (i = 0; i < coo_matrix->info.nnz; i++) {
 		dense_matrix->v[coo_matrix->row[i]][coo_matrix->col[i]] =

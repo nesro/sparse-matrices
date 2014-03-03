@@ -8,12 +8,12 @@
 
 static void bacic2x2(void) {
 
-	csr_matrix_t csr_a;
-	csr_matrix_t csr_b;
-	dense_matrix_t dense_a;
-	dense_matrix_t dense_b;
-	dense_matrix_t dense_c;
-	dense_matrix_t dense_d;
+	csr_t csr_a;
+	csr_t csr_b;
+	den_matrix_t dense_a;
+	den_matrix_t dense_b;
+	den_matrix_t dense_c;
+	den_matrix_t dense_d;
 
 	int html = 1;
 	int i;
@@ -222,13 +222,13 @@ static void bacic2x2(void) {
 }
 
 void csr_mmm_test(void) {
-	csr_matrix_t csr_a = { { 0 } };
-	csr_matrix_t csr_b = { { 0 } };
+	csr_t csr_a = { { 0 } };
+	csr_t csr_b = { { 0 } };
 
-	dense_matrix_t dense_c = { { 0 } };
-	dense_matrix_t dense_c_unrolled = { { 0 } };
-	dense_matrix_t dense_c_parallel = { { 0 } };
-	dense_matrix_t dense_c_unrolled_parallel = { { 0 } };
+	den_matrix_t dense_c = { { 0 } };
+	den_matrix_t dense_c_unrolled = { { 0 } };
+	den_matrix_t dense_c_parallel = { { 0 } };
+	den_matrix_t dense_c_unrolled_parallel = { { 0 } };
 
 	int i, j;
 
@@ -271,7 +271,7 @@ void csr_mmm_test(void) {
 }
 
 void csr_mvm_test(void) {
-	csr_matrix_t csr_a = { { 0 } };
+	csr_t csr_a = { { 0 } };
 	vector_t vector_b = { 0 };
 
 	vector_t vector_c = { 0 };

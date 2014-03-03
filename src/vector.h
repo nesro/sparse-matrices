@@ -3,10 +3,11 @@
  * https://github.com/nesro/sparse-matrices
  */
 
-#include "utils.h"
-
 #ifndef VECTOR_H_
 #define VECTOR_H_
+
+#include "utils.h"
+#include "virtual_matrix.h"
 
 typedef struct vector {
 	int size;

@@ -46,7 +46,7 @@ static void power_of_two_test(void) {
 	TEST_ASSERT(is_power_of_two(1073741824) == 1, str_buf);
 	TEST_ASSERT(is_power_of_two(2147483648) == 1, str_buf);
 
-	snprintf(str_buf, STR_BUF_LEN, "is NOT power of two");
+	snprintf(str_buf, STR_BUF_LEN, "is not power of two");
 	TEST_ASSERT(is_power_of_two(3) == 0, str_buf);
 	TEST_ASSERT(is_power_of_two(5) == 0, str_buf);
 	TEST_ASSERT(is_power_of_two(6) == 0, str_buf);

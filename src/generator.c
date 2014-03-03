@@ -8,14 +8,15 @@
 
 #include "generator.h"
 
-#include "dense_matrix.h"
+#include "den_matrix.h"
 
-void generate_dense(dense_matrix_t *dense, int n, int density) {
+void generate_dense(den_matrix_t *dense, int n, int density) {
 
 	int i;
 	int j;
 
-	dense_matrix_init(dense, n, n);
+//	FIXME:
+//	den_matrix_init(&dense, (den_matrix_init_t ) { n, n, 0 });
 
 	for (i = 0; i < n; i++)
 		for (j = 0; j < n; j++)

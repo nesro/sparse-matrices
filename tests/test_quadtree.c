@@ -63,8 +63,8 @@ static void quadtree_height_test(void) {
 static void quadtree_load(const char *filename, int sm_size) {
 
 	qt_matrix_t qt_matrix;
-	dense_matrix_t den_from_qt_matrix;
-	dense_matrix_t den_matrix;
+	den_matrix_t den_from_qt_matrix;
+	den_matrix_t den_matrix;
 
 	qt_matrix_load_mm(&qt_matrix, filename, sm_size);
 	qt_matrix_to_dense(&qt_matrix, &den_from_qt_matrix);
@@ -125,13 +125,13 @@ static void quadtree_mul(const char *filename_a, const char *filename_b,
 
 	qt_matrix_t qtr_a;
 	qt_matrix_t qtr_b;
-	dense_matrix_t den_a;
-	dense_matrix_t den_b;
-	dense_matrix_t den_qtr_c;
-	dense_matrix_t den_den_c;
+	den_matrix_t den_a;
+	den_matrix_t den_b;
+	den_matrix_t den_qtr_c;
+	den_matrix_t den_den_c;
 
-	dense_matrix_t tmp_a;
-	dense_matrix_t tmp_b;
+	den_matrix_t tmp_a;
+	den_matrix_t tmp_b;
 
 	dense_matrix_load_mm(&den_a, filename_a);
 	dense_matrix_load_mm(&den_b, filename_b);
@@ -201,10 +201,10 @@ static void quadtree_mul_test(void) {
 	}
 }
 
-static void csr(void) {
+/*static void csr(void) {
 	csr_matrix_t csr_a;
 	csr_matrix_t csr_b;
-	dense_matrix_t den_c;
+	den_matrix_t den_c;
 
 	csr_matrix_load_mm(&csr_a, "./tests/matrices/4096_01.mtx");
 	csr_matrix_load_mm(&csr_b, "./tests/matrices/4096_02.mtx");
@@ -215,14 +215,14 @@ static void csr(void) {
 	csr_matrix_free(&csr_a);
 	csr_matrix_free(&csr_b);
 	dense_matrix_free(&den_c);
-}
+}*/
 
 static void quadtree_mul_notest(const char *filename_a, const char *filename_b,
 	int sm_size) {
 	qt_matrix_t qtr_a;
 	qt_matrix_t qtr_b;
 
-	dense_matrix_t den_qtr_c;
+	den_matrix_t den_qtr_c;
 
 	qt_matrix_load_mm(&qtr_a, filename_a, sm_size);
 	qt_matrix_load_mm(&qtr_b, filename_b, sm_size);
@@ -237,7 +237,7 @@ static void quadtree_mul_notest(const char *filename_a, const char *filename_b,
 
 }
 
-static void quadtree_vs_csr(void) {
+/*static void quadtree_vs_csr(void) {
 //	quadtree_mul_notest("./tests/matrices/2048x2048_4194304nz_01.mtx",
 //		"./tests/matrices/2048x2048_4194304nz_02.mtx", 128);
 
@@ -249,7 +249,7 @@ static void quadtree_vs_csr(void) {
 		"./tests/matrices/4096_02.mtx", 512);
 	quadtree_mul_notest("./tests/matrices/4096_01.mtx",
 		"./tests/matrices/4096_02.mtx", 1024);
-}
+}*/
 
 int main(int argc, char *argv[]) {
 

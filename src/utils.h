@@ -4,9 +4,57 @@
  */
 
 #include <assert.h>
+#include <limits.h>
+#include <stdarg.h>
 
 #ifndef UTILS_H_
 #define UTILS_H_
+
+/*
+ * Warning: this can not be changed alone. All unrolled functions must be
+ * updated too.
+ */
+#define UNROLL 8
+
+#ifndef CASSERTION_H_
+#define CASSERTION(condition, message, ...)
+#endif
+
+#ifdef PRINT_DEBUG
+#define _PRINT_DEBUG 1
+#else
+#define _PRINT_DEBUG 0
+#endif
+
+/* variable argument list handling *****************************************/
+
+#define VA_END -9999
+#define VA_DEFAULT -9998
+
+int va_get_int(va_list va, int default_value, int *va_flag);
+double va_get_double(va_list va, double default_value, int *va_flag);
+
+void error(const char *fmt, ...);
+
+/* debugging ***************************************************************/
+
+#define _debug(fmt, ...) do { \
+	if (1 || _PRINT_DEBUG) \
+		fprintf(stderr, "d:%s:%s:%d(): " fmt "\n", __FILE__ , \
+			__func__ , __LINE__ , __VA_ARGS__ ); \
+		fflush(stderr); \
+	} while (0)
+
+#define _debug_var(var) do { \
+	if (1 || _PRINT_DEBUG) \
+		fprintf(stderr, "d:%s:%s:%d(): " #var "=%d\n", __FILE__ , \
+			__func__ , __LINE__ , var ); \
+		fflush(stderr); \
+	} while (0)
+
+void die(const char *fmt, ...);
+
+/***************************************************************************/
 
 #ifdef OMP_THREADS
 #	define __OMP_NUM_THREADS__ num_threads(OMP_THREADS)
@@ -25,13 +73,6 @@
 #else
 #define __CSR_MVM_LOOP_UNROLLING__ 0
 #endif
-
-typedef enum matrix_type {
-	DENSE, /**/
-	COO, /**/
-	CSR, /**/
-	QUADTREE, /**/
-} matrix_type_t;
 
 typedef struct time_record {
 	double multiplication;
@@ -71,7 +112,6 @@ typedef int error_t;
 #define ERROR_NOMEMORY 1 /* malloc/calloc fail */
 
 #define DATATYPE_FORMAT "%lf"
-typedef double datatype_t;
 
 #define MAKE_HTML 0
 

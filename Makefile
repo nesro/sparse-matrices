@@ -4,9 +4,11 @@
 # 
 
 OBJECTS=utils.o \
-	dense_matrix.o \
+	mm_load.o \
+	virtual_matrix.o \
+	den_matrix.o \
 	csr_matrix.o \
-	qt_matrix.o \
+	qdt_matrix.o \
 	mmio.o \
 	coo_matrix.o \
 	vector.o \
@@ -44,7 +46,7 @@ BUILD=./build
 
 TEST_DIR=./tests
 TEST_SRC=./tests
-TEST_BIN=./tests/bin
+TEST_BIN=./tests
 TEST_BUILD=./tests/build
 
 USERNAME=$$( if [ `whoami` = sandra ]; then echo tatarsan; else echo nesrotom; fi )
@@ -114,16 +116,22 @@ fullclean: clean
 $(BINARY): ./main.o $(OBJECTS)
 	$(LD) $(CFLAGS) $(addprefix $(BUILD)/, main.o) $(addprefix $(BUILD)/, $(OBJECTS)) -o $(BINARY) $(CLIBS)
 
-main.o: $(SOURCE_DIR)main.c $(SOURCE_DIR)utils.h $(SOURCE_DIR)csr_matrix.h $(SOURCE_DIR)vector.h $(SOURCE_DIR)coo_matrix.h $(SOURCE_DIR)dense_matrix.h
+main.o: $(SOURCE_DIR)main.c $(SOURCE_DIR)utils.h $(SOURCE_DIR)csr_matrix.h $(SOURCE_DIR)vector.h $(SOURCE_DIR)coo_matrix.h $(SOURCE_DIR)den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 utils.o: $(SOURCE_DIR)utils.c $(SOURCE_DIR)utils.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
+mm_load.o: $(SOURCE_DIR)mm_load.c $(SOURCE_DIR)mm_load.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
+virtual_matrix.o: $(SOURCE_DIR)virtual_matrix.c $(SOURCE_DIR)virtual_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+
 csr_matrix.o: $(SOURCE_DIR)csr_matrix.c $(SOURCE_DIR)csr_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-qt_matrix.o: $(SOURCE_DIR)qt_matrix.c $(SOURCE_DIR)qt_matrix.h
+qdt_matrix.o: $(SOURCE_DIR)qdt_matrix.c $(SOURCE_DIR)qdt_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 mmio.o: $(SOURCE_DIR)mmio.c $(SOURCE_DIR)mmio.h
@@ -132,7 +140,7 @@ mmio.o: $(SOURCE_DIR)mmio.c $(SOURCE_DIR)mmio.h
 coo_matrix.o: $(SOURCE_DIR)coo_matrix.c $(SOURCE_DIR)coo_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-dense_matrix.o: $(SOURCE_DIR)dense_matrix.c $(SOURCE_DIR)dense_matrix.h
+den_matrix.o: $(SOURCE_DIR)den_matrix.c $(SOURCE_DIR)den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 vector.o: $(SOURCE_DIR)vector.c $(SOURCE_DIR)vector.h

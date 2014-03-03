@@ -7,9 +7,81 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "utils.h"
 
+/* variable argument list handling *****************************************/
+
+int va_get_int(va_list va, int default_value, int *va_flag) {
+
+	int value;
+
+	if (*va_flag)
+		return default_value;
+
+	if ((value = va_arg(va, int)) == VA_END) {
+		*va_flag = 1;
+		return default_value;
+	}
+
+	return value;
+}
+
+double va_get_double(va_list va, double default_value, int *va_flag) {
+
+	double value;
+
+	if (va_flag)
+		return default_value;
+
+	if ((value = va_arg(va, double)) == VA_END) {
+		*va_flag = 1;
+		return default_value;
+	}
+
+	_debug("returning value: %lf\n", value);
+
+	return value;
+}
+
+/***************************************************************************/
+
+void _debug_msg(const char * fmt, ...) {
+
+	va_list ap;
+
+	if (0 && ! _PRINT_DEBUG)
+		return;
+
+	va_start(ap, fmt);
+	fprintf(stdout, "debug: ");
+	vfprintf(stdout, fmt, ap), putc('\n', stdout);
+	fflush(stdout);
+	va_end(ap);
+}
+
+/***************************************************************************/
+
+void error(const char *fmt, ...) {
+
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(stdout, fmt, ap);
+	fflush(stdout);
+	va_end(ap);
+	exit(EXIT_FAILURE);
+}
+
+void die(const char *fmt, ...) {
+
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(stdout, fmt, ap);
+	fflush(stdout);
+	va_end(ap);
+	exit(EXIT_FAILURE);
+}
 
 double random_double(void) {
 	return ((double) rand() / (double) RAND_MAX);
@@ -34,7 +106,7 @@ int is_power_of_two(unsigned int x) {
 	return ((x != 0) && ((x & (~x + 1)) == x));
 }
 
-/******************************************************************************/
+/***************************************************************************/
 
 #define MEMORY_USAGE 1
 
