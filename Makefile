@@ -36,6 +36,7 @@ endif
 
 CC=gcc
 LD=gcc
+MKDIR_P=mkdir -p
 CLIBS=-lm -fopenmp
 CFLAGS=-std=c99 -Wall -pedantic
 
@@ -75,7 +76,11 @@ endif
 
 #-------------------------------------------------------------------------------
 
-all: $(OBJECTS) $(BINARY)
+all: build_dir $(OBJECTS) $(BINARY)
+
+.PHONY: build_dir
+build_dir:
+	$(MKDIR_P) ./build
 
 .PHONY: run
 run: all
@@ -93,6 +98,7 @@ clean:
 	find . -type f -and \( -name "*.o" -or -name "*~" -or -name "valgrind_*" \) -delete
 	rm -fr \
 		$(BINARY) \
+		$(BUILD) \
 		./queue*sh.e \
 		./queue*sh.o \
 		./queue*sh.pe \
