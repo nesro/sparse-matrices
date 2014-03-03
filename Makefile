@@ -46,7 +46,6 @@ BUILD=./build
 
 TEST_DIR=./tests
 TEST_SRC=./tests
-TEST_BIN=./tests
 TEST_BUILD=./tests/build
 
 USERNAME=$$( if [ `whoami` = sandra ]; then echo tatarsan; else echo nesrotom; fi )
@@ -94,7 +93,6 @@ clean:
 	find . -type f -and \( -name "*.o" -or -name "*~" -or -name "valgrind_*" \) -delete
 	rm -fr \
 		$(BINARY) \
-		$(TEST_BIN)/* \
 		./queue*sh.e \
 		./queue*sh.o \
 		./queue*sh.pe \
