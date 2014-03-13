@@ -1,0 +1,3 @@
+[submodule "cassertion"]
+	path = cassertion
+	url = https://github.com/nesro/cassertion.git
