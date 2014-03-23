@@ -86,6 +86,10 @@ build_dir:
 test_build_dir:
 	$(MKDIR_P) $(TEST_BUILD)
 
+.PHONY: cassertion
+cassertion:
+	./cassertion/cassertion.sh
+
 .PHONY: run
 run: all
 	$(BINARY)
