@@ -12,6 +12,7 @@ typedef double datatype_t;
 /***************************************************************************/
 
 typedef enum vm_type {
+	UNKNOWN, /**/
 	VEC, /* vector */
 	DEN, /* dense */
 	COO, /* coordinate */
@@ -29,6 +30,7 @@ enum {
 	UNROLLED = 0x02, /**/
 	PARALLEL = 0x04, /**/
 	STRASSEN = 0x08, /**/
+	RECURSIVE = 0x10, /**/
 };
 
 /***************************************************************************/

@@ -14,9 +14,8 @@ OBJECTS=utils.o \
 	vector.o \
 	generator.o
 
-TESTS=csr_unroll_test \
-	utils_test \
-	test_quadtree
+TESTS=test_den_matrix
+
 
 BINARY=./main
 
@@ -46,12 +45,13 @@ SRC=./src
 BUILD=./build
 
 TEST_DIR=./tests
-TEST_SRC=./tests
+TEST_SRC=./tests/src
 TEST_BUILD=./tests/build
+TEST_BIN=$(TEST_DIR)
 
-USERNAME=$$( if [ `whoami` = sandra ]; then echo tatarsan; else echo nesrotom; fi )
+CASSERTION=./cassertion
 
-
+#-------------------------------------------------------------------------------
 
 ifdef DEBUG
 	CFLAGS += -O0 -ggdb #-Wextra
@@ -80,14 +80,23 @@ all: build_dir $(OBJECTS) $(BINARY)
 
 .PHONY: build_dir
 build_dir:
-	$(MKDIR_P) ./build
+	$(MKDIR_P) $(BUILD)
+
+.PHONY: test_build_dir
+test_build_dir:
+	$(MKDIR_P) $(TEST_BUILD)
 
 .PHONY: run
 run: all
 	$(BINARY)
 
+# make BIN=./main valgrind
+.PHONY: valgrind
+valgrind:
+	valgrind --leak-check=full --show-reachable=yes ${BIN}
+
 .PHONY: tests
-tests: $(TESTS)
+tests: test_build_dir $(TESTS)
 
 .PHONY: runtests
 runtests: tests
@@ -155,27 +164,29 @@ generator.o: $(SOURCE_DIR)generator.c $(SOURCE_DIR)generator.h
 
 #-------------------------------------------------------------------------------
 
-csr_unroll_test: all csr_unroll_test.o
-	$(LD) $(CFLAGS) $(TEST_BUILD)/csr_unroll_test.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+test_den_matrix: all test_den_matrix.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_den_matrix.o \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
 
-csr_unroll_test.o: $(TEST_SRC)/csr_unroll_test.c $(TEST_SRC)/test_framework.h $(SRC)/csr_matrix.h
+test_den_matrix.o: $(TEST_SRC)/test_den_matrix.c $(CASSERTION)/cassertion.h \
+$(SRC)/virtual_matrix.h $(SRC)/den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 # ---
-
-test_quadtree: all test_quadtree.o
-	$(LD) $(CFLAGS) $(TEST_BUILD)/test_quadtree.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
-
-test_quadtree.o: $(TEST_SRC)/test_quadtree.c $(TEST_SRC)/test_framework.h $(SRC)/qt_matrix.h
-	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
-
-# ---
-
-utils_test: all utils_test.o
-	$(LD) $(CFLAGS) $(TEST_BUILD)/utils_test.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
-
-utils_test.o: $(TEST_SRC)/utils_test.c $(TEST_SRC)/test_framework.h $(SRC)/utils.h
-	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+#
+#test_quadtree: all test_quadtree.o
+#	$(LD) $(CFLAGS) $(TEST_BUILD)/test_quadtree.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+#
+#test_quadtree.o: $(TEST_SRC)/test_quadtree.c $(TEST_SRC)/test_framework.h $(SRC)/qt_matrix.h
+#	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+#
+## ---
+#
+#utils_test: all utils_test.o
+#	$(LD) $(CFLAGS) $(TEST_BUILD)/utils_test.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+#
+#utils_test.o: $(TEST_SRC)/utils_test.c $(TEST_SRC)/test_framework.h $(SRC)/utils.h
+#	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------
 # STAR.fit.cvut.cz

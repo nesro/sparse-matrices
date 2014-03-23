@@ -19,7 +19,11 @@ typedef struct dense_matrix {
 
 int dense_matrix_init(dense_matrix_t *dense_matrix, int width, int height);
 void dense_matrix_matrix_mul(dense_matrix_t *a, dense_matrix_t *b,
-	dense_matrix_t *c);
+		dense_matrix_t *c);
+
+void dense_mmm_recursion(dense_matrix_t *a, dense_matrix_t *b,
+		dense_matrix_t *c);
+
 void dense_matrix_vector_mul(dense_matrix_t *a, vector_t *b, vector_t *c);
 void dense_to_html(dense_matrix_t *a, char *filename);
 void dense_matrix_free(dense_matrix_t *dense_matrix);

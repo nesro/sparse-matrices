@@ -38,22 +38,24 @@ void den_matrix_init(den_matrix_t **, int, int, int);
 void den_matrix_print(den_matrix_t *);
 void den_matrix_free(den_matrix_t *);
 
+double den_mul_recursion(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c);
+
 double den_mul_unrolled_parallel(const den_matrix_t *, const den_matrix_t *,
-	den_matrix_t *);
+		den_matrix_t *);
 double den_mul_unrolled(const den_matrix_t *, const den_matrix_t *,
-	den_matrix_t *);
+		den_matrix_t *);
 double den_mul_parallel(const den_matrix_t *, const den_matrix_t *,
-	den_matrix_t *);
-double den_mul_naive(const den_matrix_t *, const den_matrix_t *,
-	den_matrix_t *);
+		den_matrix_t *);
+double den_mul_naive(const den_matrix_t *, const den_matrix_t *, den_matrix_t *);
 double den_mul_strassen_unrolled_parallel(const den_matrix_t *,
-	const den_matrix_t *, den_matrix_t *);
+		const den_matrix_t *, den_matrix_t *);
 double den_mul_strassen_unrolled(const den_matrix_t *, const den_matrix_t *,
-	den_matrix_t *);
+		den_matrix_t *);
 double den_mul_strassen_parallel(const den_matrix_t *, const den_matrix_t *,
-	den_matrix_t *);
+		den_matrix_t *);
 double den_mul_strassen(const den_matrix_t *, const den_matrix_t *,
-	den_matrix_t *);
+		den_matrix_t *);
 
 /*
  * This is called from virtual matrix.

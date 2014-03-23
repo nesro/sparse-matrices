@@ -52,7 +52,7 @@ void den_from_mm(den_matrix_t **den, const char *mm_filename, va_list va) {
 
 	for (i = 0; i < mm_file->items; i++) {
 		(*den)->v[mm_file->data[i].col - 1][mm_file->data[i].row - 1] +=
-			mm_file->data[i].value;
+				mm_file->data[i].value;
 	}
 
 	mm_free(mm_file);
@@ -65,11 +65,9 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 	if (den != NULL && *den != NULL)
 		den_matrix_free(*den);
 
-	_debug_msg("going to die :D %x\n", den);
-
 	*den = malloc(sizeof(den_matrix_t));
 
-	_debug("w=%d h=%d z=%d\n", width, height, zero);
+	//_debug("w=%d h=%d z=%d\n", width, height, zero);
 
 	(*den)->_.type = DEN;
 	(*den)->_.f = den_vmt;
@@ -186,12 +184,12 @@ void den_matrix_print(den_matrix_t *den) {
  }*/
 
 double den_mul_unrolled_parallel(const den_matrix_t *a, const den_matrix_t *b,
-	den_matrix_t *c) {
+		den_matrix_t *c) {
 	return 0.;
 }
 
 double den_mul_unrolled(const den_matrix_t *a, const den_matrix_t *b,
-	den_matrix_t *c) {
+		den_matrix_t *c) {
 
 	int row;
 	int col;
@@ -227,32 +225,32 @@ double den_mul_unrolled(const den_matrix_t *a, const den_matrix_t *b,
 }
 
 double den_mul_parallel(const den_matrix_t *a, const den_matrix_t *b,
-	den_matrix_t *c) {
+		den_matrix_t *c) {
 	return 0.;
 }
 
 double den_mul_strassen_unrolled_parallel(const den_matrix_t *a,
-	const den_matrix_t *b, den_matrix_t *c) {
+		const den_matrix_t *b, den_matrix_t *c) {
 	return 0.;
 }
 
 double den_mul_strassen_unrolled(const den_matrix_t *a, const den_matrix_t *b,
-	den_matrix_t *c) {
+		den_matrix_t *c) {
 	return 0.;
 }
 
 double den_mul_strassen_parallel(const den_matrix_t *a, const den_matrix_t *b,
-	den_matrix_t *c) {
+		den_matrix_t *c) {
 	return 0.;
 }
 
 double den_mul_strassen(const den_matrix_t *a, const den_matrix_t *b,
-	den_matrix_t *c) {
+		den_matrix_t *c) {
 	return 0.;
 }
 
 double den_mul_naive(const den_matrix_t *a, const den_matrix_t *b,
-	den_matrix_t *c) {
+		den_matrix_t *c) {
 
 	int row;
 	int col;
@@ -277,10 +275,49 @@ double den_mul_naive(const den_matrix_t *a, const den_matrix_t *b,
 	return (omp_get_wtime() - start_time);
 }
 
-double mul(const den_matrix_t *a, const den_matrix_t *b, den_matrix_t **c,
-	char flag) {
+/******************************************************************************/
 
-	int init_zeros;
+static void den_mul_recursion_inner(const den_matrix_t *a,
+		const den_matrix_t *b, den_matrix_t *c, int ax, int ay, int bx, int by,
+		int cx, int cy, int s) {
+
+	int row, col, i;
+
+	if (s == 1) {
+		printf("c[%d][%d] += a[%d][%d] * b[%d][%d]\n", cy, cx, ay, ax, by, bx);
+		c->v[cy][cx] += a->v[ay][ax] * b->v[by][bx];
+		return;
+	}
+
+	for (row = 0; row < 2; row++) {
+		for (col = 0; col < 2; col++) {
+			for (i = 0; i < 2; i++) {
+				printf("row=%d,col=%d,i=%d\n", row, col, i);
+
+				den_mul_recursion_inner(a, b, c, /**/
+				ax + (i * (s / 2)), ay + (row * (s / 2)), /**/
+				bx + (col * (s / 2)), by + (i * (s / 2)), /**/
+				cx + (col * (s / 2)), cy + (row * (s / 2)), /**/
+				s / 2);
+			}
+		}
+	}
+
+}
+
+double den_mul_recursion(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c) {
+
+	den_mul_recursion_inner(a, b, c, 0, 0, 0, 0, 0, 0, a->_.w);
+	return 0.;
+}
+
+/******************************************************************************/
+
+double mul(const den_matrix_t *a, const den_matrix_t *b, den_matrix_t **c,
+		char flag) {
+
+	int init_zeros = 1;
 
 	/*
 	 * We have to initialize C matrix. For naive method we can compute every
@@ -291,21 +328,23 @@ double mul(const den_matrix_t *a, const den_matrix_t *b, den_matrix_t **c,
 	 */
 	if (flag & NAIVE)
 		init_zeros = 0;
-	else if (flag & STRASSEN)
+	else if ((flag & STRASSEN) || (flag & RECURSIVE))
 		init_zeros = 1;
 
 	if (*c == NULL) {
-		den_matrix_init(c, b->_.w, a->_.h, 0);
+		den_matrix_init(c, b->_.w, a->_.h, init_zeros);
 	} else if ((*c)->_.w != b->_.w || (*c)->_.h != a->_.h) {
 		free(*c);
 		c = NULL;
-		den_matrix_init(c, b->_.w, a->_.h, 0);
+		den_matrix_init(c, b->_.w, a->_.h, init_zeros);
 	}
 
-	if (flag & NAIVE) {
+	if (flag & NAIVE)
 		return den_mul_naive(a, b, *c);
-	} else if (flag & STRASSEN)
+	else if (flag & STRASSEN)
 		return den_mul_strassen(a, b, *c);
+	else if (flag & RECURSIVE)
+		return den_mul_recursion(a, b, *c);
 
 	die("The flag \"%x\" is not valid.\n", flag);
 

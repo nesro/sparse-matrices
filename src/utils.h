@@ -16,10 +16,6 @@
  */
 #define UNROLL 8
 
-#ifndef CASSERTION_H_
-#define CASSERTION(condition, message, ...)
-#endif
-
 #ifdef PRINT_DEBUG
 #define _PRINT_DEBUG 1
 #else
