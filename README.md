@@ -16,3 +16,11 @@ CZ instructions:
 
  * Odvoďte jejich časové a paměťové složitosti, porovnejte tyto teoretické
    předpoklady s výkonností a paměťovými nároky jednotlivých implementací.
+   
+features
+============================
+
+ * dense matrix multiplication:
+   * naive
+   * recursive
+   
