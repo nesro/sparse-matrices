@@ -26,6 +26,7 @@ static vm_vmt_t csr_vmt = { /**/
 (mm_save_t) NULL, /**/
 (print_t) den_matrix_print, /**/
 (compare_t) NULL, /**/
+(distance_t) NULL, /**/
 (convert_t) NULL, /**/
 (mul_t) mul, /**/
 };

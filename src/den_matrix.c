@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
+#include <math.h>
 
 #include "utils.h"
 #include "mm_load.h"
@@ -20,10 +21,47 @@ static vm_vmt_t den_vmt = { /**/
 (mm_load_t) NULL,/**/
 (mm_save_t) NULL, /**/
 (print_t) den_matrix_print, /**/
-(compare_t) NULL, /**/
+(compare_t) den_compare, /**/
+(distance_t) den_distance, /**/
 (convert_t) NULL, /**/
 (mul_t) mul, /**/
 };
+
+int den_compare(den_matrix_t *a, den_matrix_t *b) {
+
+	int i;
+	int j;
+
+	if (a->_.w != b->_.w || a->_.h != a->_.h)
+		return 2;
+
+	for (i = 0; i < a->_.h; i++) {
+		for (j = 0; j < a->_.w; j++) {
+			if (a->v[i][j] != b->v[i][j])
+				return 1;
+		}
+	}
+
+	return 0;
+}
+
+double den_distance(den_matrix_t *a, den_matrix_t *b) {
+
+	double ret = 0.;
+	int i;
+	int j;
+
+	if (a->_.w != b->_.w || a->_.h != a->_.h)
+		return INFINITY;
+
+	for (i = 0; i < a->_.h; i++) {
+		for (j = 0; j < a->_.w; j++) {
+			ret += fabs(a->v[i][j] - b->v[i][j]);
+		}
+	}
+
+	return ret;
+}
 
 /***************************************************************************/
 
@@ -284,7 +322,7 @@ static void den_mul_recursion_inner(const den_matrix_t *a,
 	int row, col, i;
 
 	if (s == 1) {
-		printf("c[%d][%d] += a[%d][%d] * b[%d][%d]\n", cy, cx, ay, ax, by, bx);
+		//printf("c[%d][%d] += a[%d][%d] * b[%d][%d]\n", cy, cx, ay, ax, by, bx);
 		c->v[cy][cx] += a->v[ay][ax] * b->v[by][bx];
 		return;
 	}
@@ -292,7 +330,7 @@ static void den_mul_recursion_inner(const den_matrix_t *a,
 	for (row = 0; row < 2; row++) {
 		for (col = 0; col < 2; col++) {
 			for (i = 0; i < 2; i++) {
-				printf("row=%d,col=%d,i=%d\n", row, col, i);
+				//printf("row=%d,col=%d,i=%d\n", row, col, i);
 
 				den_mul_recursion_inner(a, b, c, /**/
 				ax + (i * (s / 2)), ay + (row * (s / 2)), /**/

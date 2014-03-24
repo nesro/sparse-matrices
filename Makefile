@@ -14,7 +14,8 @@ OBJECTS=utils.o \
 	vector.o \
 	generator.o
 
-TESTS=test_den_matrix
+TESTS=test_utils.o \
+	test_den_matrix
 
 
 BINARY=./main
@@ -133,7 +134,8 @@ fullclean: clean
 $(BINARY): ./main.o $(OBJECTS)
 	$(LD) $(CFLAGS) $(addprefix $(BUILD)/, main.o) $(addprefix $(BUILD)/, $(OBJECTS)) -o $(BINARY) $(CLIBS)
 
-main.o: $(SOURCE_DIR)main.c $(SOURCE_DIR)utils.h $(SOURCE_DIR)csr_matrix.h $(SOURCE_DIR)vector.h $(SOURCE_DIR)coo_matrix.h $(SOURCE_DIR)den_matrix.h
+main.o: $(SOURCE_DIR)main.c $(SOURCE_DIR)utils.h $(SOURCE_DIR)csr_matrix.h \
+$(SOURCE_DIR)vector.h $(SOURCE_DIR)coo_matrix.h $(SOURCE_DIR)den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 utils.o: $(SOURCE_DIR)utils.c $(SOURCE_DIR)utils.h
@@ -168,8 +170,14 @@ generator.o: $(SOURCE_DIR)generator.c $(SOURCE_DIR)generator.h
 
 #-------------------------------------------------------------------------------
 
+test_utils.o: $(TEST_SRC)/test_utils.c $(TEST_SRC)/test_utils.h \
+$(CASSERTION)/cassertion.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
+#-------
+
 test_den_matrix: all test_den_matrix.o
-	$(LD) $(CFLAGS) $(TEST_BUILD)/test_den_matrix.o \
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_den_matrix.o \
 	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
 
 test_den_matrix.o: $(TEST_SRC)/test_den_matrix.c $(CASSERTION)/cassertion.h \
