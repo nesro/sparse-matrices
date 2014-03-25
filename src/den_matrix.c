@@ -282,11 +282,6 @@ double den_mul_strassen_parallel(const den_matrix_t *a, const den_matrix_t *b,
 	return 0.;
 }
 
-double den_mul_strassen(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c) {
-	return 0.;
-}
-
 double den_mul_naive(const den_matrix_t *a, const den_matrix_t *b,
 		den_matrix_t *c) {
 
@@ -345,8 +340,162 @@ static void den_mul_recursion_inner(const den_matrix_t *a,
 
 double den_mul_recursion(const den_matrix_t *a, const den_matrix_t *b,
 		den_matrix_t *c) {
-
 	den_mul_recursion_inner(a, b, c, 0, 0, 0, 0, 0, 0, a->_.w);
+	return 0.;
+}
+
+/******************************************************************************/
+
+static void den_zeroize(den_matrix_t *a) {
+	memset(a->rows_block, 0, a->_.w * a->_.h * sizeof(datatype_t));
+}
+
+static void den_offset_add(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c, int ax, int ay, int bx, int by, int cx, int cy, int s) {
+
+	int row;
+	int col;
+
+	for (row = 0; row < s; row++) {
+		for (col = 0; col < s; col++) {
+			c->v[cy + row][cx + col] = a->v[ay + row][ax + col]
+					+ b->v[by + row][bx + col];
+		}
+	}
+}
+
+static void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c, int ax, int ay, int bx, int by, int cx, int cy, int s) {
+
+	int row;
+	int col;
+
+	for (row = 0; row < s; row++) {
+		for (col = 0; col < s; col++) {
+			c->v[cy + row][cx + col] = a->v[ay + row][ax + col]
+					+ b->v[by + row][bx + col];
+		}
+	}
+}
+
+/*
+
+ An example of the Strassen algorithm in use:
+
+ {{1,2},
+ {3,4}}
+ *
+ {{5,6},
+ {7,8}}
+ =
+ {{19,22},
+ {43,50}}
+
+ A11 = 1
+ A12 = 2
+ A21 = 3
+ A22 = 4
+
+ B11 = 5
+ B12 = 6
+ B21 = 7
+ B22 = 8
+
+ M1 = (A11 + A22) * (B11 + B22) = (1 + 4) * (5 + 8) = 5 * 13 = 65
+ M2 = (A21 + A22) * B11 = (3 + 4) * 5 = 7 * 5 = 35
+ M3 = A11 * (B12 - B22) = 1 * (6 - 8) = 1 * -2 = -2
+ M4 = A22 * (B21 - B11) = 4 * (7 - 5) = 4 * 2 = 8
+ M5 = (A11 + A12) * B22 = (1 + 2) * 8 = 3 * 8 = 24
+ M6 = (A21 - A11) * (B11 + B12) = (3 - 1) * (5 + 6) = 2 * 11 = 22
+ M7 = (A12 - A22) * (B21 + B22) = (2 - 4) * (7 + 8) = -2 * 15 = -30
+
+ C11 = M1 + M4 - M5 + M7 = 65 + 8 - 24 + (-30) = 19
+ C12 = M3 + M5 = -2 + 24 = 22
+ C21 = M2 + M4 = 35 + 8 = 43
+ C22 = M1 - M2 + M3 + M6 = 65 - 35 + (-2) + 22 = 50
+
+ */
+static double den_mul_strassen_inner(const den_matrix_t *a,
+		const den_matrix_t *b, den_matrix_t *c, int ax, int ay, int bx, int by,
+		int cx, int cy, int s) {
+
+	int i;
+	int h; /* half */
+	vm_t *m[9];
+
+	if (s == 1) {
+		c->v[cy][cx] += a->v[ay][ax] * b->v[ay][ax];
+	}
+
+	h = s / 2;
+	for (i = 0; i < 9; i++) {
+		vm_create(&m[i], DEN, h, h, 1);
+	}
+	/*
+	 (1 ) 0M1 = (A11TL + A22BR) * (B11TL + B22BR)
+	 (2 ) 1M2 = (A21BL + A22BR) * B11TL
+	 (3 ) 2M3 = A11TL * (B12TR - B22BR)
+	 (4 ) 3M4 = A22BR * (B21BL - B11TL)
+	 (5 ) 4M5 = (A11TL + A12TR) * B22BR
+	 (6 ) 5M6 = (A21BL - A11TL) * (B11TL + B12TR)
+	 (7 ) 6M7 = (A12TR - A22BR) * (B21BL + B22BR)
+
+	 (8 ) C11TL = M1 + M4 - M5 + M7
+	 (9 ) C12TR = M3 + M5
+	 (10) C21BL = M2 + M4
+	 (11) C22BR = M1 - M2 + M3 + M6
+	 */
+	den_offset_add(a, a, m[7], ax, ay, ax + h, ay + h, 0, 0, h);
+	den_offset_add(b, b, m[8], bx, by, bx + h, by + h, 0, 0, h);
+	den_mul_strassen_inner(m[7], m[8], m[0], 0, 0, 0, 0, 0, 0, h);
+	den_zeroize(m[7]);
+	den_zeroize(m[8]);
+	den_offset_add(a, a, ax, ay + h, ax + h, ay + h, m[7], h);
+	den_mul_strassen_inner(b, m[7], m[1], bx, by, 0, 0, 0, 0, h);
+	den_zeroize(m[7]);
+	den_offset_sub(b, b, m[7], bx + h, by, bx + h, by + h, 0, 0);
+	den_mul_strassen_inner(a, m[7], m[2], ax, ay, 0, 0, 0, 0, h);
+	den_zeroize(m[7]);
+	den_offset_sub(b, b, m[7], bx, by + h, bx, by, 0, 0);
+	den_mul_strassen_inner(a, m[7], m[3], ax + h, ay + h, 0, 0, 0, 0, h);
+	den_zeroize(m[7]);
+	den_offset_add(a, a, ax, ay, ax + h, ay, m[7], h);
+	den_mul_strassen_inner(m[7], b, m[4], 0, 0, bx + h, by + h, 0, 0, h);
+	den_zeroize(m[7]);
+	den_zeroize(m[8]);
+	den_offset_sub(a, a, m[7], ax, ay + h, ax, ay, 0, 0, h);
+	den_offset_add(b, b, m[8], bx, by, bx + h, by + h, 0, 0, h);
+	den_mul_strassen_inner(m[7], m[8], m[5], 0, 0, 0, 0, 0, 0, h);
+	den_zeroize(m[7]);
+	den_zeroize(m[8]);
+	den_offset_sub(a, a, m[7], ax + h, ay, ax + h, ay + h, 0, 0, h);
+	den_offset_add(b, b, m[8], bx, by + h, bx + h, by + h, 0, 0, h);
+	den_mul_strassen_inner(m[7], m[8], m[5], 0, 0, 0, 0, 0, 0, h);
+	/* c1,1*/
+	den_zeroize(m[7]);
+	den_offset_add(m[0], m[3], m[7], 0, 0, 0, 0, 0, 0, h);
+	den_offset_sub(m[7], m[4], m[7], 0, 0, 0, 0, 0, 0, h);
+	den_offset_add(m[7], m[6], c, 0, 0, 0, 0, cx, cy, h);
+	/* c1,2*/
+	den_offset_add(m[2], m[4], c, 0, 0, 0, 0, cx + h, cy, h);
+	/* c1,2*/
+	den_offset_add(m[1], m[3], c, 0, 0, 0, 0, cx, cy + h, h);
+	/* c2,2*/
+	den_zeroize(m[7]);
+	den_offset_sub(m[0], m[1], m[7], 0, 0, 0, 0, 0, 0, h);
+	den_offset_add(m[7], m[2], m[7], 0, 0, 0, 0, 0, 0, h);
+	den_offset_add(m[7], m[5], c, 0, 0, 0, 0, cx+h, cy+h, h);
+
+	for (i = 0; i < 9; i++) {
+		m[i]->f.free(m[i]);
+	}
+
+	return 0.;
+}
+
+double den_mul_strassen(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c) {
+	den_mul_strassen_inner(a, b, c, 0, 0, 0, 0, 0, 0, a->_.h);
 	return 0.;
 }
 

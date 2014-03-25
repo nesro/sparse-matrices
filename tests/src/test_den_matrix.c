@@ -17,7 +17,7 @@ static void run() {
 	vm_t *b = NULL;
 	vm_t *c_def = NULL;
 	vm_t *c_rec = NULL;
-	//vm_t *c_str = NULL;
+	vm_t *c_str = NULL;
 
 	const test_matrix_t *tm;
 	const test_matrices_pair_t *tp;
@@ -39,13 +39,16 @@ static void run() {
 		CASSERTION(c_def->f.distance(c_def, c_rec) == 0, "a=%s,b=%s, recursive",
 				tp->a.path, tp->b.path);
 
-		//a->f.mul(a, b, &c_str, STRASSEN);
+		CASSERTION_TIME();
+		a->f.mul(a, b, &c_str, STRASSEN);
+		CASSERTION(c_def->f.distance(c_def, c_str) == 0, "a=%s,b=%s, recursive",
+				tp->a.path, tp->b.path);
 
 		a->f.free(a);
 		b->f.free(b);
 		c_def->f.free(c_def);
 		c_rec->f.free(c_rec);
-		//c_str->f.free(c_str);
+		c_str->f.free(c_str);
 	}
 
 //	vm_load_mm(&a, DEN, "./matrices/2x2_4nz_01.mtx");

@@ -17,7 +17,6 @@ OBJECTS=utils.o \
 TESTS=test_utils.o \
 	test_den_matrix
 
-
 BINARY=./main
 
 # csr MM Loop UnRolling
@@ -113,14 +112,16 @@ clean:
 	rm -fr \
 		$(BINARY) \
 		$(BUILD) \
+		$(TEST_BUILD) \
+		$(TEST_DIR)/test_den_matrix \
+		./cachegrind* \
+		./*.png \
+		./*.txt \
+		./*.html \
 		./queue*sh.e \
 		./queue*sh.o \
 		./queue*sh.pe \
 		./queue*sh.po \
-		./cachegrind* \
-		./*.png \
-		./*.txt \
-		./*.html
 
 .PHONY: fullclean
 fullclean: clean
