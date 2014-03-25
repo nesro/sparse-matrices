@@ -12,6 +12,25 @@
 #include "../../cassertion/cassertion.h"
 #include "test_utils.h"
 
+static void rowcol() {
+
+	vm_t *a = NULL;
+	int col = 3;
+	int row = 2;
+	int x = 3;
+	int y = 2;
+	datatype_t v = 1;
+
+	vm_create(&a, DEN, 1, 10, 10);
+
+	((den_matrix_t *) a)->v[row][col] = v;
+
+	CASSERTION(((den_matrix_t * ) a)->v[y][x] == v, "row/col vs y/x test %s",
+			"");
+
+	a->f.free(a);
+}
+
 static void run() {
 	vm_t *a = NULL;
 	vm_t *b = NULL;
@@ -32,6 +51,11 @@ static void run() {
 		vm_load_mm(&a, DEN, tp->a.path);
 		vm_load_mm(&b, DEN, tp->b.path);
 
+		printf("---- a:\n");
+		a->f.print(a);
+		printf("---- b:\n");
+		b->f.print(b);
+
 		a->f.mul(a, b, &c_def, NAIVE);
 
 		CASSERTION_TIME();
@@ -41,8 +65,13 @@ static void run() {
 
 		CASSERTION_TIME();
 		a->f.mul(a, b, &c_str, STRASSEN);
-		CASSERTION(c_def->f.distance(c_def, c_str) == 0, "a=%s,b=%s, recursive",
+		CASSERTION(c_def->f.distance(c_def, c_str) == 0, "a=%s,b=%s, strassen",
 				tp->a.path, tp->b.path);
+
+		printf("---- naive:\n");
+		c_def->f.print(c_def);
+		printf("---- recursive:\n");
+		c_str->f.print(c_str);
 
 		a->f.free(a);
 		b->f.free(b);
@@ -72,6 +101,7 @@ int main(int argc, char *argv[]) {
 
 	CASSERTION_INIT(argc, argv);
 
+	rowcol();
 	run();
 
 	CASSERTION_RESULTS();

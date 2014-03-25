@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <omp.h>
 #include <math.h>
 
@@ -76,6 +77,8 @@ void den_vm_init(den_matrix_t **den, va_list va) {
 	height = va_get_int(va, -1, &va_flag);
 	width = va_get_int(va, -1, &va_flag);
 
+	printf("width=%d, height=%d, zero=%d\n", width, height, zero);
+
 	den_matrix_init(den, width, height, zero);
 }
 
@@ -89,7 +92,7 @@ void den_from_mm(den_matrix_t **den, const char *mm_filename, va_list va) {
 	den_matrix_init(den, mm_file->width, mm_file->height, 1);
 
 	for (i = 0; i < mm_file->items; i++) {
-		(*den)->v[mm_file->data[i].col - 1][mm_file->data[i].row - 1] +=
+		(*den)->v[mm_file->data[i].row - 1][mm_file->data[i].col - 1] +=
 				mm_file->data[i].value;
 	}
 
@@ -146,7 +149,7 @@ void den_matrix_print(den_matrix_t *den) {
 
 	for (i = 0; i < den->_.h; i++) {
 		for (j = 0; j < den->_.w; j++) {
-			printf(DPF ", ", den->v[j][i]);
+			printf(DPF ", ", den->v[i][j]);
 		}
 
 		printf("\n");
@@ -351,29 +354,35 @@ static void den_zeroize(den_matrix_t *a) {
 }
 
 static void den_offset_add(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c, int ax, int ay, int bx, int by, int cx, int cy, int s) {
+		den_matrix_t *c, int ar, int ac, int br, int bc, int cr, int cc, int s) {
 
 	int row;
 	int col;
 
 	for (row = 0; row < s; row++) {
 		for (col = 0; col < s; col++) {
-			c->v[cy + row][cx + col] = a->v[ay + row][ax + col]
-					+ b->v[by + row][bx + col];
+			printf(" this %lf and %lf \n", a->v[ar + row][ac + col],
+					b->v[br + row][bc + col]);
+
+			c->v[cr + row][cc + col] = a->v[ar + row][ac + col]
+					+ b->v[br + row][bc + col];
 		}
 	}
 }
 
 static void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c, int ax, int ay, int bx, int by, int cx, int cy, int s) {
+		den_matrix_t *c, int ar, int ac, int br, int bc, int cr, int cc, int s) {
 
 	int row;
 	int col;
 
 	for (row = 0; row < s; row++) {
 		for (col = 0; col < s; col++) {
-			c->v[cy + row][cx + col] = a->v[ay + row][ax + col]
-					+ b->v[by + row][bx + col];
+			printf("SUB this %lf and %lf \n", a->v[ar + row][ac + col],
+								b->v[br + row][bc + col]);
+
+			c->v[cr + row][cc + col] = a->v[ar + row][ac + col]
+				-+ b->v[br + row][bc + col];
 		}
 	}
 }
@@ -415,22 +424,24 @@ static void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
  C22 = M1 - M2 + M3 + M6 = 65 - 35 + (-2) + 22 = 50
 
  */
-static double den_mul_strassen_inner(const den_matrix_t *a,
-		const den_matrix_t *b, den_matrix_t *c, int ax, int ay, int bx, int by,
-		int cx, int cy, int s) {
+static void den_mul_strassen_inner(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c, int ax, int ay, int bx, int by, int cx, int cy, int s) {
 
 	int i;
 	int h; /* half */
-	vm_t *m[9];
+	den_matrix_t *m[9];
 
 	if (s == 1) {
-		c->v[cy][cx] += a->v[ay][ax] * b->v[ay][ax];
+		c->v[cy][cx] = a->v[ay][ax] * b->v[by][bx];
+		return;
 	}
 
 	h = s / 2;
 	for (i = 0; i < 9; i++) {
-		vm_create(&m[i], DEN, h, h, 1);
+		m[i] = NULL;
+		vm_create((vm_t **) &m[i], DEN, 1, h, h);
 	}
+
 	/*
 	 (1 ) 0M1 = (A11TL + A22BR) * (B11TL + B22BR)
 	 (2 ) 1M2 = (A21BL + A22BR) * B11TL
@@ -445,52 +456,62 @@ static double den_mul_strassen_inner(const den_matrix_t *a,
 	 (10) C21BL = M2 + M4
 	 (11) C22BR = M1 - M2 + M3 + M6
 	 */
+	/*M1*/
 	den_offset_add(a, a, m[7], ax, ay, ax + h, ay + h, 0, 0, h);
 	den_offset_add(b, b, m[8], bx, by, bx + h, by + h, 0, 0, h);
 	den_mul_strassen_inner(m[7], m[8], m[0], 0, 0, 0, 0, 0, 0, h);
-	den_zeroize(m[7]);
-	den_zeroize(m[8]);
-	den_offset_add(a, a, ax, ay + h, ax + h, ay + h, m[7], h);
+
+	/*M2*/
+	((vm_t *) a)->f.print(((vm_t *) a));
+	den_offset_add(a, a, m[7], ay + h, ax, ay + h, ax + h, 0, 0, h);
 	den_mul_strassen_inner(b, m[7], m[1], bx, by, 0, 0, 0, 0, h);
-	den_zeroize(m[7]);
-	den_offset_sub(b, b, m[7], bx + h, by, bx + h, by + h, 0, 0);
+
+	((vm_t *) b)->f.print(((vm_t *) b));
+	((vm_t *) m[1])->f.print(((vm_t *) m[7]));
+
+	printf("******** 54\n");
+	((vm_t *) m[1])->f.print(((vm_t *) m[1]));
+
+	/*M3*/
+	den_offset_sub(b, b, m[7], bx + h, by, bx + h, by + h, 0, 0, h);
 	den_mul_strassen_inner(a, m[7], m[2], ax, ay, 0, 0, 0, 0, h);
-	den_zeroize(m[7]);
-	den_offset_sub(b, b, m[7], bx, by + h, bx, by, 0, 0);
-	den_mul_strassen_inner(a, m[7], m[3], ax + h, ay + h, 0, 0, 0, 0, h);
-	den_zeroize(m[7]);
-	den_offset_add(a, a, ax, ay, ax + h, ay, m[7], h);
+	/* M4 */
+	den_offset_sub(b, b, m[7], by+h, bx, by, bx, 0, 0, h);
+	den_mul_strassen_inner(a, m[7], m[3], ay + h, ax + h, 0, 0, 0, 0, h);
+
+	printf("******** 2\n");
+	((vm_t *) m[7])->f.print(((vm_t *) m[7]));
+
+	printf("******** 10\n");
+	((vm_t *) m[3])->f.print(((vm_t *) m[3]));
+
+	/* M5 */
+	den_offset_add(a, a, m[7], ax, ay, ax + h, ay, 0, 0, h);
 	den_mul_strassen_inner(m[7], b, m[4], 0, 0, bx + h, by + h, 0, 0, h);
-	den_zeroize(m[7]);
-	den_zeroize(m[8]);
+	/* M6 */
 	den_offset_sub(a, a, m[7], ax, ay + h, ax, ay, 0, 0, h);
 	den_offset_add(b, b, m[8], bx, by, bx + h, by + h, 0, 0, h);
 	den_mul_strassen_inner(m[7], m[8], m[5], 0, 0, 0, 0, 0, 0, h);
-	den_zeroize(m[7]);
-	den_zeroize(m[8]);
+	/* M7 */
 	den_offset_sub(a, a, m[7], ax + h, ay, ax + h, ay + h, 0, 0, h);
 	den_offset_add(b, b, m[8], bx, by + h, bx + h, by + h, 0, 0, h);
 	den_mul_strassen_inner(m[7], m[8], m[5], 0, 0, 0, 0, 0, 0, h);
 	/* c1,1*/
-	den_zeroize(m[7]);
-	den_offset_add(m[0], m[3], m[7], 0, 0, 0, 0, 0, 0, h);
-	den_offset_sub(m[7], m[4], m[7], 0, 0, 0, 0, 0, 0, h);
-	den_offset_add(m[7], m[6], c, 0, 0, 0, 0, cx, cy, h);
+//	den_offset_add(m[0], m[3], m[7], 0, 0, 0, 0, 0, 0, h);
+//	den_offset_sub(m[7], m[4], m[7], 0, 0, 0, 0, 0, 0, h);
+//	den_offset_add(m[7], m[6], c, 0, 0, 0, 0, cx, cy, h);
+//	/* c1,2*/
+//	den_offset_add(m[2], m[4], c, 0, 0, 0, 0, cy + h, cx, h);
 	/* c1,2*/
-	den_offset_add(m[2], m[4], c, 0, 0, 0, 0, cx + h, cy, h);
-	/* c1,2*/
-	den_offset_add(m[1], m[3], c, 0, 0, 0, 0, cx, cy + h, h);
-	/* c2,2*/
-	den_zeroize(m[7]);
-	den_offset_sub(m[0], m[1], m[7], 0, 0, 0, 0, 0, 0, h);
-	den_offset_add(m[7], m[2], m[7], 0, 0, 0, 0, 0, 0, h);
-	den_offset_add(m[7], m[5], c, 0, 0, 0, 0, cx+h, cy+h, h);
+	den_offset_add(m[1], m[3], c, 0, 0, 0, 0, cy + h, cx, h);
+//	/* c2,2*/
+//	den_offset_sub(m[0], m[1], m[7], 0, 0, 0, 0, 0, 0, h);
+//	den_offset_add(m[7], m[2], m[7], 0, 0, 0, 0, 0, 0, h);
+//	den_offset_add(m[7], m[5], c, 0, 0, 0, 0, cx + h, cy + h, h);
 
 	for (i = 0; i < 9; i++) {
-		m[i]->f.free(m[i]);
+		((vm_t *) m[i])->f.free(((vm_t *) m[i]));
 	}
-
-	return 0.;
 }
 
 double den_mul_strassen(const den_matrix_t *a, const den_matrix_t *b,
