@@ -78,6 +78,12 @@ static void run() {
 		c_def->f.free(c_def);
 		c_rec->f.free(c_rec);
 		c_str->f.free(c_str);
+
+		a = NULL;
+		b = NULL;
+		c_def = NULL;
+		c_rec = NULL;
+		c_str = NULL;
 	}
 
 //	vm_load_mm(&a, DEN, "./matrices/2x2_4nz_01.mtx");
