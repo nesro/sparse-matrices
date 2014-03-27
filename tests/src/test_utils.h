@@ -6,8 +6,10 @@
 #ifndef TEST_UTILS_H_
 #define TEST_UTILS_H_
 
+#define MTX_DIR "./tests/matrices/"
+
 typedef struct test_matrix {
-	char path[30];
+	char path[50];
 	int width;
 	int height;
 	int nnz;
