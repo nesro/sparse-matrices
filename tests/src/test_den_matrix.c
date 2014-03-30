@@ -51,27 +51,28 @@ static void run() {
 		vm_load_mm(&a, DEN, tp->a.path);
 		vm_load_mm(&b, DEN, tp->b.path);
 
-		printf("---- a:\n");
-		a->f.print(a);
-		printf("---- b:\n");
-		b->f.print(b);
-
 		a->f.mul(a, b, &c_def, NAIVE);
 
 		CASSERTION_TIME();
 		a->f.mul(a, b, &c_rec, RECURSIVE);
-		CASSERTION(c_def->f.distance(c_def, c_rec) == 0, "a=%s,b=%s, recursive",
+		CASSERTION(c_def->f.compare(c_def, c_rec) == 0, "a=%s,b=%s, recursive",
 				tp->a.path, tp->b.path);
 
 		CASSERTION_TIME();
 		a->f.mul(a, b, &c_str, STRASSEN);
-		CASSERTION(c_def->f.distance(c_def, c_str) == 0, "a=%s,b=%s, strassen",
+		CASSERTION(c_def->f.compare(c_def, c_str) == 0, "a=%s,b=%s, strassen",
 				tp->a.path, tp->b.path);
 
+#if 0
+		printf("---- a:\n");
+		a->f.print(a);
+		printf("---- b:\n");
+		b->f.print(b);
 		printf("---- naive:\n");
 		c_def->f.print(c_def);
 		printf("---- recursive:\n");
 		c_str->f.print(c_str);
+#endif
 
 		a->f.free(a);
 		b->f.free(b);

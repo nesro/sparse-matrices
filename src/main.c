@@ -197,10 +197,12 @@ int main(int argc, char *argv[]) {
 		abort();
 	}
 
-	vm_load_mm(&vm_a, DEN, "4x4_4nz_01.mtx");
-	vm_load_mm(&vm_b, DEN, "4x4_4nz_01.mtx");
+	vm_load_mm(&vm_a, DEN, matrix_a);
+	vm_load_mm(&vm_b, DEN, matrix_b);
 
 	time = vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE | UNROLLED);
+
+
 	printf("time=%lf\n", time);
 
 	if (do_output)

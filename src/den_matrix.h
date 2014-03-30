@@ -13,6 +13,9 @@
 #ifndef DENSE_MATRIX_H_
 #define DENSE_MATRIX_H_
 
+/* global */
+extern int g_den_strassen_block;
+
 typedef struct den_matrix_init {
 	int width;
 	int height;

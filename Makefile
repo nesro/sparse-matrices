@@ -1,5 +1,5 @@
 #
-# Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013-2014
+# Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013, 2014
 # https://github.com/nesro/sparse-matrices
 # 
 
@@ -14,40 +14,32 @@ OBJECTS=utils.o \
 	vector.o \
 	generator.o
 
+
+# $(addsuffix .o, $(OBJECTS))
+
 TESTS=test_utils.o \
+	mulres_distance \
+	matrix_generator \
 	test_den_matrix
 
 BINARY=./main
 
-# csr MM Loop UnRolling
-ifdef MMLUR
-	CFLAGS += -DMMLUR=1
-endif
-
-# csr MV Loop UnRolling
-ifdef MVLUR
-	CFLAGS += -DMVLUR=1
-endif
-
-ifdef TEST_EIA_MVM
-	CFLAGS += -DTEST_EIA_MVM=1
-endif
-
 CC=gcc
 LD=gcc
 MKDIR_P=mkdir -p
+
 CLIBS=-lm -fopenmp
 CFLAGS=-std=c99 -Wall -pedantic
 
-SOURCE_DIR=./src/
+SOURCE_DIR=./src
 
 SRC=./src
 BUILD=./build
 
 TEST_DIR=./tests
-TEST_SRC=./tests/src
-TEST_BUILD=./tests/build
-TEST_BIN=$(TEST_DIR)
+TEST_SRC=$(TEST_DIR)/src
+TEST_BUILD=$(TEST_DIR)/build
+TEST_BIN=$(TEST_DIR)/bin
 
 CASSERTION=./cassertion
 
@@ -82,9 +74,10 @@ all: build_dir $(OBJECTS) $(BINARY)
 build_dir:
 	$(MKDIR_P) $(BUILD)
 
-.PHONY: test_build_dir
-test_build_dir:
+.PHONY: test_dirs
+test_dirs:
 	$(MKDIR_P) $(TEST_BUILD)
+	$(MKDIR_P) $(TEST_BIN)
 
 .PHONY: cassertion
 cassertion:
@@ -100,7 +93,7 @@ valgrind:
 	valgrind --leak-check=full --show-reachable=yes ${BIN}
 
 .PHONY: tests
-tests: test_build_dir $(TESTS)
+tests: all test_dirs $(TESTS)
 
 .PHONY: runtests
 runtests: tests
@@ -113,7 +106,7 @@ clean:
 		$(BINARY) \
 		$(BUILD) \
 		$(TEST_BUILD) \
-		$(TEST_DIR)/test_den_matrix \
+		$(TEST_BIN) \
 		./cachegrind* \
 		./*.png \
 		./*.txt \
@@ -133,49 +126,66 @@ fullclean: clean
 #-------------------------------------------------------------------------------
 
 $(BINARY): ./main.o $(OBJECTS)
-	$(LD) $(CFLAGS) $(addprefix $(BUILD)/, main.o) $(addprefix $(BUILD)/, $(OBJECTS)) -o $(BINARY) $(CLIBS)
+	$(LD) $(CFLAGS) $(addprefix $(BUILD)/, main.o) \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(BINARY) $(CLIBS)
 
-main.o: $(SOURCE_DIR)main.c $(SOURCE_DIR)utils.h $(SOURCE_DIR)csr_matrix.h \
-$(SOURCE_DIR)vector.h $(SOURCE_DIR)coo_matrix.h $(SOURCE_DIR)den_matrix.h
+#-------------------------------------------------------------------------------
+
+#TODO: header files from some list
+main.o: $(SOURCE_DIR)/main.c $(SOURCE_DIR)/utils.h $(SOURCE_DIR)/csr_matrix.h \
+$(SOURCE_DIR)/vector.h $(SOURCE_DIR)/coo_matrix.h $(SOURCE_DIR)/den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-utils.o: $(SOURCE_DIR)utils.c $(SOURCE_DIR)utils.h
+utils.o: $(SOURCE_DIR)/utils.c $(SOURCE_DIR)/utils.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-mm_load.o: $(SOURCE_DIR)mm_load.c $(SOURCE_DIR)mm_load.h
+mm_load.o: $(SOURCE_DIR)/mm_load.c $(SOURCE_DIR)/mm_load.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-virtual_matrix.o: $(SOURCE_DIR)virtual_matrix.c $(SOURCE_DIR)virtual_matrix.h
+virtual_matrix.o: $(SOURCE_DIR)/virtual_matrix.c $(SOURCE_DIR)/virtual_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-csr_matrix.o: $(SOURCE_DIR)csr_matrix.c $(SOURCE_DIR)csr_matrix.h
+csr_matrix.o: $(SOURCE_DIR)/csr_matrix.c $(SOURCE_DIR)/csr_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-qdt_matrix.o: $(SOURCE_DIR)qdt_matrix.c $(SOURCE_DIR)qdt_matrix.h
+qdt_matrix.o: $(SOURCE_DIR)/qdt_matrix.c $(SOURCE_DIR)/qdt_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-mmio.o: $(SOURCE_DIR)mmio.c $(SOURCE_DIR)mmio.h
+mmio.o: $(SOURCE_DIR)/mmio.c $(SOURCE_DIR)/mmio.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-coo_matrix.o: $(SOURCE_DIR)coo_matrix.c $(SOURCE_DIR)coo_matrix.h
+coo_matrix.o: $(SOURCE_DIR)/coo_matrix.c $(SOURCE_DIR)/coo_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-den_matrix.o: $(SOURCE_DIR)den_matrix.c $(SOURCE_DIR)den_matrix.h
+den_matrix.o: $(SOURCE_DIR)/den_matrix.c $(SOURCE_DIR)/den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-vector.o: $(SOURCE_DIR)vector.c $(SOURCE_DIR)vector.h
+vector.o: $(SOURCE_DIR)/vector.c $(SOURCE_DIR)/vector.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
-generator.o: $(SOURCE_DIR)generator.c $(SOURCE_DIR)generator.h
+generator.o: $(SOURCE_DIR)/generator.c $(SOURCE_DIR)/generator.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------
+# test helpers and standalone binaries
+
+matrix_generator: $(TEST_SRC)/matrix_generator.c
+	$(CC) $(CFLAGS) -o $(TEST_BIN)/$@ $< $(CLIBS)
+
+mulres_distance: mulres_distance.o $(OBJECTS)
+	$(LD) $(CFLAGS) $(TEST_BUILD)/mulres_distance.o \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+
+mulres_distance.o: $(TEST_SRC)/mulres_distance.c $(SRC)/virtual_matrix.h \
+$(SRC)/den_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 test_utils.o: $(TEST_SRC)/test_utils.c $(TEST_SRC)/test_utils.h \
 $(CASSERTION)/cassertion.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
-#-------
+#-------------------------------------------------------------------------------
+# cassertion test suites
 
 test_den_matrix: all test_den_matrix.o
 	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_den_matrix.o \
@@ -185,24 +195,8 @@ test_den_matrix.o: $(TEST_SRC)/test_den_matrix.c $(CASSERTION)/cassertion.h \
 $(SRC)/virtual_matrix.h $(SRC)/den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
-# ---
-#
-#test_quadtree: all test_quadtree.o
-#	$(LD) $(CFLAGS) $(TEST_BUILD)/test_quadtree.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
-#
-#test_quadtree.o: $(TEST_SRC)/test_quadtree.c $(TEST_SRC)/test_framework.h $(SRC)/qt_matrix.h
-#	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
-#
-## ---
-#
-#utils_test: all utils_test.o
-#	$(LD) $(CFLAGS) $(TEST_BUILD)/utils_test.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
-#
-#utils_test.o: $(TEST_SRC)/utils_test.c $(TEST_SRC)/test_framework.h $(SRC)/utils.h
-#	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
-
 #-------------------------------------------------------------------------------
-# STAR.fit.cvut.cz
+# STAR.fit.cvut.cz helpers
 
 USERNAME=nesrotom
 
@@ -235,7 +229,7 @@ watch:
 	watch -n 1 qstat
 
 qdelall:
-	qstat | grep nesrotom | cut -d' ' -f2 | xargs qdel
+	qstat | grep nesrotom | cut -d ' ' -f2 | xargs qdel
 
 qdelres:
 	rm -f /mnt/data/nesrotom/*
@@ -253,6 +247,20 @@ gp-star:
 
 #------------------------------------------------------------------------------
 
-
+# ---
+#
+#test_quadtree: all test_quadtree.o
+#	$(LD) $(CFLAGS) $(TEST_BUILD)/test_quadtree.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+#
+#test_quadtree.o: $(TEST_SRC)/test_quadtree.c $(TEST_SRC)/test_framework.h $(SRC)/qt_matrix.h
+#	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+#
+## ---
+#
+#utils_test: all utils_test.o
+#	$(LD) $(CFLAGS) $(TEST_BUILD)/utils_test.o $(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+#
+#utils_test.o: $(TEST_SRC)/utils_test.c $(TEST_SRC)/test_framework.h $(SRC)/utils.h
+#	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 

@@ -14,6 +14,8 @@
 #include "den_matrix.h"
 #include "coo_matrix.h"
 
+g_den_strassen_block = 2;
+
 /***************************************************************************/
 
 static vm_vmt_t den_vmt = { /**/
@@ -417,38 +419,39 @@ static void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
  */
 
 static void den_mul_strassen_inner(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c, int ax, int ay, int bx, int by, int cx, int cy, int s) {
+		den_matrix_t *c, int ay, int ax, int by, int bx, int cy, int cx, int s) {
 
 	int i;
 	int h; /* half */
 	den_matrix_t *m[9];
 
-//	if (s == 2) {
-//		int j, k, l, sum;
-//
-//		for (j = 1; j >= 0; j--) {
-//			for (k = 1; k >= 0; k--) {
-//				sum = 0;
-//
-//				for (i = 1; i >= 0; i--) {
-//					sum += a->v[ay+j][ax+i] * b->v[by+i][by+k];
-//				}
-//
-//				c->v[cy + j][cx + k] = sum;
-//			}
-//		}
-//
-//		c->v[cy][cx] = a->v[ay][ax] * b->v[by][bx];
-//		c->v[cy][cx + 1] = a->v[ay][ax + 1] * b->v[by + 1][bx];
-//		c->v[cy + 1][cx] = a->v[ay + 1][ax] * b->v[by + 1][bx];
-//		c->v[cy + 1][cx + 1] = a->v[ay + 1][ax + 1] * b->v[by + 1][bx + 1];
-//		return;
-//	}
+#if 1
+	int block_size = g_den_strassen_block;
 
+	if (s == block_size) {
+		int j, k;
+		double sum;
+
+		for (j = block_size - 1; j >= 0; j--) {
+			for (k = block_size - 1; k >= 0; k--) {
+				sum = 0;
+
+				for (i = block_size - 1; i >= 0; i--) {
+					sum += a->v[ay + j][ax + i] * b->v[by + i][bx + k];
+				}
+
+				c->v[cy + j][cx + k] = sum;
+			}
+		}
+
+		return;
+	}
+#else
 	if (s == 1) {
 		c->v[cy][cx] = a->v[ay][ax] * b->v[by][bx];
 		return;
 	}
+#endif
 
 	h = s / 2;
 	for (i = 0; i < 9; i++) {

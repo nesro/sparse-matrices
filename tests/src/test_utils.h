@@ -7,6 +7,7 @@
 #define TEST_UTILS_H_
 
 #define MTX_DIR "./tests/matrices/"
+#define MTX_GEN_DIR MTX_DIR "generated/"
 
 typedef struct test_matrix {
 	char path[50];
