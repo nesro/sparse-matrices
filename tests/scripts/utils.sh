@@ -12,8 +12,10 @@ function gnuplot_wrapper {
 		plot+=", \"\" using $nlines:$i"
 	done  
 	
+	# set term png size 1024,786
+	
 	gnuplot << __EOF__
-		set term png size 1024,786
+		set term svg
 		set output "$output_filename"
 		set pointsize 2
 		set style data points
@@ -33,4 +35,4 @@ __EOF__
 }
 
 
-gnuplot_wrapper test.txt test.png "xlabel" "ylabel" 3
+#gnuplot_wrapper test.txt test.png "xlabel" "ylabel" 3
