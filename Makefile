@@ -27,6 +27,7 @@ BINARY=./main
 CC=gcc
 LD=gcc
 MKDIR_P=mkdir -p
+MAKE=make
 
 CLIBS=-lm -fopenmp
 CFLAGS=-std=c99 -Wall -pedantic
@@ -68,7 +69,7 @@ endif
 
 #-------------------------------------------------------------------------------
 
-all: build_dir $(OBJECTS) $(BINARY)
+all: build_dir $(OBJECTS) $(BINARY) tests
 
 .PHONY: build_dir
 build_dir:
@@ -82,6 +83,10 @@ test_dirs:
 .PHONY: cassertion
 cassertion:
 	./cassertion/cassertion.sh
+
+.PHONY: thesis
+thesis:
+	$(MAKE) -C thesis_cz all
 
 .PHONY: run
 run: all
@@ -114,7 +119,8 @@ clean:
 		./queue*sh.e \
 		./queue*sh.o \
 		./queue*sh.pe \
-		./queue*sh.po \
+		./queue*sh.po
+	$(MAKE) -C thesis_cz clean
 
 .PHONY: fullclean
 fullclean: clean
