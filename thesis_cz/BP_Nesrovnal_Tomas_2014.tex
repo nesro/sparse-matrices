@@ -160,8 +160,6 @@ divide, conquer, combine
 
 \subsection{Loop tiling}
 
-
-
 % https://edux.fit.cvut.cz/courses/BI-EIA/_media/lectures/kompilator.pdf
 
 %-----------------------------------------------------------------------------
@@ -349,17 +347,18 @@ b_{4,1} & b_{4,2} & b_{4,3} & b_{4,4}
 
 Kvůli režii rekurzivního dělení v praxi nezmenšujeme podmatice až na velikost jedna. Vhodný práh velikosti podmatice je například takový, co se vejde do L1 cache.
 
-Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice. Asymptotickou složitost rekurzivního algoritmu můžeme spočítat pomocí mistrovské metody:
+Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice. Asymptotickou složitost rekurzivního algoritmu můžeme spočítat pomocí mistrovské metody.
 
 \[ T(n) = \left\{ 
   \begin{array}{l l}
     \Theta(1) & \quad \text{if $n$ = 1}\\
-    8T(n/2) + \Theta(n^2) & \quad \text{if $n$ > 1}
+    8T(n/2) + \Theta(1) & \quad \text{if $n$ > 1}
   \end{array} \right.\]
 
-Protože platí $a=8, b=2, r=\log_{8} 2, n^r=n^{\log_{8} 2}=3=O(n^2)$, je složitost podle mistrovké metody \texttt{MMM-recursive}(n) = $O(n^3)$.
+Protože platí, že $a=8, b=2, r=\log_{2} 8, n^r=n^{\log_{2} 8}=n^3=\Omega(1)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-recursive}(n) = $O(n^3)$.
 
-\section{Strassenův algoritmus}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Strassenův algoritmus} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO}, ve kterém jako první představil algoritmus násobení dvou matic s menší asymptotickou složitostí než algotimus podle definice, tedy $O(n^3)$.
 
@@ -396,129 +395,122 @@ C = \begin{pmatrix}
 \end{pmatrix}
 \end{align}
 
-Strassenův algoritmus pořebuje sedm operací násobení
+V pseudokódu používáme procedury \texttt{offset-add} respektive \texttt{offset-sub}. Slouží ke sčítání respektive odečítání matic bloku prvků od nějakého offsetu y a x. Paremetry obou funkcí jsou: \texttt{offset-*}$(A,B,C,ay,ax,by,bx,cy,cx,n)$. 
 
 \begin{algorithm}[H]
 	\caption{Strassenův algoritmus}\label{mmm-strassen}
 	\begin{algorithmic}[1]
-		\Procedure{MMM-strassen}{$A,B,C,ax,ay,bx,by,cx,cy,s$}
-		\If{$s = 1$}
+		\Procedure{MMM-strassen}{$A,B,C,ay,ax,by,bx,cy,cx,n$}
+		\If{$n = 1$}
 			\State \texttt{$C[cy][cx]\gets C[cy][cx] + A[ay][ax] \cdot B[by][bx];$}
 			\State \texttt{$return;$}
 		\EndIf
-  		\State \texttt{$h \gets s/2;$}
-  		\State \texttt{$M[9] \gets initMatrices(9, h);$} \Comment{devět pomocných matic}
-  		% -----------------------------------------------------------------------
-  		% M1
-  		\State \texttt{$offsetAdd(M[8],0,0,A,ax,ay,A,ax+h,ay+h,h);$} \Comment{M1}
-  		\State \texttt{$offsetAdd(M[9],0,0,B,bx,by,B,bx+h,by+h,h);$}
-  		\State \texttt{MMM-strassen$(M[8],M[9],M[1],0,0,0,0,0,0,h);$}
-  		% M2
-  		\State \texttt{$offsetAdd(M[8],0,0,A,ax,ay+h,A,ax+h,ay+h,h);$} \Comment{M2}
-  		\State \texttt{MMM-strassen$(M[8],B,M[2],0,0,bx,by,0,0,h);$}
-  		% M3
-  		\State \texttt{$offsetSub(M[8],0,0,B,bx+h,by,B,bx+h,by+h,h);$} \Comment{M3}
-  		\State \texttt{MMM-strassen$(A,M[8],M[3],ax,ay,0,0,0,0,h);$}
-  		% M4
-  		\State \texttt{$offsetSub(M[8],0,0,B,ax,ay+h,B,ax,ay,h);$} \Comment{M4}
-  		\State \texttt{MMM-strassen$(A,M[8],M[4],ax+h,ay+h,0,0,0,0,h);$}
-  		% M5
-  		\State \texttt{$offsetAdd(M[8],0,0,A,ax,ay,A,ax+h,ay,h);$} \Comment{M5}
-  		\State \texttt{MMM-strassen$(M[8],B,M[5],0,0,bx+h,by+h,0,0,h);$}
-  		% M6 TODO
-  		\State \texttt{$offsetSub(M[8],0,0,A,ax,ay+h,A,ax,ay,h);$} \Comment{M6}
-  		\State \texttt{$offsetAdd(M[9],0,0,B,bx,by,B,bx+h,by,h);$}
-  		\State \texttt{MMM-strassen$(M[8],M[9],M[6],0,0,0,0,0,0,h);$}
-  		% M7 TODO
-  		\State \texttt{$offsetSub(M[8],0,0,A,ax+h,ay,A,ax,ay,h);$} \Comment{M7}
-  		\State \texttt{$offsetAdd(M[9],0,0,B,bx,by+2,B,bx+h,by+h,h);$}
-  		\State \texttt{MMM-strassen$(M[8],M[9],M[7],0,0,0,0,0,0,h);$}
-		% C1
-		\State \texttt{$offsetAdd(M[8],0,0,M[1],0,0,M[4],0,0,h);$} \Comment{C1,1}
-		\State \texttt{$offsetSub(M[8],0,0,M[8],0,0,M[5],0,0,h);$}
-		\State \texttt{$offsetAdd(C,cx,cy,M[8],0,0,M[7],0,0,h);$}
-		% C2
-		\State \texttt{$offsetAdd(C,cx+h,cy,M[3],0,0,M[5],0,0,h);$} \Comment{C1,2}
-		% C3
-		\State \texttt{$M[8] \gets offsetAdd(C,cx,cy+h,M[2],0,0,M[4],0,0,h);$} \Comment{C2,1}
-		% C4
-		\State \texttt{$M[8] \gets offsetSub(M[8],0,0,M[1],0,0,M[2],0,0,h);$} \Comment{C2,2}
-		\State \texttt{$M[8] \gets offsetAdd(M[8],0,0,M[8],0,0,M[3],0,0,h);$}
-		\State \texttt{$M[8] \gets offsetAdd(C,cx+h,cy+h,M[8],0,0,M[6],0,0,h);$}
+  		\State \texttt{$h \gets n/2;$} \Comment{čtvrtina}
+  		\State \texttt{$m[9] \gets initMatrices(9, h);$} \Comment{devět pomocných matic}
+ % 	
+	\State \texttt{offset-add$(a, a, m[8], ay, ax, ay + h, ax + h, 0, 0, h);$} \Comment{M1}
+	\State \texttt{offset-add$(b, b, m[9], by, bx, by + h, bx + h, 0, 0, h);$}
+	\State \texttt{MMM-strassen$(m[8], m[9], m[1], 0, 0, 0, 0, 0, 0, h);$}
+%	
+	\State \texttt{offset-add$(a, a, m[8], ay + h, ax, ay + h, ax + h, 0, 0, h);$} \Comment{M2}
+	\State \texttt{MMM-strassen$(m[8], b, m[2], 0, 0, bx, by, 0, 0, h);$}
+%	
+	\State \texttt{offset-sub$(b, b, m[8], by, bx + h, by + h, bx + h, 0, 0, h);$} \Comment{M3}
+	\State \texttt{MMM-strassen$(a, m[8], m[3], ay, ax, 0, 0, 0, 0, h);$}
+%	
+	\State \texttt{offset-sub$(b, b, m[8], by + h, bx, by, bx, 0, 0, h);$} \Comment{M4}
+	\State \texttt{MMM-strassen$(a, m[8], m[4], ay + h, ax + h, 0, 0, 0, 0, h);$}
+%	
+	\State \texttt{offset-add$(a, a, m[8], ay, ax, ay, ax + h, 0, 0, h);$} \Comment{M5}
+	\State \texttt{MMM-strassen$(m[8], b, m[5], 0, 0, by + h, bx + h, 0, 0, h);$}
+%	
+	\State \texttt{offset-sub$(a, a, m[8], ay + h, ax, ay, ax, 0, 0, h);$} \Comment{M6}
+	\State \texttt{offset-add$(b, b, m[9], by, bx, by, bx + h, 0, 0, h);$}
+	\State \texttt{MMM-strassen$(m[8], m[9], m[6], 0, 0, 0, 0, 0, 0, h);$}
+%	
+	\State \texttt{offset-sub$(a, a, m[8], ay, ax + h, ay + h, ax + h, 0, 0, h);$} \Comment{M7}
+	\State \texttt{offset-add$(b, b, m[9], by + h, bx, by + h, bx + h, 0, 0, h);$}
+	\State \texttt{MMM-strassen$(m[8], m[9], m[7], 0, 0, 0, 0, 0, 0, h);$}
+%	
+	\State \texttt{offset-add$(m[1], m[4], m[8], 0, 0, 0, 0, 0, 0, h);$} \Comment{c1,1}
+	\State \texttt{offset-sub$(m[8], m[5], m[8], 0, 0, 0, 0, 0, 0, h);$}
+	\State \texttt{offset-add$(m[8], m[7], c, 0, 0, 0, 0, cy, cx, h);$}
+%	
+	\State \texttt{offset-add$(m[3], m[5], c, 0, 0, 0, 0, cy, cx + h, h);$} \Comment{c1,2}
+%	
+	\State \texttt{offset-add$(m[2], m[4], c, 0, 0, 0, 0, cy + h, cx, h);$} \Comment{c2,1}
+%	
+	\State \texttt{offset-sub$(m[1], m[2], m[8], 0, 0, 0, 0, 0, 0, h);$} \Comment{c2,2}
+	\State \texttt{offset-add$(m[8], m[3], m[8], 0, 0, 0, 0, 0, 0, h);$}
+	\State \texttt{offset-add$(m[8], m[6], c, 0, 0, 0, 0, cy + h, cx + h, h);$}		
 		\EndProcedure
 	\end{algorithmic}
 \end{algorithm}
 
 
-TODO
+Výpočet asymptotické složitosti vypočteme podobně jako u \texttt{MMM-recursive}, tedy mistrovskou metodou. 
 
-Strassenův algoritmus má lepší asymptotickou složistost $O(n^{2.808})$, to však za cenu numerické stability. Z definice tento algoritmus od $n > 655$ potřebuje méně instrukcí než algoritmus podle definice[zdroj]
+TODO: mistrovska metoda
 
-TODO: zdroj: Generative and Transformational Techniques in Software Engineering II: International Summer School, GTTSE 2007, Braga, Portugal, July 2-7. 2007, Revised Papers | Front Cover Ralf Lämmel, Joost Visser, João Saraiva | Springer, Oct 8, 2008 - Computers - 521 pages
-
-Numerickou stabilitu Strassenova algoritmu demonstrujeme na výpočtu jednoho prvku z násobení dvou matic o velikosti dva. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze tři destinná čísla.	
+Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme desetinná čísla, abysme ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
 
 Pomocí algoritmu podle definice, by takový počítač vypočítal součin dvou matic následnovně:
 
 \begin{align}
 \begin{pmatrix}
- 0.1234 & 0.5678 \\
- 0.9123 & 0.4567
+ 30.234 & 0.5678 \\
+ 0.9123 & 10.456
 \end{pmatrix} \cdot \begin{pmatrix}
  0.8912 & 0.3456 \\
- 0.7891 & 0.2345 \\
+ 0.7891 & 9.999 \\
 \end{pmatrix} = \begin{pmatrix}
- 0.5579 & \hdots \\
+ 27.392 & \hdots \\
  \hdots & \hdots
 \end{pmatrix}
 \end{align}
 
-Správný výsledek je $0.1234 \times 0.8912 + 0.5678 \times 0.7891 = 0.10997408 + 0.44805098 = 0.55802506$.
+Správný výsledek je $30.234 \times 0.8912 + 0.5678 \times 0.7891 = 26.9445408 + 0.44805098 = 27.39259178$.
 
 Nyní výpočet provedeme pomocí Strassenova algoritmu:
 
 \begin{align}
 \begin{pmatrix}
- 0.1234 & 0.5678 \\
- 0.9123 & 0.4567
+ 30.234 & 0.5678 \\
+ 0.9123 & 10.456
 \end{pmatrix} \cdot \begin{pmatrix}
  0.8912 & 0.3456 \\
- 0.7891 & 0.2345
+ 0.7891 & 9.999
 \end{pmatrix} \\
-M_{1} = (0.1234 + 0.4567) \cdot (0.8912 + 0.2345) = 0.6530  \\
+M_{1} = (30.234 + 10.456) \cdot (0.8912 + 9.999) = 443.12  \\
 \hdots \\
-M_{4} = 0.4567 \cdot (0.7891 - 0.8912) = -0.0466 \\
-M_{5} = (0.1234 + 0.5678) \cdot 0.2345 = 0.1620 \\
+M_{4} = 10.456 \cdot (0.7891 - 0.8912) = -1.067 \\
+M_{5} = (30.234 + 0.5678) \cdot 9.999 = 307.98 \\
 \hdots \\
-M_{7} = (0.5678 - 0.4567) \cdot (0.7891 + 0.2345) = 0.1137 \\
+M_{7} = (0.5678 - 10.456) \cdot (0.7891 + 9.999) = -106.67 \\
  \begin{pmatrix}
  M_{1} + M_{4} - M_{5} + M_{7} & \hdots \\
  \hdots & \hdots
 \end{pmatrix} = \begin{pmatrix}
- 0.5581 & \hdots \\
+ 27.403 & \hdots \\
  \hdots & \hdots
 \end{pmatrix}
 \end{align}
 
-% 0.6530+(-0.0466)-0.1620+0.1137
-% 19.465+(-3.182)-5.149+14.509
+% zdroj http://math.nist.gov/MatrixMarket/data/Harwell-Boeing/oilgen/orsirr_1.html
 
+Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oriznuta na 1024x1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu je vidět exponencionální růst chyby.
 
-TODO: pro strassena ja potreba dodelat i ostatni prvky
-
-Strassenův algorimus lze ještě vylepšit. Pro sedm operací násobení je monžné snížit počet sčítání a odečítání. Pro jednoduchost zde ovšem uvádíme originalní algoritmus.
-
-Tady jsem zkusil matici z MM:
-
-\begin{figure}\centering
+\begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen_stability}
 	\caption{Strassen stability}
 	\label{fig:Ukázka numerické stability Strassenova algoritmu}
 \end{figure}
 
+Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se říká Strassen-like. Pro sedm operací násobení je monžné snížit počet sčítání a odečítání. Pro jednoduchost zde ovšem uvádíme originalní algoritmus.
+
 \section{Coppersmith-Winograd algoritmus}
 
-TODO: rict ze ma dobrou O(n2735477), ale velkou konstantu a je v praxi zatim nepouzitelnej
+TODO: rict ze ma dobrou O(n2735477), ale velkou konstantu a je v praxi zatim nepouzitelny
 
 \section{Další algoritmy}
 
