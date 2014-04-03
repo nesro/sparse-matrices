@@ -158,7 +158,9 @@ divide, conquer, combine
 
 \subsection{AoS -> SoA}
 
-TODO, i priklad?
+\subsection{Loop tiling}
+
+
 
 % https://edux.fit.cvut.cz/courses/BI-EIA/_media/lectures/kompilator.pdf
 
@@ -189,7 +191,7 @@ Základním algoritmem násobení dvou matic je podle definice. Ve třech for cy
 	\end{algorithmic}
 \end{algorithm}
 
-Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N$ sčítaní. Asymptotická složitost je tedy $O(n^2(n + n))$ = $O(2n^3)$. V ukázkových výpočtech je násobení pouze $N-1$ krát, to proto, že neuvádíme přičítání k nule.
+Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N$ sčítaní. Asymptotická složitost je tedy $O(n^2(n + n))$ = $O(2n^3)$. V ukázkových výpočtech je násobení pouze $N-1$ krát, to proto, že neuvádíme přičítání k nule (řádek 6).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -266,9 +268,30 @@ Každou z matic rozdělíme na čtvrtiny a jednotlivé podmatice násobíme algo
 \end{pmatrix}
 \end{align}
 
-Pro ilustraci jako příklad uvádíme výpočet horního levého prvku v násobení dvou matic o velikosti $ 2^{2} $.
+Tento postup opakujeme, dokud velikostí podmatic nenarazíme na práh, tedy hodnotu, při které opustíme rekurzivní algoritmus a použijeme algoritmus lineární. V ukázkovém pseudokódu dělíme podmatice až na velikost prahu jedna, podmatice tedy obsahují pouze jeden prvek.
 
-\begin{align}[!h]
+\begin{algorithm}[H]
+	\caption{Rekurzivní násobení}\label{mmm-recursive}
+	\begin{algorithmic}[1]
+		\Procedure{MMM-recursive}{$A,B,C,ay,ax,by,bx,cy,cx,n$}
+		\If{$n = 1$}
+			\State \texttt{$C[cy][cx]\gets C[cy][cx] + A[ay][ax] \cdot B[by][bx];$}
+			\State \texttt{$return;$}
+		\EndIf
+		\ForAll{\texttt{$r \in \{ 0, n/2 \}$}}
+			\ForAll{\texttt{$c \in \{ 0, n/2 \}$}}
+				\ForAll{\texttt{$i \in \{ 0, n/2 \}$}}
+					\State \texttt{MMM-recursive$(A,B,C,ay+i,ax+r,by+c,bx+i,cy+c,cx+r,n/2);$}
+				\EndFor
+			\EndFor
+		\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Pro ilustraci jako příklad uvádíme výpočet horního levého prvku v násobení dvou matic o velikosti $ 2^{2} $. Pro větší přehlednost značíme prvky malým písmem z názvu matice a indexy o jejich pozicích.
+
+\begin{align}
 \begin{pmatrix}
 a_{1,1} & a_{1,2} & a_{1,3} & a_{1,4} \\
 a_{2,1} & a_{2,2} & a_{2,3} & a_{2,4} \\
@@ -323,26 +346,8 @@ b_{4,1} & b_{4,2} & b_{4,3} & b_{4,4}
 \end{pmatrix}
 \end{align}
 
-Kvůli režii rekurzivního dělení nezmenšujeme matice až na velikost dva. Vhodná velikost matice je například taková, co se vejde do L1 cache.
 
-\begin{algorithm}[H]
-	\caption{Rekurzivní násobení}\label{mmm-recursive}
-	\begin{algorithmic}[1]
-		\Procedure{MMM-recursive}{$A,B,C,ax,ay,bx,by,cx,cy,s$}
-		\If{$s = 1$}
-			\State \texttt{$C[cy][cx]\gets C[cy][cx] + A[ay][ax] \cdot B[by][bx];$}
-			\State \texttt{$return;$}
-		\EndIf
-		\ForAll{\texttt{$r \in \{ 0, s/2 \}$}}
-			\ForAll{\texttt{$c \in \{ 0, s/2 \}$}}
-				\ForAll{\texttt{$i \in \{ 0, s/2 \}$}}
-					\State \texttt{MMM-recursive$(A,B,C,ax+i,ay+r,bx+c,by+i,cx+c,cy+r,s/2);$}
-				\EndFor
-			\EndFor
-		\EndFor
-		\EndProcedure
-	\end{algorithmic}
-\end{algorithm}
+Kvůli režii rekurzivního dělení v praxi nezmenšujeme podmatice až na velikost jedna. Vhodný práh velikosti podmatice je například takový, co se vejde do L1 cache.
 
 Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice. Asymptotickou složitost rekurzivního algoritmu můžeme spočítat pomocí mistrovské metody:
 
@@ -352,17 +357,17 @@ Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice
     8T(n/2) + \Theta(n^2) & \quad \text{if $n$ > 1}
   \end{array} \right.\]
 
-Protože platí $a=8, b=2, r=\log_{8} 2, n^r=n^{\log_{8} 2}=3=O(n^2)$, je složitost skutečně \texttt{MMM-recursive}(n) = $O(n^3)$.
+Protože platí $a=8, b=2, r=\log_{8} 2, n^r=n^{\log_{8} 2}=3=O(n^2)$, je složitost podle mistrovké metody \texttt{MMM-recursive}(n) = $O(n^3)$.
 
 \section{Strassenův algoritmus}
 
-V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO}, ve kterém jako první představil algoritmus násobení dvou matic s menší složitostí než $O(n^3)$.
+V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO}, ve kterém jako první představil algoritmus násobení dvou matic s menší asymptotickou složitostí než algotimus podle definice, tedy $O(n^3)$.
 
 Algoritmus je založen na myšlence, že sčítání je operace méně náročnejší než operace násobení. Respektive dvě matice umíme sečíst nebo odečíst v složitosti $O(n^2)$, ale vynásobit v $O(n^3)$.
 
-Volken Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou matic $A$ a $B$ o velikosti dva a výslednou matici $C$ seskládal pomocí sedmi pomocných matic. Obrázek \ref{fig:StrVis} ukazuje o podmaticích velikosti čtyři, které sčítance přičítají a které odečítají. 
+Volker Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou matic $A$ a $B$ o velikosti dva a výslednou matici $C$ seskládal pomocí sedmi pomocných matic. Obrázek \ref{fig:StrVis} ukazuje, z čeho se pomocné matice skládají a jak jsou do výsledné matice seskládany. V ilustračních maticích o velikosti čtyři ukazujeme, které sčítance pomocná matice do výsledku přičítá a které odečítá. 
 
-\begin{figure}[!h]\centering
+\begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen}
 	\caption{Strassen (převzato z wikipedie, předělat?)}
 	\label{fig:StrVis}
@@ -370,7 +375,7 @@ Volken Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou mat
 
 Zápis Strassenova algoritmu vypadá následnovně:	
 
-\begin{align}[!h]
+\begin{align}
 A \cdot B = \begin{pmatrix}
  A_{1,1} & A_{1,2} \\
  A_{2,1} & A_{2,2} \\
@@ -393,7 +398,7 @@ C = \begin{pmatrix}
 
 Strassenův algoritmus pořebuje sedm operací násobení
 
-\begin{algorithm}[!H]
+\begin{algorithm}[H]
 	\caption{Strassenův algoritmus}\label{mmm-strassen}
 	\begin{algorithmic}[1]
 		\Procedure{MMM-strassen}{$A,B,C,ax,ay,bx,by,cx,cy,s$}
