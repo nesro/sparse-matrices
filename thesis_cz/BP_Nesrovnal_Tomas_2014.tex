@@ -29,6 +29,9 @@
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% <nesrotom>
+
+\usepackage{float}
+
 \usepackage{algorithm}% http://ctan.org/pkg/algorithms
 \usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
 \usepackage{pseudocode}
@@ -126,6 +129,8 @@ Výsledek součinu matic se nezmění, pokud matice doplníme o~libovovolný po�
 
 TODO: popsat notace
 
+% IntroductionToAlgoritms 3.1 asymptotic notations 43-97 (1217, 1222).
+
 \section{Řídké matice}
 
 Matice, které obsahují velké množství nulových prvků, nazýváme řídké. Nebudeme přesně uvádět kolik procent z celkového počtu prvků musí být nulových, abychom matici nazývali řídkou. Stejně jako řídkou matici můžeme uložit do formátu pro husté matice, můžeme hustou matici uložit do formátu pro řídké matice.
@@ -145,6 +150,9 @@ TODO: numerická stabilita (viz strassen?)
 Dnešní překladače umí velice dobře optimalizovat vygenerovaný kód. Pokusy o nějaké mikrooptimalizace program spíše zpomalí.
 
 Je vhodné používat funkce standartních knihoven, protože bývají optimalizované přímo v assembleru.
+
+\subsection{Rozděl a panuj}
+divide, conquer, combine
 
 \subsection{Rozbalování cyklů}
 
@@ -181,7 +189,7 @@ Základním algoritmem násobení dvou matic je podle definice. Ve třech for cy
 	\end{algorithmic}
 \end{algorithm}
 
-
+Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N$ sčítaní. Asymptotická složitost je tedy $O(n^2(n + n))$ = $O(2n^3)$. V ukázkových výpočtech je násobení pouze $N-1$ krát, to proto, že neuvádíme přičítání k nule.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -260,7 +268,7 @@ Každou z matic rozdělíme na čtvrtiny a jednotlivé podmatice násobíme algo
 
 Pro ilustraci jako příklad uvádíme výpočet horního levého prvku v násobení dvou matic o velikosti $ 2^{2} $.
 
-\begin{align}
+\begin{align}[!h]
 \begin{pmatrix}
 a_{1,1} & a_{1,2} & a_{1,3} & a_{1,4} \\
 a_{2,1} & a_{2,2} & a_{2,3} & a_{2,4} \\
@@ -311,14 +319,13 @@ b_{4,1} & b_{4,2} & b_{4,3} & b_{4,4}
  a_{1,1} b_{1,1}+a_{1,2} b_{2,1}+a_{1,3} b_{3,1}+a_{1,4} b_{4,1} & \hdots \\
 \hdots & \hdots
 \end{pmatrix} &
-\hdots \\
-\hdots & \hdots
+\hdots \\\hdots & \hdots
 \end{pmatrix}
 \end{align}
 
 Kvůli režii rekurzivního dělení nezmenšujeme matice až na velikost dva. Vhodná velikost matice je například taková, co se vejde do L1 cache.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Rekurzivní násobení}\label{mmm-recursive}
 	\begin{algorithmic}[1]
 		\Procedure{MMM-recursive}{$A,B,C,ax,ay,bx,by,cx,cy,s$}
@@ -337,17 +344,33 @@ Kvůli režii rekurzivního dělení nezmenšujeme matice až na velikost dva. V
 	\end{algorithmic}
 \end{algorithm}
 
+Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice. Asymptotickou složitost rekurzivního algoritmu můžeme spočítat pomocí mistrovské metody:
+
+\[ T(n) = \left\{ 
+  \begin{array}{l l}
+    \Theta(1) & \quad \text{if $n$ = 1}\\
+    8T(n/2) + \Theta(n^2) & \quad \text{if $n$ > 1}
+  \end{array} \right.\]
+
+Protože platí $a=8, b=2, r=\log_{8} 2, n^r=n^{\log_{8} 2}=3=O(n^2)$, je složitost skutečně \texttt{MMM-recursive}(n) = $O(n^3)$.
+
 \section{Strassenův algoritmus}
 
-V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO} .
+V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO}, ve kterém jako první představil algoritmus násobení dvou matic s menší složitostí než $O(n^3)$.
 
-\begin{figure}\centering
+Algoritmus je založen na myšlence, že sčítání je operace méně náročnejší než operace násobení. Respektive dvě matice umíme sečíst nebo odečíst v složitosti $O(n^2)$, ale vynásobit v $O(n^3)$.
+
+Volken Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou matic $A$ a $B$ o velikosti dva a výslednou matici $C$ seskládal pomocí sedmi pomocných matic. Obrázek \ref{fig:StrVis} ukazuje o podmaticích velikosti čtyři, které sčítance přičítají a které odečítají. 
+
+\begin{figure}[!h]\centering
 	\includegraphics[width=\textwidth]{./images/strassen}
-	\caption{Strassen}
-	\label{fig:Vizualizace Strassenova algoritmu}
+	\caption{Strassen (převzato z wikipedie, předělat?)}
+	\label{fig:StrVis}
 \end{figure}
 
-\begin{align}
+Zápis Strassenova algoritmu vypadá následnovně:	
+
+\begin{align}[!h]
 A \cdot B = \begin{pmatrix}
  A_{1,1} & A_{1,2} \\
  A_{2,1} & A_{2,2} \\
@@ -368,7 +391,9 @@ C = \begin{pmatrix}
 \end{pmatrix}
 \end{align}
 
-\begin{algorithm}
+Strassenův algoritmus pořebuje sedm operací násobení
+
+\begin{algorithm}[!H]
 	\caption{Strassenův algoritmus}\label{mmm-strassen}
 	\begin{algorithmic}[1]
 		\Procedure{MMM-strassen}{$A,B,C,ax,ay,bx,by,cx,cy,s$}
