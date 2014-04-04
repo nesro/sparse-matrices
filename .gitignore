@@ -35,6 +35,7 @@ main
 *.bbl
 *.blg
 *.dvi
+*.fls
 *.fdb_latexmk
 *.glg
 *.glo

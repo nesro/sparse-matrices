@@ -18,11 +18,11 @@ int main(int argc, char *argv[]) {
 	vm_t *c_def = NULL;
 	vm_t *c_str = NULL;
 
-	/* todo: check for ^2 */
-	g_den_strassen_block = atoi(argv[3]);
-
 	vm_load_mm(&a, DEN, argv[1]);
 	vm_load_mm(&b, DEN, argv[2]);
+
+	/* todo: check for ^2 */
+	((den_matrix_t*) a)->strassen_block_treshold = atoi(argv[3]);
 
 	a->f.mul(a, b, &c_def, NAIVE);
 	a->f.mul(a, b, &c_str, STRASSEN);

@@ -14,8 +14,6 @@
 #include "den_matrix.h"
 #include "coo_matrix.h"
 
-g_den_strassen_block = 2;
-
 /***************************************************************************/
 
 static vm_vmt_t den_vmt = { /**/
@@ -101,6 +99,7 @@ void den_from_mm(den_matrix_t **den, const char *mm_filename, va_list va) {
 	mm_free(mm_file);
 }
 
+
 void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 
 	int row;
@@ -128,6 +127,8 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 
 	for (row = 0; row < height; row++)
 		(*den)->v[row] = (*den)->rows_block + row * height;
+
+	(*den)->strassen_block_treshold = 2;
 }
 
 void den_matrix_free(den_matrix_t *den_matrix) {
@@ -136,12 +137,7 @@ void den_matrix_free(den_matrix_t *den_matrix) {
 	free(den_matrix);
 }
 
-void dense_matrix_free(den_matrix_t *dense_matrix) {
-	free(dense_matrix->v);
-	free(dense_matrix->rows_block);
-	free(dense_matrix);
-	dense_matrix = NULL;
-}
+/******************************************************************************/
 
 void den_matrix_print(den_matrix_t *den) {
 
@@ -350,9 +346,9 @@ double den_mul_recursion(const den_matrix_t *a, const den_matrix_t *b,
 	return 0.;
 }
 
-/******************************************************************************/
+/********************************************************** offset operations */
 
-static void den_offset_add(const den_matrix_t *a, const den_matrix_t *b,
+void den_offset_add(const den_matrix_t *a, const den_matrix_t *b,
 		den_matrix_t *c, int ar, int ac, int br, int bc, int cr, int cc, int s) {
 
 	int row;
@@ -366,7 +362,20 @@ static void den_offset_add(const den_matrix_t *a, const den_matrix_t *b,
 	}
 }
 
-static void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
+void den_offset_addto(const den_matrix_t *a, den_matrix_t *c, int ar, int ac,
+		int cr, int cc, int s) {
+
+	int row;
+	int col;
+
+	for (row = 0; row < s; row++) {
+		for (col = 0; col < s; col++) {
+			c->v[cr + row][cc + col] += a->v[ar + row][ac + col];
+		}
+	}
+}
+
+void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
 		den_matrix_t *c, int ar, int ac, int br, int bc, int cr, int cc, int s) {
 
 	int row;
@@ -379,6 +388,8 @@ static void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
 		}
 	}
 }
+
+/******************************************************************************/
 
 /*
 
@@ -426,7 +437,7 @@ static void den_mul_strassen_inner(const den_matrix_t *a, const den_matrix_t *b,
 	den_matrix_t *m[9];
 
 #if 1
-	int block_size = g_den_strassen_block;
+	int block_size = a->strassen_block_treshold;
 
 	if (s == block_size) {
 		int j, k;

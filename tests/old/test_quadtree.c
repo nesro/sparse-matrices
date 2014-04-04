@@ -16,43 +16,43 @@ static void quadtree_height_test(void) {
 
 	size = 8;
 	sm_size = 2;
-	qt_matrix_init(&qt_matrix, size, size, 1, sm_size);
+	qdt_init(&qt_matrix, size, size, 1, sm_size);
 	snprintf(str_buf, STR_BUF_LEN, "size=%d, qt height=%d, sm_size=%d", size,
 		qt_matrix.height, sm_size);
 	TEST_ASSERT(qt_matrix.height == 2, str_buf);
-	qt_matrix_free(&qt_matrix);
+	qdt_free(&qt_matrix);
 
 	size = 8;
 	sm_size = 4;
-	qt_matrix_init(&qt_matrix, size, size, 1, sm_size);
+	qdt_init(&qt_matrix, size, size, 1, sm_size);
 	snprintf(str_buf, STR_BUF_LEN, "size=%d, qt height=%d, sm_size=%d", size,
 		qt_matrix.height, sm_size);
 	TEST_ASSERT(qt_matrix.height == 1, str_buf);
-	qt_matrix_free(&qt_matrix);
+	qdt_free(&qt_matrix);
 
 	size = 16;
 	sm_size = 2;
-	qt_matrix_init(&qt_matrix, size, size, 1, sm_size);
+	qdt_init(&qt_matrix, size, size, 1, sm_size);
 	snprintf(str_buf, STR_BUF_LEN, "size=%d, qt height=%d, sm_size=%d", size,
 		qt_matrix.height, sm_size);
 	TEST_ASSERT(qt_matrix.height == 3, str_buf);
-	qt_matrix_free(&qt_matrix);
+	qdt_free(&qt_matrix);
 
 	size = 16;
 	sm_size = 4;
-	qt_matrix_init(&qt_matrix, size, size, 1, sm_size);
+	qdt_init(&qt_matrix, size, size, 1, sm_size);
 	snprintf(str_buf, STR_BUF_LEN, "size=%d, qt height=%d, sm_size=%d", size,
 		qt_matrix.height, sm_size);
 	TEST_ASSERT(qt_matrix.height == 2, str_buf);
-	qt_matrix_free(&qt_matrix);
+	qdt_free(&qt_matrix);
 
 	size = 16;
 	sm_size = 8;
-	qt_matrix_init(&qt_matrix, size, size, 1, sm_size);
+	qdt_init(&qt_matrix, size, size, 1, sm_size);
 	snprintf(str_buf, STR_BUF_LEN, "size=%d, qt height=%d, sm_size=%d", size,
 		qt_matrix.height, sm_size);
 	TEST_ASSERT(qt_matrix.height == 1, str_buf);
-	qt_matrix_free(&qt_matrix);
+	qdt_free(&qt_matrix);
 }
 
 /**
@@ -66,8 +66,8 @@ static void quadtree_load(const char *filename, int sm_size) {
 	den_matrix_t den_from_qt_matrix;
 	den_matrix_t den_matrix;
 
-	qt_matrix_load_mm(&qt_matrix, filename, sm_size);
-	qt_matrix_to_dense(&qt_matrix, &den_from_qt_matrix);
+	qdt_load_mm(&qt_matrix, filename, sm_size);
+	qdt_to_dense(&qt_matrix, &den_from_qt_matrix);
 
 	dense_matrix_load_mm(&den_matrix, filename);
 
@@ -80,7 +80,7 @@ static void quadtree_load(const char *filename, int sm_size) {
 	TEST_ASSERT(dense_matrix_compare(&den_matrix, &den_from_qt_matrix) == 1,
 		str_buf);
 
-	qt_matrix_free(&qt_matrix);
+	qdt_free(&qt_matrix);
 	dense_matrix_free(&den_from_qt_matrix);
 	dense_matrix_free(&den_matrix);
 }
@@ -139,26 +139,26 @@ static void quadtree_mul(const char *filename_a, const char *filename_b,
 	dense_matrix_free(&den_a);
 	dense_matrix_free(&den_b);
 
-	qt_matrix_load_mm(&qtr_a, filename_a, sm_size);
-	qt_matrix_load_mm(&qtr_b, filename_b, sm_size);
+	qdt_load_mm(&qtr_a, filename_a, sm_size);
+	qdt_load_mm(&qtr_b, filename_b, sm_size);
 
-	qt_matrix_to_dense(&qtr_a, &tmp_a);
-	qt_matrix_to_dense(&qtr_b, &tmp_b);
+	qdt_to_dense(&qtr_a, &tmp_a);
+	qdt_to_dense(&qtr_b, &tmp_b);
 
 	if (html) {
 		dense_to_html(&tmp_a, "qtr_a.html");
 		dense_to_html(&tmp_b, "qtr_b.html");
 	}
 
-	qt_matrix_matrix_mul(&qtr_a, &qtr_b, &den_qtr_c);
+	qdt_mul(&qtr_a, &qtr_b, &den_qtr_c);
 
 	qt_matrix_print(&qtr_a);
 	qt_matrix_print(&qtr_b);
 
 	dense_matrix_free(&tmp_a);
 	dense_matrix_free(&tmp_b);
-	qt_matrix_free(&qtr_a);
-	qt_matrix_free(&qtr_b);
+	qdt_free(&qtr_a);
+	qdt_free(&qtr_b);
 
 	if (html) {
 		dense_to_html(&den_qtr_c, "den_qtr_c.html");
@@ -224,14 +224,14 @@ static void quadtree_mul_notest(const char *filename_a, const char *filename_b,
 
 	den_matrix_t den_qtr_c;
 
-	qt_matrix_load_mm(&qtr_a, filename_a, sm_size);
-	qt_matrix_load_mm(&qtr_b, filename_b, sm_size);
+	qdt_load_mm(&qtr_a, filename_a, sm_size);
+	qdt_load_mm(&qtr_b, filename_b, sm_size);
 
 	printf("QUADTREE-CSR MMM submatrix_size=%d time: %lf <<<\n", sm_size,
-		qt_matrix_matrix_mul(&qtr_a, &qtr_b, &den_qtr_c));
+		qdt_mul(&qtr_a, &qtr_b, &den_qtr_c));
 
-	qt_matrix_free(&qtr_a);
-	qt_matrix_free(&qtr_b);
+	qdt_free(&qtr_a);
+	qdt_free(&qtr_b);
 
 	dense_matrix_free(&den_qtr_c);
 

@@ -49,7 +49,7 @@ typedef void (*print_t)(vm_t *);
 typedef int (*compare_t)(vm_t *, vm_t *);
 typedef double (*distance_t)(vm_t *, vm_t *);
 
-typedef vm_t *(*convert_t)(vm_type_t, vm_t *);
+typedef vm_t *(*convert_t)(vm_t *, vm_type_t);
 typedef double (*mul_t)(const vm_t *, const vm_t *, vm_t **, char);
 
 /***************************************************************************/
@@ -71,6 +71,7 @@ struct vm {
 	vm_vmt_t f;
 	int w;
 	int h;
+	int nnz;
 	char filename[30];
 };
 

@@ -13,98 +13,73 @@
 #include "utils.h"
 
 #define PRINT 0
+#define QDT_CSR 1
 
 /*****************************************************************************/
-
-/*
- * Quadtree matrix
- */
-typedef struct qdt_matrix {
-	vm_t _;
-
-	int leaf_size; /* leaf size */
-
-	datatype_t *v;
-	int *ci; /* column indicies */
-	int *rp; /* row pointers */
-
-} qtp_matrix_t;
-
-/*****************************************************************************/
-
-typedef struct qtA_matrix {
-	vm_t _parent;
-} qtA_matrix_t;
-
-typedef struct qtB_matrix {
-	vm_t _parent;
-} qtB_matrix_t;
-
-typedef struct qtC_matrix {
-	vm_t _parent;
-} qtC_matrix_t;
-
-/*****************************************************************************/
-
-typedef struct qt_submatrix {
+typedef struct qdt_submatrix {
 	int x;
 	int y;
 
+#if QDT_CSR
 	int iv; /* index in the values array */
 	int irp; /* index in the row pointer array */
-
 	int nnz;
 	int rows;
-
 	/* for loading purposes only */
 	int lr; /* last row */
 	int i; /* have i items from nnz */
-} qt_submatrix_t;
+#else /* QDT_CSR */
+	vm_t m;
+#endif /* QDT_CSR */
+} qdt_submatrix_t;
 
-typedef struct qt_node {
-	qt_submatrix_t *sm; /* submatrix */
-	struct qt_node *tl; /* top left node */
-	struct qt_node *tr; /* top right node */
-	struct qt_node *bl; /* bottom left node */
-	struct qt_node *br; /* bottom right node */
-} qt_node_t;
+typedef struct qdt_node {
+	qdt_submatrix_t *sm; /* submatrix */
+	struct qdt_node *tl; /* top left node */
+	struct qdt_node *tr; /* top right node */
+	struct qdt_node *bl; /* bottom left node */
+	struct qdt_node *br; /* bottom right node */
+} qdt_node_t;
 
-typedef struct qt_matrix {
+typedef struct qdt_matrix {
+	vm_t _;
 
 	const char *filename;
 
+#if QDT_CSR
 	datatype_t *v;
 	int *ci;
 	int *rp;
+#endif /* QDT_CSR */
 
 	int blocks;
-
 	int height; /* height of the tree */
 
 	int sm_size;
 	matrix_t info;
-	qt_node_t *root;
+	qdt_node_t *root;
 
 	/* for loading purposes only */
 	int last_index_v;
 	int last_index_rp;
-} qt_matrix_t;
+} qdt_matrix_t;
 
-void qt_matrix_init(qt_matrix_t *qt_matrix, int width, int height, int nnz,
-	int sm_size);
-void qt_matrix_free(qt_matrix_t *qt_matrix);
-double qt_matrix_matrix_mul(qt_matrix_t *a, qt_matrix_t *b, den_matrix_t *c);
 
-double qt_matrix_load_mm(qt_matrix_t *qt_matrix, const char *filename,
-	int sm_size);
+void qdt_vm_init(qdt_matrix_t **qdt, va_list va);
+void qdt_init(qdt_matrix_t **qt_matrix, int width, int height, int nnz,
+		int sm_size);
+void qdt_free(qdt_matrix_t *qdt_matrix);
+double qdt_mul(qdt_matrix_t *a, qdt_matrix_t *b, den_matrix_t **c);
 
-void qt_matrix_to_dense(qt_matrix_t *qt_matrix, den_matrix_t *dense_matrix);
+double qdt_load_mm(qdt_matrix_t **qt_matrix, const char *filename, int sm_size);
 
-qt_submatrix_t *qt_submatrix_get(qt_matrix_t *qt_matrix, int i, int j);
+void qdt_to_dense(qdt_matrix_t *qt_matrix, den_matrix_t *dense_matrix);
 
-void qt_matrix_print(qt_matrix_t *qt_matrix);
+qdt_submatrix_t *qdt_submatrix_get(qdt_matrix_t *qt_matrix, int i, int j);
+
+void qdt_print(qdt_matrix_t *qt_matrix);
 
 time_record_t qt_matrix_mm_mul(const char *matrix_a, const char *matrix_b,
-	int sm_size);
+		int sm_size);
 
 #endif /* QT_MATRIX_H_ */

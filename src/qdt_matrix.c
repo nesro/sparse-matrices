@@ -1,5 +1,5 @@
 /**
- * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013-2014
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013, 2014
  * https://github.com/nesro/sparse-matrices
  */
 
@@ -8,67 +8,106 @@
 #include <math.h>
 
 #include "omp.h"
+#include "virtual_matrix.h"
 #include "qdt_matrix.h"
 #include "den_matrix.h"
 
-void qt_matrix_init(qt_matrix_t *qt_matrix, int width, int height, int nnz,
-	int sm_size) {
+static vm_vmt_t qdt_vmt = { /**/
+(reset_t) NULL, /**/
+(free_t) qdt_free, /**/
+(mm_load_t) NULL,/**/
+(mm_save_t) NULL, /**/
+(print_t) NULL, /**/
+(compare_t) NULL, /**/
+(distance_t) NULL, /**/
+(convert_t) NULL, /**/
+(mul_t) qdt_mul, /**/
+};
 
-	qt_matrix->info.w = width;
-	qt_matrix->info.h = height;
-	qt_matrix->info.nnz = nnz;
+void qdt_vm_init(qdt_matrix_t **qdt, va_list va) {
 
-	qt_matrix->root = calloc(1, sizeof(qt_node_t));
-	assert(qt_matrix->root != NULL);
+	int va_flag = 0;
+	int width;
+	int height;
+	int nnz;
+	int sm_size;
 
-	qt_matrix->height = ceil(
-		(log((width * height) / (sm_size * sm_size)) / (double) log(4)));
+	sm_size = va_get_int(va, 1, &va_flag);
+	nnz = va_get_int(va, 1, &va_flag);
+	height = va_get_int(va, -1, &va_flag);
+	width = va_get_int(va, -1, &va_flag);
 
-	qt_matrix->blocks = 0;
-
-	qt_matrix->sm_size = sm_size;
-
-	qt_matrix->v = NULL;
-	qt_matrix->ci = NULL;
-	qt_matrix->rp = NULL;
-
-	/* for loading purposes only */
-	qt_matrix->last_index_v = 0;
-	qt_matrix->last_index_rp = 0;
-
-	/* for information purposes only */
-	qt_matrix->filename = NULL;
+	qdt_init(qdt, width, height, nnz, sm_size);
 }
 
-static void qt_matrix_free_node(qt_node_t *node) {
+void qdt_init(qdt_matrix_t **qdt, int width, int height, int nnz, int sm_size) {
+
+	*qdt = malloc(sizeof(qdt_matrix_t));
+	assert(*qdt != NULL);
+
+	(*qdt)->_.type = QDT;
+	(*qdt)->_.f = qdt_vmt;
+	(*qdt)->_.w = width;
+	(*qdt)->_.h = height;
+
+	(*qdt)->_.nnz = nnz;
+
+	(*qdt)->root = calloc(1, sizeof(qdt_node_t));
+	assert((*qdt)->root != NULL);
+
+	(*qdt)->height = ceil(
+			(log((width * height) / (sm_size * sm_size)) / (double) log(4)));
+
+	(*qdt)->blocks = 0;
+	(*qdt)->sm_size = sm_size;
+
+#if QDT_CSR
+	(*qdt)->v = NULL;
+	(*qdt)->ci = NULL;
+	(*qdt)->rp = NULL;
+
+	/* for loading purposes only */
+	(*qdt)->last_index_v = 0;
+	(*qdt)->last_index_rp = 0;
+#endif
+}
+
+static void qdt_free_node(qdt_node_t *node) {
+
 	if (node == NULL)
 		return;
 
 	free(node->sm);
 
-	qt_matrix_free_node(node->tl);
-	qt_matrix_free_node(node->tr);
-	qt_matrix_free_node(node->bl);
-	qt_matrix_free_node(node->br);
+	qdt_free_node(node->tl);
+	qdt_free_node(node->tr);
+	qdt_free_node(node->bl);
+	qdt_free_node(node->br);
 
 	free(node);
 }
 
-void qt_matrix_free(qt_matrix_t *qt_matrix) {
-	free(qt_matrix->v);
-	free(qt_matrix->ci);
-	free(qt_matrix->rp);
-	qt_matrix_free_node(qt_matrix->root);
+void qdt_free(qdt_matrix_t *qdt_matrix) {
+#if QDT_CSR
+	free(qdt_matrix->v);
+	free(qdt_matrix->ci);
+	free(qdt_matrix->rp);
+#endif /* QDT_CSR */
+
+	qdt_free_node(qdt_matrix->root);
 }
 
-static void inner_qt_matrix_to_dense(qt_matrix_t *qt_matrix, qt_node_t *node,
-	den_matrix_t *dense_matrix) {
+/******************************************************************************/
+
+static void inner_qt_matrix_to_dense(qdt_matrix_t *qt_matrix, qdt_node_t *node,
+		den_matrix_t *dense_matrix) {
 
 	int i;
 	int j;
 	int rp;
 
 	if (node->sm != NULL) {
+#if QDT_CSR
 		/* CSR -> DENSE */
 		for (i = 0; i < qt_matrix->sm_size; i++) {
 			rp = node->sm->irp + i;
@@ -81,6 +120,11 @@ static void inner_qt_matrix_to_dense(qt_matrix_t *qt_matrix, qt_node_t *node,
 				] += qt_matrix->v[node->sm->iv + j];
 			}
 		}
+#else /* QDT_CSR */
+		den_offset_addto(
+				(dense_matrix_t *) node->sm->m.f.convert(node->sm->m, DEN),
+				dense_matrix, 0, 0, node->sm->y, node->sm->x);
+#endif /* QDT_CSR */
 
 		return;
 	}
@@ -95,18 +139,18 @@ static void inner_qt_matrix_to_dense(qt_matrix_t *qt_matrix, qt_node_t *node,
 		inner_qt_matrix_to_dense(qt_matrix, node->br, dense_matrix);
 }
 
-void qt_matrix_to_dense(qt_matrix_t *qt_matrix, den_matrix_t *dense_matrix) {
+void qdt_to_dense(qdt_matrix_t *qt_matrix, den_matrix_t *dense_matrix) {
 //	FIXME
 //	 den_matrix_init(&dense_matrix, (den_matrix_init_t ) { qt_matrix->info.w,
 //			qt_matrix->info.h, 1 });
 	inner_qt_matrix_to_dense(qt_matrix, qt_matrix->root, dense_matrix);
 }
 
-qt_submatrix_t *qt_submatrix_get(qt_matrix_t *qt_matrix, int item_row,
-	int item_col) {
+qdt_submatrix_t *qdt_submatrix_get(qdt_matrix_t *qt_matrix, int item_row,
+		int item_col) {
 
 	int i;
-	qt_node_t **tmp_node = &qt_matrix->root;
+	qdt_node_t **tmp_node = &qt_matrix->root;
 
 	int half_width = qt_matrix->info.w / 2;
 	int half_height = qt_matrix->info.h / 2;
@@ -114,7 +158,7 @@ qt_submatrix_t *qt_submatrix_get(qt_matrix_t *qt_matrix, int item_row,
 
 	for (i = 0;; i++) {
 		if (*tmp_node == NULL) {
-			*tmp_node = calloc(1, sizeof(qt_node_t));
+			*tmp_node = calloc(1, sizeof(qdt_node_t));
 
 			if (*tmp_node == NULL) {
 				fprintf(stderr, "tmp_node == NULL\n");
@@ -152,14 +196,14 @@ qt_submatrix_t *qt_submatrix_get(qt_matrix_t *qt_matrix, int item_row,
 	}
 
 	if ((*tmp_node)->sm == NULL) {
-		(*tmp_node)->sm = calloc(1, sizeof(qt_submatrix_t));
+		(*tmp_node)->sm = calloc(1, sizeof(qdt_submatrix_t));
 		assert((*tmp_node)->sm != NULL);
 
 		qt_matrix->blocks++;
 		(*tmp_node)->sm->x = (item_col / qt_matrix->sm_size)
-			* qt_matrix->sm_size;
+				* qt_matrix->sm_size;
 		(*tmp_node)->sm->y = (item_row / qt_matrix->sm_size)
-			* qt_matrix->sm_size;
+				* qt_matrix->sm_size;
 
 	}
 
@@ -178,8 +222,8 @@ qt_submatrix_t *qt_submatrix_get(qt_matrix_t *qt_matrix, int item_row,
  * @param b
  * @param c
  */
-static void qt_node_mul(qt_matrix_t *ma, qt_matrix_t *mb, qt_node_t *a,
-	qt_node_t *b, den_matrix_t *c) {
+static void qdt_node_mul(qdt_matrix_t *ma, qdt_matrix_t *mb, qdt_node_t *a,
+		qdt_node_t *b, den_matrix_t **c) {
 
 	if (a == NULL || b == NULL)
 		return;
@@ -194,6 +238,7 @@ static void qt_node_mul(qt_matrix_t *ma, qt_matrix_t *mb, qt_node_t *a,
 		int j;
 		int k;
 
+#if QDT_CSR
 		/*
 		 * I want to optimize this part a little bit.
 		 * The good readable part is in the if 0 block.
@@ -219,20 +264,22 @@ static void qt_node_mul(qt_matrix_t *ma, qt_matrix_t *mb, qt_node_t *a,
 		for (r = 0; r < ma->sm_size; r++) {
 
 			rpa = a->sm->irp + r;
-			cptr = &c->v[a->sm->y + r][b->sm->x];
+			cptr = &(*c)->v[a->sm->y + r][b->sm->x];
 
 			for (j = a->sm->iv + ma->rp[rpa]; j < a->sm->iv + ma->rp[rpa + 1];
-				j++) {
+					j++) {
 
 				rpb = b->sm->irp + ma->ci[j];
 
 				for (k = b->sm->iv + mb->rp[rpb];
-					k < b->sm->iv + mb->rp[rpb + 1]; k++) {
+						k < b->sm->iv + mb->rp[rpb + 1]; k++) {
 
 					cptr[mb->ci[k]] += ma->v[j] * mb->v[k];
 				}
 			}
 		}
+
+#endif /* QDT_CSR */
 
 //		datatype_t **cptr = NULL;
 //
@@ -258,31 +305,32 @@ static void qt_node_mul(qt_matrix_t *ma, qt_matrix_t *mb, qt_node_t *a,
 	 |C|D|   |G|H|   |C*E + D*G|C*F + D*H|
 	 */
 
-	qt_node_mul(ma, mb, a->tl, b->tl, c); /* AE */
-	qt_node_mul(ma, mb, a->tr, b->bl, c); /* BG */
+	qdt_node_mul(ma, mb, a->tl, b->tl, c); /* AE */
+	qdt_node_mul(ma, mb, a->tr, b->bl, c); /* BG */
 
-	qt_node_mul(ma, mb, a->tl, b->tr, c); /* AF */
-	qt_node_mul(ma, mb, a->tr, b->br, c); /* BH */
+	qdt_node_mul(ma, mb, a->tl, b->tr, c); /* AF */
+	qdt_node_mul(ma, mb, a->tr, b->br, c); /* BH */
 
-	qt_node_mul(ma, mb, a->bl, b->tl, c); /* CE */
-	qt_node_mul(ma, mb, a->br, b->bl, c); /* DG */
+	qdt_node_mul(ma, mb, a->bl, b->tl, c); /* CE */
+	qdt_node_mul(ma, mb, a->br, b->bl, c); /* DG */
 
-	qt_node_mul(ma, mb, a->bl, b->tr, c); /* CF */
-	qt_node_mul(ma, mb, a->br, b->br, c); /* DH */
+	qdt_node_mul(ma, mb, a->bl, b->tr, c); /* CF */
+	qdt_node_mul(ma, mb, a->br, b->br, c); /* DH */
 }
 
-double qt_matrix_matrix_mul(qt_matrix_t *a, qt_matrix_t *b, den_matrix_t *c) {
+double qdt_mul(qdt_matrix_t *a, qdt_matrix_t *b, den_matrix_t **c) {
 
 	double start_time;
 	double end_time;
 
 	assert(a->info.w == b->info.w);
 	assert(a->info.h == b->info.h);
-// FIXME
-//	den_matrix_init(&c, (den_matrix_init_t ) { a->info.w, a->info.h, 1 });
+
+	if (*c == NULL)
+		vm_create((vm_t **) c, DEN, a->_.w, a->_.w, 1);
 
 	start_time = omp_get_wtime();
-	qt_node_mul(a, b, a->root, b->root, c);
+	qdt_node_mul(a, b, a->root, b->root, c);
 	end_time = omp_get_wtime();
 
 	return end_time - start_time;
@@ -294,29 +342,30 @@ double qt_matrix_matrix_mul(qt_matrix_t *a, qt_matrix_t *b, den_matrix_t *c) {
 
 /******************************************************************************/
 
-static void compute_blocks_beginnings(qt_matrix_t *qt_matrix, qt_node_t *node) {
+static void compute_blocks_beginnings(qdt_matrix_t *qdt_matrix,
+		qdt_node_t *node) {
 
 	if (node->sm != NULL) {
-		node->sm->iv = qt_matrix->last_index_v;
-		node->sm->irp = qt_matrix->last_index_rp;
+		node->sm->iv = qdt_matrix->last_index_v;
+		node->sm->irp = qdt_matrix->last_index_rp;
 
-		qt_matrix->last_index_v += node->sm->nnz;
-		qt_matrix->last_index_rp += qt_matrix->sm_size + 1;
+		qdt_matrix->last_index_v += node->sm->nnz;
+		qdt_matrix->last_index_rp += qdt_matrix->sm_size + 1;
 
 		return;
 	}
 
 	if (node->tl != NULL)
-		compute_blocks_beginnings(qt_matrix, node->tl);
+		compute_blocks_beginnings(qdt_matrix, node->tl);
 	if (node->tr != NULL)
-		compute_blocks_beginnings(qt_matrix, node->tr);
+		compute_blocks_beginnings(qdt_matrix, node->tr);
 	if (node->bl != NULL)
-		compute_blocks_beginnings(qt_matrix, node->bl);
+		compute_blocks_beginnings(qdt_matrix, node->bl);
 	if (node->br != NULL)
-		compute_blocks_beginnings(qt_matrix, node->br);
+		compute_blocks_beginnings(qdt_matrix, node->br);
 }
 
-static void compute_blocks_rp(qt_matrix_t *qt_matrix, qt_node_t *node) {
+static void compute_blocks_rp(qdt_matrix_t *qdt_matrix, qdt_node_t *node) {
 
 	int i;
 	int sum;
@@ -324,29 +373,28 @@ static void compute_blocks_rp(qt_matrix_t *qt_matrix, qt_node_t *node) {
 
 	if (node->sm != NULL) {
 		sum = 0;
-		for (i = 0; i < qt_matrix->sm_size; i++) {
-			tmp = qt_matrix->rp[node->sm->irp + i];
-			qt_matrix->rp[node->sm->irp + i] = sum;
+		for (i = 0; i < qdt_matrix->sm_size; i++) {
+			tmp = qdt_matrix->rp[node->sm->irp + i];
+			qdt_matrix->rp[node->sm->irp + i] = sum;
 			sum += tmp;
 		}
 
-		qt_matrix->rp[node->sm->irp + qt_matrix->sm_size] = node->sm->nnz;
+		qdt_matrix->rp[node->sm->irp + qdt_matrix->sm_size] = node->sm->nnz;
 
 		return;
 	}
 
 	if (node->tl != NULL)
-		compute_blocks_rp(qt_matrix, node->tl);
+		compute_blocks_rp(qdt_matrix, node->tl);
 	if (node->tr != NULL)
-		compute_blocks_rp(qt_matrix, node->tr);
+		compute_blocks_rp(qdt_matrix, node->tr);
 	if (node->bl != NULL)
-		compute_blocks_rp(qt_matrix, node->bl);
+		compute_blocks_rp(qdt_matrix, node->bl);
 	if (node->br != NULL)
-		compute_blocks_rp(qt_matrix, node->br);
+		compute_blocks_rp(qdt_matrix, node->br);
 }
 
-double qt_matrix_load_mm(qt_matrix_t *qt_matrix, const char *filename,
-	int sm_size) {
+double qdt_load_mm(qdt_matrix_t **qdt_matrix, const char *filename, int sm_size) {
 
 	double start_time;
 	double end_time;
@@ -363,7 +411,7 @@ double qt_matrix_load_mm(qt_matrix_t *qt_matrix, const char *filename,
 	int *coo_y; /* coo matrix, y coordinates */
 	datatype_t *coo_v; /* coo matrix, values */
 
-	qt_submatrix_t *tmp_sm; /* temporal submatrix */
+	qdt_submatrix_t *tmp_sm; /* temporal submatrix */
 
 	/**************************************************************************/
 
@@ -379,7 +427,7 @@ double qt_matrix_load_mm(qt_matrix_t *qt_matrix, const char *filename,
 
 	if (mm_is_complex(matcode) && mm_is_matrix(matcode) && mm_is_sparse(matcode)) {
 		printf("Sorry, this application does not support "
-			"Market Market type: [%s]\n", mm_typecode_to_str(matcode));
+				"Market Market type: [%s]\n", mm_typecode_to_str(matcode));
 		exit(1);
 	}
 
@@ -393,8 +441,8 @@ double qt_matrix_load_mm(qt_matrix_t *qt_matrix, const char *filename,
 	assert(is_power_of_two(h));
 	assert(nnz > 0);
 
-	qt_matrix_init(qt_matrix, w, h, nnz, sm_size);
-	qt_matrix->filename = filename;
+	qdt_init(qdt_matrix, w, h, nnz, sm_size);
+//	qdt_matrix->filename = filename;
 
 	coo_x = malloc(nnz * sizeof(int));
 	coo_y = malloc(nnz * sizeof(int));
@@ -413,29 +461,30 @@ double qt_matrix_load_mm(qt_matrix_t *qt_matrix, const char *filename,
 		coo_x[i]--;
 		coo_y[i]--;
 
-		tmp_sm = qt_submatrix_get(qt_matrix, coo_y[i], coo_x[i]);
+		tmp_sm = qdt_submatrix_get(*qdt_matrix, coo_y[i], coo_x[i]);
 		tmp_sm->nnz++;
 	}
 	fclose(f);
 
-	compute_blocks_beginnings(qt_matrix, qt_matrix->root);
+	compute_blocks_beginnings(*qdt_matrix, (*qdt_matrix)->root);
 
-	qt_matrix->v = calloc(nnz, sizeof(datatype_t));
-	qt_matrix->ci = calloc(nnz, sizeof(int));
+	(*qdt_matrix)->v = calloc(nnz, sizeof(datatype_t));
+	(*qdt_matrix)->ci = calloc(nnz, sizeof(int));
 
-	qt_matrix->rp = calloc(qt_matrix->blocks * (qt_matrix->sm_size + 1),
-		sizeof(int));
+	(*qdt_matrix)->rp = calloc(
+			(*qdt_matrix)->blocks * ((*qdt_matrix)->sm_size + 1), sizeof(int));
 
 	for (i = 0; i < nnz; i++) {
-		tmp_sm = qt_submatrix_get(qt_matrix, coo_y[i], coo_x[i]);
+		tmp_sm = qdt_submatrix_get(*qdt_matrix, coo_y[i], coo_x[i]);
 
-		qt_matrix->v[tmp_sm->iv + tmp_sm->i] = coo_v[i];
-		qt_matrix->ci[tmp_sm->iv + tmp_sm->i] = coo_x[i] % qt_matrix->sm_size;
-		qt_matrix->rp[tmp_sm->irp + (coo_y[i] % qt_matrix->sm_size)]++;
+		(*qdt_matrix)->v[tmp_sm->iv + tmp_sm->i] = coo_v[i];
+		(*qdt_matrix)->ci[tmp_sm->iv + tmp_sm->i] = coo_x[i]
+				% (*qdt_matrix)->sm_size;
+		(*qdt_matrix)->rp[tmp_sm->irp + (coo_y[i] % (*qdt_matrix)->sm_size)]++;
 		tmp_sm->i++;
 	}
 
-	compute_blocks_rp(qt_matrix, qt_matrix->root);
+	compute_blocks_rp(*qdt_matrix, (*qdt_matrix)->root);
 
 	free(coo_x);
 	free(coo_y);
@@ -446,8 +495,8 @@ double qt_matrix_load_mm(qt_matrix_t *qt_matrix, const char *filename,
 
 }
 
-static void qt_matrix_print_inner(qt_matrix_t *qt_matrix, qt_node_t *node,
-	int depth) {
+static void qt_matrix_print_inner(qdt_matrix_t *qdt_matrix, qdt_node_t *node,
+		int depth) {
 
 	depth += 8;
 
@@ -471,90 +520,90 @@ static void qt_matrix_print_inner(qt_matrix_t *qt_matrix, qt_node_t *node,
 		assert(node->sm == NULL);
 
 		printf("%*s\n", depth, "tl");
-		qt_matrix_print_inner(qt_matrix, node->tl, depth);
+		qt_matrix_print_inner(qdt_matrix, node->tl, depth);
 	}
 
 	if (node->tr != NULL) {
 		assert(node->sm == NULL);
 
 		printf("%*s\n", depth, "tr");
-		qt_matrix_print_inner(qt_matrix, node->tr, depth);
+		qt_matrix_print_inner(qdt_matrix, node->tr, depth);
 	}
 
 	if (node->bl != NULL) {
 		assert(node->sm == NULL);
 
 		printf("%*s\n", depth, "bl");
-		qt_matrix_print_inner(qt_matrix, node->bl, depth);
+		qt_matrix_print_inner(qdt_matrix, node->bl, depth);
 	}
 
 	if (node->br != NULL) {
 		assert(node->sm == NULL);
 
 		printf("%*s\n", depth, "br");
-		qt_matrix_print_inner(qt_matrix, node->br, depth);
+		qt_matrix_print_inner(qdt_matrix, node->br, depth);
 	}
 }
 
-void qt_matrix_print(qt_matrix_t *qt_matrix) {
+void qt_matrix_print(qdt_matrix_t *qdt_matrix) {
 	int i;
 
 	if (!PRINT)
 		return;
 
-	if (qt_matrix == NULL) {
+	if (qdt_matrix == NULL) {
 		fprintf(stderr, "qt_matrix == NULL\n");
 		return;
 	}
 
 	printf("matrix from file: %s\n",
-		qt_matrix->filename != NULL ? qt_matrix->filename : "NULL");
+			qdt_matrix->filename != NULL ? qdt_matrix->filename : "NULL");
 
-	printf("sm_size: %d\n", qt_matrix->sm_size);
-	printf("quadtree height = %d\n", qt_matrix->height);
+	printf("sm_size: %d\n", qdt_matrix->sm_size);
+	printf("quadtree height = %d\n", qdt_matrix->height);
 
 	printf("v:  ");
-	for (i = 0; i < qt_matrix->info.nnz; i++) {
-		printf("%02.lf,", qt_matrix->v[i]);
-		if ((i + 1) % qt_matrix->sm_size == 0)
+	for (i = 0; i < qdt_matrix->info.nnz; i++) {
+		printf("%02.lf,", qdt_matrix->v[i]);
+		if ((i + 1) % qdt_matrix->sm_size == 0)
 			printf(" _ ");
 	}
 	printf("\nci: ");
-	for (i = 0; i < qt_matrix->info.nnz; i++) {
-		printf("%02d,", qt_matrix->ci[i]);
-		if ((i + 1) % qt_matrix->sm_size == 0)
+	for (i = 0; i < qdt_matrix->info.nnz; i++) {
+		printf("%02d,", qdt_matrix->ci[i]);
+		if ((i + 1) % qdt_matrix->sm_size == 0)
 			printf(" _ ");
 	}
 	printf("\nrp: ");
-	for (i = 0; i < qt_matrix->blocks * (qt_matrix->sm_size + 1); i++) {
-		printf("%d,", qt_matrix->rp[i]);
-		if ((i + 1) % (qt_matrix->sm_size + 1) == 0)
+	for (i = 0; i < qdt_matrix->blocks * (qdt_matrix->sm_size + 1); i++) {
+		printf("%d,", qdt_matrix->rp[i]);
+		if ((i + 1) % (qdt_matrix->sm_size + 1) == 0)
 			printf(" _ ");
 	}
 
 	printf("nodes:\n");
-	qt_matrix_print_inner(qt_matrix, qt_matrix->root, 0);
+	qt_matrix_print_inner(qdt_matrix, qdt_matrix->root, 0);
 
 	printf("\n");
 }
 
-time_record_t qt_matrix_mm_mul(const char *matrix_a, const char *matrix_b,
-	int sm_size) {
-
-	qt_matrix_t a;
-	qt_matrix_t b;
-	den_matrix_t c;
-	time_record_t tr;
-
-	tr.load_a = qt_matrix_load_mm(&a, matrix_a, sm_size);
-	tr.load_b = qt_matrix_load_mm(&b, matrix_b, sm_size);
-
-	tr.multiplication = qt_matrix_matrix_mul(&a, &b, &c);
-
-	qt_matrix_free(&a);
-	qt_matrix_free(&b);
-	den_matrix_free(&c);
-
-	return tr;
-}
+//time_record_t qt_matrix_mm_mul(const char *matrix_a, const char *matrix_b,
+//		int sm_size) {
+//
+//	qdt_matrix_t a;
+//	qdt_matrix_t b;
+//	den_matrix_t c;
+//	time_record_t tr;
+//
+//	tr.load_a = qdt_load_mm(&a, matrix_a, sm_size);
+//	tr.load_b = qdt_load_mm(&b, matrix_b, sm_size);
+//
+//	tr.multiplication = qdt_mul(&a, &b, &c);
+//
+//	qdt_free(&a);
+//	qdt_free(&b);
+//	den_matrix_free(&c);
+//
+//	return tr;
+//}
 

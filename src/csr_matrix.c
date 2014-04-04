@@ -124,8 +124,8 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 //	}
 //	start_time = omp_get_wtime();
 //
-//#pragma omp parallel for default(none) shared(a,b,c) \
-//	private(row,acol,acol2,bcol,bcol2,acol_i,acol2_i,bcol_i,bcol2_i,x,x2) \
+//#pragma omp parallel for default(none) shared(a,b,c) \?
+//	private(row,acol,acol2,bcol,bcol2,acol_i,acol2_i,bcol_i,bcol2_i,x,x2) \?
 //	__OMP_NUM_THREADS__
 //	for (row = 0; row < a->info.h - 1; row += 2) {
 //		acol = a->rp[row];
@@ -373,10 +373,10 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 //	}
 //	start_time = omp_get_wtime();
 //
-//#pragma omp parallel for \
-//	default(none) \
-//	shared(a,b,c) \
-//	private(ac, bc) \
+//#pragma omp parallel for \?
+//	default(none) \?
+//	shared(a,b,c) \?
+//	private(ac, bc) \?
 //	__OMP_NUM_THREADS__
 //	for (r = 0; r < a->info.h; r++)
 //		for (ac = a->rp[r]; ac < a->rp[r + 1]; ac++)
@@ -432,7 +432,7 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 //	vector_init(c, b->size);
 //	start_time = omp_get_wtime();
 //
-//#pragma omp parallel default(none) shared(a,b,c) \
+//#pragma omp parallel default(none) shared(a,b,c) \?
 //	private(row_ptr,frs,fre,sre,fri,sri,frci,srci,sfr,ssr) 	__OMP_NUM_THREADS__
 //	{
 //
@@ -585,7 +585,7 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 //	vector_init(c, b->size);
 //	start_time = omp_get_wtime();
 //
-//#pragma omp parallel for default(none) shared(a,b,c) private(r,ci) \
+//#pragma omp parallel for default(none) shared(a,b,c) private(r,ci) \?
 //	__OMP_NUM_THREADS__
 //	for (r = 0; r < a->info.h; r++) {
 //		for (ci = a->rp[r]; ci < a->rp[r + 1]; ci++) {

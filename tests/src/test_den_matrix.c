@@ -32,6 +32,7 @@ static void rowcol() {
 }
 
 static void run() {
+
 	vm_t *a = NULL;
 	vm_t *b = NULL;
 	vm_t *c_def = NULL;

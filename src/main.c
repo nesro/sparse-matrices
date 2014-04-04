@@ -101,11 +101,12 @@ int main(int argc, char *argv[]) {
 	int leaf_size = -1;
 	time_record_t tr;
 
-	int do_output = 0; /* -o flag */
+	char *output = NULL; /* -o flag */
 
 	vm_t *vm_a = NULL;
 	vm_t *vm_b = NULL;
 	vm_t *vm_c = NULL;
+	int print_time = 0;
 	double time;
 
 	if (argc < 2) {
@@ -116,7 +117,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "a:b:f:hl:o:")) != -1) {
+	while ((c = getopt(argc, argv, "a:b:f:hl:o:t")) != -1) {
 		switch (c) {
 		case 'a':
 			matrix_a = optarg;
@@ -134,11 +135,14 @@ int main(int argc, char *argv[]) {
 			leaf_size = load_leaf_size(optarg);
 			break;
 		case 'o':
-			do_output = 1;
+			output = optarg;
 			break;
 		case 'q':
 			quick_test();
 			return EXIT_SUCCESS;
+		case 't':
+			print_time = 1;
+			break;
 		case '?':
 			if (optopt == 'a')
 				fprintf(stderr,
@@ -178,7 +182,8 @@ int main(int argc, char *argv[]) {
 	if (format == QDT) {
 		if (leaf_size == -1) {
 			fprintf(stderr,
-					"ERROR: Leaf size is not set. Set it with an -l option.\n");
+					"ERROR: Leaf size is not set or has an invalid value."
+							"Set it with an -l option to a power of two.\n");
 			return EXIT_FAILURE;
 		}
 	}
@@ -197,19 +202,21 @@ int main(int argc, char *argv[]) {
 		abort();
 	}
 
-	vm_load_mm(&vm_a, DEN, matrix_a);
-	vm_load_mm(&vm_b, DEN, matrix_b);
+	vm_load_mm(&vm_a, format, matrix_a);
+	vm_load_mm(&vm_b, format, matrix_b);
 
 	time = vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE | UNROLLED);
 
+	if (print_time)
+		printf("%lf\n", time);
 
-	printf("time=%lf\n", time);
-
-	if (do_output)
+	if (output != NULL)
 		vm_c->f.print(vm_c);
 
 	printf("load_a %lf\nload_b %lf\nmultiplication %lf\n", tr.load_a, tr.load_b,
 			tr.multiplication);
+
+//	vm_c->f.tofile(vm_c, output);
 
 	vm_a->f.free(vm_a);
 	vm_b->f.free(vm_b);

@@ -8,6 +8,7 @@
 #include "virtual_matrix.h"
 #include "den_matrix.h"
 #include "csr_matrix.h"
+#include "qdt_matrix.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +26,9 @@ void vm_create(vm_t **vm, vm_type_t type, ...) {
 		break;
 	case CSR:
 		csr_vm_init((csr_t **) vm, vl);
+		break;
+	case QDT:
+		qdt_vm_init((qdt_matrix_t **)vm, vl);
 		break;
 	default:
 		break;

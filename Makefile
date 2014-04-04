@@ -69,7 +69,7 @@ endif
 
 #-------------------------------------------------------------------------------
 
-all: build_dir $(OBJECTS) $(BINARY) tests
+all: build_dir $(OBJECTS) $(BINARY)
 
 .PHONY: build_dir
 build_dir:
@@ -131,7 +131,7 @@ fullclean: clean
 
 #-------------------------------------------------------------------------------
 
-$(BINARY): ./main.o $(OBJECTS)
+$(BINARY): $(OBJECTS) ./main.o
 	$(LD) $(CFLAGS) $(addprefix $(BUILD)/, main.o) \
 	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(BINARY) $(CLIBS)
 
@@ -193,7 +193,7 @@ $(CASSERTION)/cassertion.h
 #-------------------------------------------------------------------------------
 # cassertion test suites
 
-test_den_matrix: all test_den_matrix.o
+test_den_matrix: test_den_matrix.o
 	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_den_matrix.o \
 	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
 

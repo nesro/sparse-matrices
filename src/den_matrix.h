@@ -13,9 +13,6 @@
 #ifndef DENSE_MATRIX_H_
 #define DENSE_MATRIX_H_
 
-/* global */
-extern int g_den_strassen_block;
-
 typedef struct den_matrix_init {
 	int width;
 	int height;
@@ -28,6 +25,7 @@ typedef struct den_matrix {
 
 	/* private */
 	datatype_t *rows_block;
+	int strassen_block_treshold;
 } den_matrix_t;
 
 /***************************************************************************/
@@ -81,5 +79,14 @@ void dense_matrix_hash_save(den_matrix_t *dense_matrix, const char *filename);
 int dense_matrix_compare(den_matrix_t *a, den_matrix_t *b);
 
 /*****************************************************************************/
+
+void den_offset_add(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c, int ar, int ac, int br, int bc, int cr, int cc, int s);
+
+void den_offset_addto(const den_matrix_t *a, den_matrix_t *c, int ar, int ac,
+		int cr, int cc, int s);
+
+void den_offset_sub(const den_matrix_t *a, const den_matrix_t *b,
+		den_matrix_t *c, int ar, int ac, int br, int bc, int cr, int cc, int s);
 
 #endif /* DENSE_MATRIX_H_ */
