@@ -84,6 +84,8 @@
 
 \section{Použití násobení matic}
 
+% inverze matic: Matrix multiplication and matrix inversion ItA
+
 TODO: kde se pouziva nasobeni matic
 
 \section{Matice}
@@ -452,6 +454,13 @@ Výpočet asymptotické složitosti vypočteme podobně jako u \texttt{MMM-recur
 
 TODO: mistrovska metoda
 
+\[ T(n) = \left\{ 
+  \begin{array}{l l}
+    \Theta(1) & \quad \text{if $n$ = 1}\\
+    7T(n/2) + \Theta(1) & \quad \text{if $n$ > 1}
+  \end{array} \right.\]
+
+
 Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme desetinná čísla, abysme ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
 
 Pomocí algoritmu podle definice, by takový počítač vypočítal součin dvou matic následnovně:
@@ -498,7 +507,7 @@ M_{7} = (0.5678 - 10.456) \cdot (0.7891 + 9.999) = -106.67 \\
 
 % zdroj http://math.nist.gov/MatrixMarket/data/Harwell-Boeing/oilgen/orsirr_1.html
 
-Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oriznuta na 1024x1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu je vidět exponencionální růst chyby.
+Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na 1024x1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu je vidět exponencionální růst chyby.
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen_stability}
