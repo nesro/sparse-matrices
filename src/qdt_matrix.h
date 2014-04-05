@@ -29,48 +29,46 @@ typedef struct qdt_submatrix {
 	int lr; /* last row */
 	int i; /* have i items from nnz */
 #else /* QDT_CSR */
-	vm_t m;
+vm_t m;
 #endif /* QDT_CSR */
 } qdt_submatrix_t;
 
 typedef struct qdt_node {
-	qdt_submatrix_t *sm; /* submatrix */
-	struct qdt_node *tl; /* top left node */
-	struct qdt_node *tr; /* top right node */
-	struct qdt_node *bl; /* bottom left node */
-	struct qdt_node *br; /* bottom right node */
+qdt_submatrix_t *sm; /* submatrix */
+struct qdt_node *tl; /* top left node */
+struct qdt_node *tr; /* top right node */
+struct qdt_node *bl; /* bottom left node */
+struct qdt_node *br; /* bottom right node */
 } qdt_node_t;
 
 typedef struct qdt_matrix {
-	vm_t _;
+vm_t _;
 
-	const char *filename;
+const char *filename;
 
 #if QDT_CSR
-	datatype_t *v;
-	int *ci;
-	int *rp;
+datatype_t *v;
+int *ci;
+int *rp;
 #endif /* QDT_CSR */
 
-	int blocks;
-	int height; /* height of the tree */
+int blocks;
+int height; /* height of the tree */
 
-	int sm_size;
+int sm_size;
 //	matrix_t info;
-	qdt_node_t *root;
+qdt_node_t *root;
 
-	/* for loading purposes only */
-	int last_index_v;
-	int last_index_rp;
+/* for loading purposes only */
+int last_index_v;
+int last_index_rp;
 } qdt_matrix_t;
-
 
 void qdt_vm_init(qdt_matrix_t **qdt, va_list va);
 void qdt_init(qdt_matrix_t **qt_matrix, int width, int height, int nnz,
-		int sm_size);
+	int sm_size);
 void qdt_free(qdt_matrix_t *qdt_matrix);
 double qdt_mul(qdt_matrix_t *a, qdt_matrix_t *b, den_matrix_t **c, char);
-
 
 void qdt_from_mm(qdt_matrix_t **, const char *, va_list);
 double qdt_load_mm(qdt_matrix_t **qt_matrix, const char *filename, int sm_size);
@@ -81,7 +79,9 @@ qdt_submatrix_t *qdt_submatrix_get(qdt_matrix_t *qt_matrix, int i, int j);
 
 void qdt_print(qdt_matrix_t *qt_matrix);
 
+vm_t *qdt_convert(qdt_matrix_t*, vm_type_t);
+
 time_record_t qt_matrix_mm_mul(const char *matrix_a, const char *matrix_b,
-		int sm_size);
+	int sm_size);
 
 #endif /* QT_MATRIX_H_ */

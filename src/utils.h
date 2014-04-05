@@ -48,7 +48,23 @@ void error(const char *fmt, ...);
 		fflush(stderr); \
 	} while (0)
 
-void die(const char *fmt, ...);
+//void die(const char *fmt, ...);
+
+#define die(fmt) do { \
+	if (1 || _PRINT_DEBUG) \
+		fprintf(stderr, "DIE:%s:%s:%d(): " fmt "\n", __FILE__ , \
+			__func__ , __LINE__); \
+		fflush(stderr); \
+		abort(); \
+	} while (0)
+
+#define fdie(fmt, ...) do { \
+	if (1 || _PRINT_DEBUG) \
+		fprintf(stderr, "DIE:%s:%s:%d(): " fmt "\n", __FILE__ , \
+			__func__ , __LINE__ , __VA_ARGS__ ); \
+		fflush(stderr); \
+		abort(); \
+	} while (0)
 
 /***************************************************************************/
 

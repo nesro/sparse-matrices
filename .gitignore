@@ -19,6 +19,7 @@
 *.out
 *.app
 main
+tests/bin/*
 
 # Eclipse
 .cproject

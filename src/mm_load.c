@@ -15,7 +15,7 @@ mm_file_t *mm_load(const char *filename) {
 	int i;
 
 	if ((f = fopen(filename, "r")) == NULL) {
-		die("File %s doesn't exists. Exiting.\n", filename);
+		fdie("File %s doesn't exists. Exiting.\n", filename);
 	}
 
 	if (mm_read_banner(f, &matcode) != 0) {
@@ -23,7 +23,7 @@ mm_file_t *mm_load(const char *filename) {
 	}
 
 	if (mm_is_complex(matcode) && mm_is_matrix(matcode) && mm_is_sparse(matcode)) {
-		die("Sorry, this application does not support Market Market type: "
+		fdie("Sorry, this application does not support Market Market type: "
 			"[%s]\n", mm_typecode_to_str(matcode));
 	}
 
@@ -39,7 +39,7 @@ mm_file_t *mm_load(const char *filename) {
 	for (i = 0; i < mm_file->items; i++) {
 		if (fscanf(f, "%d %d %lg\n", &mm_file->data[i].row,
 			&mm_file->data[i].col, &mm_file->data[i].value) != 3) {
-			die("fscanf failed for file %s and item no. %i\n", filename, i);
+			fdie("fscanf failed for file %s and item no. %i\n", filename, i);
 		}
 	}
 

@@ -36,11 +36,11 @@ static void run() {
 		vm_load_mm(&qa, QDT, tp->a.path, 1);
 		vm_load_mm(&qb, QDT, tp->b.path, 1);
 
-		da->f.mul(da, db, &qc, NAIVE);
+		da->f.mul(da, db, &dc, NAIVE);
 
 		CASSERTION_TIME();
 		qa->f.mul(qa, qb, &qc, NAIVE);
-		CASSERTION(da->f.compare(da, qa) == 0, "a=%s,b=%s", tp->a.path,
+		CASSERTION(dc->f.compare(dc, qc) == 0, "a=%s,b=%s", tp->a.path,
 				tp->b.path);
 
 #if 0

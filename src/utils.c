@@ -73,15 +73,15 @@ void error(const char *fmt, ...) {
 	exit(EXIT_FAILURE);
 }
 
-void die(const char *fmt, ...) {
-
-	va_list ap;
-	va_start(ap, fmt);
-	vfprintf(stdout, fmt, ap);
-	fflush(stdout);
-	va_end(ap);
-	exit(EXIT_FAILURE);
-}
+//void die(const char *fmt, ...) {
+//
+//	va_list ap;
+//	va_start(ap, fmt);
+//	vfprintf(stdout, fmt, ap);
+//	fflush(stdout);
+//	va_end(ap);
+//	exit(EXIT_FAILURE);
+//}
 
 double random_double(void) {
 	return ((double) rand() / (double) RAND_MAX);

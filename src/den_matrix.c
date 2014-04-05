@@ -36,7 +36,8 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 	if (a->_.w != b->w || a->_.h != b->h)
 		return 2;
 
-	b->f.convert(b, DEN);
+	if (b->type != DEN)
+		b->f.convert(b, DEN);
 
 	for (i = 0; i < a->_.h; i++) {
 		for (j = 0; j < a->_.w; j++) {
@@ -578,7 +579,7 @@ double mul(const den_matrix_t *a, const den_matrix_t *b, den_matrix_t **c,
 	else if (flag & RECURSIVE)
 		return den_mul_recursion(a, b, *c);
 
-	die("The flag \"%x\" is not valid.\n", flag);
+	fdie("The flag \"%x\" is not valid.\n", flag);
 
 	/*NOTREACHABE*/
 	return -1;

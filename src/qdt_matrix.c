@@ -20,7 +20,7 @@ static vm_vmt_t qdt_vmt = { /**/
 (print_t) NULL, /**/
 (compare_t) NULL, /**/
 (distance_t) NULL, /**/
-(convert_t) NULL, /**/
+(convert_t) qdt_convert, /**/
 (mul_t) qdt_mul, /**/
 };
 
@@ -95,6 +95,7 @@ void qdt_free(qdt_matrix_t *qdt_matrix) {
 #endif /* QDT_CSR */
 
 	qdt_free_node(qdt_matrix->root);
+	free(qdt_matrix);
 }
 
 /******************************************************************************/
@@ -121,6 +122,7 @@ static void inner_qt_matrix_to_dense(qdt_matrix_t *qt_matrix, qdt_node_t *node,
 			}
 		}
 #else /* QDT_CSR */
+		/* FIXME: this has not been tested */
 		den_offset_addto(
 				(dense_matrix_t *) node->sm->m.f.convert(node->sm->m, DEN),
 				dense_matrix, 0, 0, node->sm->y, node->sm->x);
@@ -145,6 +147,28 @@ void qdt_to_dense(qdt_matrix_t *qt_matrix, den_matrix_t *dense_matrix) {
 //			qt_matrix->info.h, 1 });
 	inner_qt_matrix_to_dense(qt_matrix, qt_matrix->root, dense_matrix);
 }
+
+vm_t *qdt_convert(qdt_matrix_t *qdt, vm_type_t type) {
+
+	vm_t *vm = NULL;
+
+	switch (type) {
+	case DEN:
+		vm_create(&vm, DEN, 1, qdt->_.w, qdt->_.h);
+		//inner_qt_matrix_to_dense(qdt, qdt->root, (den_matrix_t*) vm);
+		break;
+	default:
+		fdie("unknown format to convert %d\n", type);
+		break;
+	}
+
+	/* XXX: */
+	/* qdt->_.f.free(qdt); */
+
+	return vm;
+}
+
+/******************************************************************************/
 
 qdt_submatrix_t *qdt_submatrix_get(qdt_matrix_t *qt_matrix, int item_row,
 		int item_col) {
