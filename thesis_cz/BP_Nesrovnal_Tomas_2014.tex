@@ -139,8 +139,6 @@ Matice, které obsahují velké množství nulových prvků, nazýváme řídké
 
 Řídkost matice budeme vyjadřovat pomocí $nnz$ (Number of NonZero elements), tedy počtem nenulových prvků z celkových $mn$, pro matici A typu ($m$, $n$).
 
-Formáty uložení řídkých matic obecně ukládají jednotlivé elementy zvlášť a tedy nemusí ukládat ty nulové. To ale přináší řadu nevýhod. Za prvé se musí ukládat informace o souřadicních jednotliých prvcích. Za druhé, ztrácíme možnost přístupu k prvku na libovolných šouřadnicích v čase $O(1)$. 
-
 TODO: typy ridkych matic (pasova, atd, pattern, real)
 
 \section{Numerická stabilita}
@@ -519,9 +517,23 @@ Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se
 
 \section{Rychlé algoritmy}
 
-TODO: rict ze ma dobrou O(n2735477), ale velkou konstantu a je v praxi zatim nepouzitelny
+Po tom, co Strassen ukázal, že existují rychlejší algoritmy než $O(n^3)$, ještě rychlejší algoritmy než ten jeho na sebe nenechaly dlouho čekat. Složitost násobení matic pro jednoduchost označíme jako $O(n^\omega)$.
 
-\section{Speciální algoritmy pro řídké matice}
+Nejpomalejší algorotmus s $\omega=3$ je podle definice. Strassenův algoritmus se sedmi násobeními má $\omega\approx2.807354$. Jeden z nejrychlejších algoritmů je algoritmus Virginie Williamsové \cite{DBLP:conf/stoc/Williams12}\cite{BreakigCWB}, pro který je $\omega<2.3727$. 
+
+Hranicí nejlepší možné složitosti může být $\omega=2$, protože každý prvek z matice musíme nějak započítat. Existují z velké části podložené doměnky na základě teroie grup \cite{complexityMM}, že $\omega=2$ skutečně platí, ale přímý důkaz ještě neexistuje.
+
+\section{Algoritmus podle definice upravený pro řídké matice}
+
+Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat násobení takových dvou prvků, z nichž je alespoň jeden nulový. Označme $nnzr_{M,i}$ jako počet nenulových prvků v i-tém řádku matice M a $nnzc_{M,i}$ jako počet nenulových prvků v i-tém sloupci matice M. Protože násobíme každý řádek s každým sloupcem, bude celkový počet operací dán vzorcem:
+ 
+\begin{align}
+\sum_{i=1}^{N} nnzr_{A,i} nnzc_{B,i}
+\end{align}
+
+Složitost tohoto algoritmu pro násobení dvou matic $A$ a $B$ o velikosti $n$ tedy můžeme vyjádřit jako $O(mn)$, kde $m = max(nnz(A),nnz(B)$.  
+
+tady \cite{DBLP:journals/talg/YusterZ05} bka
 
 Existuje mnoho dalších algoritmů násobení matic. Zmíníme algoritmy vyhledávající vzory v řídkých maticích, například diagonály, co násobí jednotlivé vzory mezi sebou. \textbf{?muzu rict, ze to delat nebudu?} V této práci se zabýváme pouze algoritmy a formáty uložení pro (odkaz do sekce s typama ridkych matic).
 
@@ -531,6 +543,10 @@ Existuje mnoho dalších algoritmů násobení matic. Zmíníme algoritmy vyhled
 %-----------------------------------------------------------------------------
 
 \chapter{Formáty uložení řídkých matic}
+
+Formáty uložení řídkých matic obecně ukládají jednotlivé elementy zvlášť a tedy nemusí ukládat ty nulové. To ale přináší řadu nevýhod. Za prvé se musí ukládat informace o souřadicních jednotliých prvcích. Za druhé, ztrácíme možnost přístupu k prvku na libovolných šouřadnicích v čase $\Theta(1)$, protože prvky nemáme přímo indexované podle jejich umístění v řádku a sloupci.
+
+upravitelne vs neupravitelne 
 
 \section{COO - Coordinate list}
 
