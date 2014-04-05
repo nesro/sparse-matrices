@@ -96,8 +96,11 @@ run: all
 # make BIN=./main valgrind
 .PHONY: valgrind
 valgrind:
-	nice -n 19 valgrind --leak-check=full --show-reachable=yes \
-	${BIN} 2> >(while read l; do echo -e "\e[01;31m$l\e[0m" >&2; done)
+	./tests/scripts/valgrind.sh ${BIN}
+
+# make BIN=./main allgrind
+.PHONY: allgrind
+allgrind: all tests valgrind
 
 .PHONY: tests
 tests: all test_dirs $(TESTS)

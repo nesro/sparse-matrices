@@ -34,7 +34,7 @@ void den_vm_init(den_matrix_t **, va_list);
 void den_from_mm(den_matrix_t **, const char *, va_list);
 void den_matrix_init(den_matrix_t **, int, int, int);
 
-int den_compare(den_matrix_t *, den_matrix_t *);
+int den_compare(den_matrix_t *, vm_t *);
 double den_distance(den_matrix_t *, den_matrix_t *);
 
 /***************************************************************************/
