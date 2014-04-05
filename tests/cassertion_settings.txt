@@ -1,0 +1,16 @@
+# CASSERTION configuration file
+# binary:run_options:exit_on_failure:verbose_level
+#
+# bianary:
+# exit_on_failure:
+#    0 - off (do not exit on failure)
+#    1 - on (exit on first failure)
+#
+# run_options:
+#    0 - run
+#    1 - run only this test (the first in the list)
+#    2 - do not run this test
+#    3 - exit after this test
+#
+./tests/bin/test_den_matrix:0:0
+./tests/bin/test_qdt_matrix:1:0
