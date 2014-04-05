@@ -82,8 +82,8 @@ test_dirs:
 	$(MKDIR_P) $(TEST_BIN)
 
 .PHONY: cassertion
-cassertion:
-	./cassertion/cassertion.sh
+cassertion: all tests
+	./cassertion/cassertion.sh -c ./tests/cassertion_settings.txt
 
 .PHONY: thesis
 thesis:

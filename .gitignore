@@ -26,7 +26,10 @@ tests/bin/*
 .project
 
 # Ignore generated matrices, a user will generate them by itself
-./tests/matrices/generated/*
+tests/matrices/generated/*
+
+# Ignore casssertion logs
+cassertion_logs
 
 # LaTeX
 *.acn
