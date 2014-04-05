@@ -56,7 +56,7 @@ typedef struct qdt_matrix {
 	int height; /* height of the tree */
 
 	int sm_size;
-	matrix_t info;
+//	matrix_t info;
 	qdt_node_t *root;
 
 	/* for loading purposes only */
@@ -69,8 +69,10 @@ void qdt_vm_init(qdt_matrix_t **qdt, va_list va);
 void qdt_init(qdt_matrix_t **qt_matrix, int width, int height, int nnz,
 		int sm_size);
 void qdt_free(qdt_matrix_t *qdt_matrix);
-double qdt_mul(qdt_matrix_t *a, qdt_matrix_t *b, den_matrix_t **c);
+double qdt_mul(qdt_matrix_t *a, qdt_matrix_t *b, den_matrix_t **c, char);
 
+
+void qdt_from_mm(qdt_matrix_t **, const char *, va_list);
 double qdt_load_mm(qdt_matrix_t **qt_matrix, const char *filename, int sm_size);
 
 void qdt_to_dense(qdt_matrix_t *qt_matrix, den_matrix_t *dense_matrix);

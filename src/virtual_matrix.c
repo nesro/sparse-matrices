@@ -28,7 +28,7 @@ void vm_create(vm_t **vm, vm_type_t type, ...) {
 		csr_vm_init((csr_t **) vm, vl);
 		break;
 	case QDT:
-		qdt_vm_init((qdt_matrix_t **)vm, vl);
+		qdt_vm_init((qdt_matrix_t **) vm, vl);
 		break;
 	default:
 		break;
@@ -49,6 +49,9 @@ void vm_load_mm(vm_t **vm, vm_type_t type, const char *mm, ...) {
 		break;
 	case CSR:
 		csr_from_mm((csr_t **) vm, mm, vl);
+		break;
+	case QDT:
+		qdt_from_mm((qdt_matrix_t **) vm, mm, vl);
 		break;
 	default:
 		break;
@@ -74,7 +77,7 @@ void vm_print(vm_t *vm) {
 }
 
 void vm_exec(action_t action, vm_type_t type_a, vm_type_t type_b,
-	const char *file_a, const char *file_b, vm_t **c, char flag,  ...) {
+		const char *file_a, const char *file_b, vm_t **c, char flag, ...) {
 
 //	vm_exec(MUL, CSR, DEN, "file1.mtx", "file2.mtx", c, MATRIX_A, LEAF_SIZE, 12);
 
@@ -82,8 +85,6 @@ void vm_exec(action_t action, vm_type_t type_a, vm_type_t type_b,
 	vm_t *b;
 	va_list va_list_a;
 	va_list va_list_b;
-
-
 
 	/* is va empty */
 

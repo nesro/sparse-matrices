@@ -152,9 +152,9 @@ qdt_submatrix_t *qdt_submatrix_get(qdt_matrix_t *qt_matrix, int item_row,
 	int i;
 	qdt_node_t **tmp_node = &qt_matrix->root;
 
-	int half_width = qt_matrix->info.w / 2;
-	int half_height = qt_matrix->info.h / 2;
-	int delkoef = qt_matrix->info.w / 2;
+	int half_width = qt_matrix->_.w / 2;
+	int half_height = qt_matrix->_.h / 2;
+	int delkoef = qt_matrix->_.w / 2;
 
 	for (i = 0;; i++) {
 		if (*tmp_node == NULL) {
@@ -318,16 +318,17 @@ static void qdt_node_mul(qdt_matrix_t *ma, qdt_matrix_t *mb, qdt_node_t *a,
 	qdt_node_mul(ma, mb, a->br, b->br, c); /* DH */
 }
 
-double qdt_mul(qdt_matrix_t *a, qdt_matrix_t *b, den_matrix_t **c) {
+double qdt_mul(qdt_matrix_t *a, qdt_matrix_t *b, den_matrix_t **c,
+		char flag /* unused */) {
 
 	double start_time;
 	double end_time;
 
-	assert(a->info.w == b->info.w);
-	assert(a->info.h == b->info.h);
+	assert(a->_.w == b->_.w);
+	assert(a->_.h == b->_.h);
 
 	if (*c == NULL)
-		vm_create((vm_t **) c, DEN, a->_.w, a->_.w, 1);
+		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
 
 	start_time = omp_get_wtime();
 	qdt_node_mul(a, b, a->root, b->root, c);
@@ -392,6 +393,20 @@ static void compute_blocks_rp(qdt_matrix_t *qdt_matrix, qdt_node_t *node) {
 		compute_blocks_rp(qdt_matrix, node->bl);
 	if (node->br != NULL)
 		compute_blocks_rp(qdt_matrix, node->br);
+}
+
+/******************************************************************************/
+
+void qdt_from_mm(qdt_matrix_t **qdt, const char *file, va_list va) {
+
+	int va_flag = 0;
+	int sm_size;
+
+	sm_size = va_get_int(va, -1, &va_flag);
+
+	assert(sm_size != -1);
+
+	qdt_load_mm(qdt, file, sm_size);
 }
 
 double qdt_load_mm(qdt_matrix_t **qdt_matrix, const char *filename, int sm_size) {
@@ -563,13 +578,13 @@ void qt_matrix_print(qdt_matrix_t *qdt_matrix) {
 	printf("quadtree height = %d\n", qdt_matrix->height);
 
 	printf("v:  ");
-	for (i = 0; i < qdt_matrix->info.nnz; i++) {
+	for (i = 0; i < qdt_matrix->_.nnz; i++) {
 		printf("%02.lf,", qdt_matrix->v[i]);
 		if ((i + 1) % qdt_matrix->sm_size == 0)
 			printf(" _ ");
 	}
 	printf("\nci: ");
-	for (i = 0; i < qdt_matrix->info.nnz; i++) {
+	for (i = 0; i < qdt_matrix->_.nnz; i++) {
 		printf("%02d,", qdt_matrix->ci[i]);
 		if ((i + 1) % qdt_matrix->sm_size == 0)
 			printf(" _ ");

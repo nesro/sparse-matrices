@@ -28,17 +28,19 @@ static vm_vmt_t den_vmt = { /**/
 (mul_t) mul, /**/
 };
 
-int den_compare(den_matrix_t *a, den_matrix_t *b) {
+int den_compare(den_matrix_t *a, vm_t *b) {
 
 	int i;
 	int j;
 
-	if (a->_.w != b->_.w || a->_.h != a->_.h)
+	if (a->_.w != b->w || a->_.h != b->h)
 		return 2;
+
+	b->f.convert(b, DEN);
 
 	for (i = 0; i < a->_.h; i++) {
 		for (j = 0; j < a->_.w; j++) {
-			if (a->v[i][j] != b->v[i][j])
+			if (a->v[i][j] != ((den_matrix_t *) b)->v[i][j])
 				return 1;
 		}
 	}
@@ -98,7 +100,6 @@ void den_from_mm(den_matrix_t **den, const char *mm_filename, va_list va) {
 
 	mm_free(mm_file);
 }
-
 
 void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 

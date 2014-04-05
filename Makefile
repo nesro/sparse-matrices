@@ -20,7 +20,8 @@ OBJECTS=utils.o \
 TESTS=test_utils.o \
 	mulres_distance \
 	matrix_generator \
-	test_den_matrix
+	test_den_matrix \
+	test_qdt_matrix
 
 BINARY=./main
 
@@ -196,9 +197,17 @@ $(CASSERTION)/cassertion.h
 test_den_matrix: test_den_matrix.o
 	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_den_matrix.o \
 	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
-
+	
 test_den_matrix.o: $(TEST_SRC)/test_den_matrix.c $(CASSERTION)/cassertion.h \
 $(SRC)/virtual_matrix.h $(SRC)/den_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
+test_qdt_matrix: test_qdt_matrix.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_qdt_matrix.o \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+
+test_qdt_matrix.o: $(TEST_SRC)/test_qdt_matrix.c $(CASSERTION)/cassertion.h \
+$(SRC)/virtual_matrix.h $(SRC)/qdt_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------
