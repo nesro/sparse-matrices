@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	switch (format) {
-	case DENSE:
+	case DEN:
 		break;
 	case QDT:
 		//tr = qt_matrix_mm_mul(matrix_a, matrix_b, leaf_size);
