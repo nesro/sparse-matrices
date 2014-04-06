@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
 	vm_load_mm(&vm_a, format, matrix_a);
 	vm_load_mm(&vm_b, format, matrix_b);
 
-	time = vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE | UNROLLED);
+	time = vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE);
 
 	if (print_time)
 		printf("%lf\n", time);

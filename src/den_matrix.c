@@ -295,6 +295,11 @@ double den_mul_naive(const den_matrix_t *a, const den_matrix_t *b,
 	datatype_t sum;
 	double start_time;
 
+#if 0
+	double zero=0;
+	double nonzero=0;
+#endif /* 0 */
+
 	start_time = omp_get_wtime();
 
 	for (row = a->_.h - 1; row >= 0; row--) {
@@ -302,12 +307,24 @@ double den_mul_naive(const den_matrix_t *a, const den_matrix_t *b,
 			sum = 0;
 
 			for (i = c->_.h - 1; i >= 0; i--) {
+
+#if 0
+				if(a->v[row][i] == 0. ||  b->v[i][col] == 0.)
+					zero++;
+				else
+					nonzero++;
+#endif /* 0 */
+
 				sum += a->v[row][i] * b->v[i][col];
 			}
 
 			c->v[row][col] = sum;
 		}
 	}
+
+#if 0
+	printf("zero=%lf nonzero=%lf\n", zero, nonzero);
+#endif /* 0 */
 
 	return (omp_get_wtime() - start_time);
 }
