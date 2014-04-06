@@ -365,16 +365,18 @@ Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat n�
 
 Složitost tohoto algoritmu pro násobení dvou matic $A$ a $B$ o velikosti $n$ tedy můžeme vyjádřit jako $O(mn)$, kde $m = max(nnz(A),nnz(B)$. Pro husté matice platí, že $m=n^2$. Nutno podotknout, že $O(mn)$ je nejhorší případ, kdy všechny nenulové prvky matice $A$ budou násobit se všemy nenulovými prvky matice $B$.
 
+Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se jedná o dvě stejné matice orsirr\_1. Matice orsirr\_1 má velikost 1030 a 6858 nnz. Rozmístění nnz před respektive po vynásobení ukazují obrázky \ref{fig:befOrsirr1} respektive \ref{fig:aftOrsirr1}. Kdyby nastal nejhorší možný případ, počet operací násobení by byl $1030 \times 6858 = 7063740$, pro tento případ ovšem stačí $46976$ operací násobení. V $1092680024$ případech násobení nemuselo být provedeno, protože alepoň jeden ze dvou prvků byl nula. 
+
 \begin{figure}[p]
 	\includegraphics[width=1.0\textwidth]{./images/orsirr_1_orig}
-	\caption{orsirr\_1}
-	\label{fig:Ukázka numerické stability Strassenova algoritmu}
+	\caption{Matice orsirr\_1 před vynásobením}
+	\label{fig:befOrsirr1}
 \end{figure}
 
 \begin{figure}[p]
 	\includegraphics[width=1.0\textwidth]{./images/orsirr_1_mul}
-	\caption{orsirr\_1 po vynásobení sama se sebou}
-	\label{fig:Ukázka numerické stability Strassenova algoritmu}
+	\caption{Matice orsirr\_1 po vynásobením sama se sebou}
+	\label{fig:aftOrsirr1}
 \end{figure}
 
 \section{Rychlé násobení řídkých matic}
