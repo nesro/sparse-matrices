@@ -227,7 +227,7 @@ C = \begin{pmatrix}
 \end{pmatrix}
 \end{align}
 
-V pseudokódu používáme procedury \texttt{offset-add} respektive \texttt{offset-sub}. Slouží ke sčítání respektive odečítání matic bloku prvků od nějakého offsetu y a x. Paremetry obou funkcí jsou: \texttt{offset-*}$(A,B,C,ay,ax,by,bx,cy,cx,n)$. 
+V pseudokódu používáme procedury \texttt{offset-add} respektive \texttt{offset-sub}. Slouží ke sčítání respektive odečítání bloku prvků o velikosti n v maticích od nějakého offsetu \texttt{y} a \texttt{x}. Paremetry obou funkcí jsou: \texttt{offset-*}$(A,B,C,ay,ax,by,bx,cy,cx,n)$. 
 
 \begin{algorithm}[H]
 	\caption{Strassenův algoritmus}\label{mmm-strassen}
@@ -282,16 +282,17 @@ V pseudokódu používáme procedury \texttt{offset-add} respektive \texttt{offs
 
 Výpočet asymptotické složitosti vypočteme podobně jako u \texttt{MMM-recursive}, tedy mistrovskou metodou. 
 
-TODO: mistrovska metoda
+V každém kroku rekurze počítáme $\Theta(n^2)$ operací na vytvoření pomocných matic.
 
 \[ T(n) = \left\{ 
   \begin{array}{l l}
     \Theta(1) & \quad \text{if $n$ = 1}\\
-    7T(n/2) + \Theta(1) & \quad \text{if $n$ > 1}
+    7T(n/2) + \Theta(n^2) & \quad \text{if $n$ > 1}
   \end{array} \right.\]
 
+Protože platí, že $a=7, b=2, r=\log_{2} 7, n^r=n^{\log_{2} 7}=\Omega(n^2)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-strassen}(n) = $O(n^{\log_{2} 7}) \approx O(n^{2.8})$.
 
-Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme desetinná čísla, abysme ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
+Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme konkrétní desetinná čísla, abysme ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
 
 Pomocí algoritmu podle definice, by takový počítač vypočítal součin dvou matic následnovně:
 
@@ -337,7 +338,9 @@ M_{7} = (0.5678 - 10.456) \cdot (0.7891 + 9.999) = -106.67 \\
 
 % zdroj http://math.nist.gov/MatrixMarket/data/Harwell-Boeing/oilgen/orsirr_1.html
 
-Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na 1024x1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu je vidět exponencionální růst chyby.
+Jak můžeme vidět, zatímco u algoritmu podle definice jsme pouze ztratili desetinnou přesnost, výsledek Strassenva algoritmu se lišil už v prvním desetinném čísle. 
+
+Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na velikost 1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu je vidět exponencionální růst chyby.
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen_stability}
@@ -351,7 +354,7 @@ Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se
 
 Po tom, co Strassen ukázal, že existují rychlejší algoritmy než $O(n^3)$, ještě rychlejší algoritmy než ten jeho na sebe nenechaly dlouho čekat. Složitost násobení matic pro jednoduchost označíme jako $O(n^\omega)$.
 
-Nejpomalejší algorotmus s $\omega=3$ je podle definice. Strassenův algoritmus se sedmi násobeními má $\omega\approx2.807354$. Jeden z nejrychlejších algoritmů je algoritmus Virginie Williamsové \cite{DBLP:conf/stoc/Williams12}\cite{BreakigCWB}, pro který je $\omega<2.3727$. 
+Nejpomalejší algoritmus s $\omega=3$ je podle definice. Strassenův algoritmus se sedmi násobeními má $\omega\approx2.807354$. Jeden z nejrychlejších algoritmů je algoritmus Virginie Williamsové \cite{DBLP:conf/stoc/Williams12}\cite{BreakigCWB}, pro který je $\omega<2.3727$. 
 
 Hranicí nejlepší možné složitosti může být $\omega=2$, protože každý prvek z matice musíme nějak započítat. Existují z velké části podložené doměnky na základě teroie grup \cite{complexityMM}, že $\omega=2$ skutečně platí, ale přímý důkaz ještě neexistuje.
 
@@ -363,9 +366,9 @@ Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat n�
 \sum_{i=1}^{N} nnzr_{A,i} nnzc_{B,i}
 \end{align*}
 
-Složitost tohoto algoritmu pro násobení dvou matic $A$ a $B$ o velikosti $n$ tedy můžeme vyjádřit jako $O(mn)$, kde $m = max(nnz(A),nnz(B)$. Pro husté matice platí, že $m=n^2$. Nutno podotknout, že $O(mn)$ je nejhorší případ, kdy všechny nenulové prvky matice $A$ budou násobit se všemy nenulovými prvky matice $B$.
+Složitost tohoto algoritmu pro násobení dvou matic $A$ a $B$ o velikosti $n$ tedy můžeme vyjádřit jako $O(mn)$, kde $m = max(nnz(A),nnz(B)$. Pro husté matice bez jediného nulového prvku samozřejmě platí, že $m=n^2$. Nutno podotknout, že $O(mn)$ je nejhorší případ, kdy se všechny nenulové prvky matice $A$ budou násobit se všemy nenulovými prvky matice $B$.
 
-Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se jedná o dvě stejné matice orsirr\_1. Matice orsirr\_1 má velikost 1030 a 6858 nnz. Rozmístění nnz před respektive po vynásobení ukazují obrázky \ref{fig:befOrsirr1} respektive \ref{fig:aftOrsirr1}. Kdyby nastal nejhorší možný případ, počet operací násobení by byl $1030 \times 6858 = 7063740$, pro tento případ ovšem stačí $46976$ operací násobení. V $1092680024$ případech násobení nemuselo být provedeno, protože alepoň jeden ze dvou prvků byl nula. 
+Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se jedná o dvě matice orsirr\_1. Matice orsirr\_1 má velikost $n=1030$ a~$m=6858$ nnz. Rozmístění nnz před respektive po vynásobení ukazují obrázky \ref{fig:befOrsirr1} respektive \ref{fig:aftOrsirr1}. Kdyby nastal nejhorší možný případ, počet operací násobení při použití algoritmu podle definice pro řídké matice by byl $1030 \times 6858 = 7063740$. Pro tento případ ovšem stačí $46976$ operací násobení. Oproti nejhoršímu možnému případu nastalo $7063740 - 46976 = 7016764$ situací, kdy jeden ze dvou prkvů byl nulový a operace násobení nemusela být provedena. Při násobení algoritmem podle definice pro husté matice by v $1092680024$ případech operace násobení nemusela být provedena, protože alespoň jeden ze dvou prvků by byl nula. Po vynásobení matice orsirr\_1 sama se sebou, stoupl její počet nnz z $m=6858$ na $m=23532$. V tomto případě to bylo především z důvodu, že všechny prvky z diagonály matice jsou nenulové, každý prvek se tedy započítá.
 
 \begin{figure}[p]
 	\includegraphics[width=1.0\textwidth]{./images/orsirr_1_orig}
@@ -381,14 +384,10 @@ Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se 
 
 \section{Rychlé násobení řídkých matic}
 
+Strassenův algoritmus $\omega=2.8$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega=2.3$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $O(mn)$, kdy $m=nnz$. Na příklad, pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
 
+Raphael Yuster a Uri Zwick ukázali algoritmus \cite{DBLP:journals/talg/YusterZ05} s asymototickou složitostí $O(m^{0.7}n^{1.2}+n^{2+o(1)}$, který rozdělí permutace řádků a sloupců na řídké a husté. Řídké permutace násobí algoritmem podle definice upravém pro řídké matice $O(mn)$. Husté permutace vynásobí v té době nejznámějším nejrychlejším algoritmem a to od Dona Coppersmitha a Shmuela Winograda s asymtotickou složitostí $\omega=2.3$ \cite{DBLP:journals/jsc/CoppersmithW90}.
 
-TODO: ukazat co z matice se kolikrat zapocita
+\section{Další algoritmy pro řídké maticice}
 
-Od Od $m<n^1.37$ se algoritmus Virginie Williamsové $O(n^2.3727)$ stává stejně asyptoticky rychlý jako algoritmus podle definice upravený pro řídké matice $O(mn)$. 
-
-Strassenův algoritmus $\omega=2.8$ od $m<n^1.8$ a algoritmus Virginie Williamsové $O(n^2.3727)$ od $m<n^1.37$ jsou stejně asymptoticky rychlé jako algoritmus podle definice upravený pro řídké matice $O(mn)$. Na příklad, pro $n=100$ je v husté matici $10000$ prvků. Pokud by z nich by 
-
-tady \cite{DBLP:journals/talg/YusterZ05} bka
-
-Existuje mnoho dalších algoritmů násobení matic. Zmíníme algoritmy vyhledávající vzory v řídkých maticích, například diagonály, co násobí jednotlivé vzory mezi sebou. \textbf{?muzu rict, ze to delat nebudu?} V této práci se zabýváme pouze algoritmy a formáty uložení pro (odkaz do sekce s typama ridkych matic).
+Algoritmů násobení řídkých matic je mnoho. Často se odvíjejí od typu řídkých matic a formátu v jakém jsou uloženy. Příkladem může být formát, ve kterém se ukládají diagonály \cite{diagonalTvrdikSimecek}.
