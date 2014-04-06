@@ -218,6 +218,12 @@ int main(int argc, char *argv[]) {
 	printf("load_a %lf\nload_b %lf\nmultiplication %lf\n", tr.load_a, tr.load_b,
 			tr.multiplication);
 
+#if 0
+	printf("den nnz: a=%d b=%d c=%d\n", den_count_nnz((den_matrix_t *) vm_a),
+			den_count_nnz((den_matrix_t *) vm_b),
+			den_count_nnz((den_matrix_t *) vm_c));
+#endif
+
 //	vm_c->f.tofile(vm_c, output);
 
 	vm_a->f.free(vm_a);

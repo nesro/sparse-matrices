@@ -66,6 +66,8 @@ double den_mul_strassen(const den_matrix_t *, const den_matrix_t *,
  */
 double mul(const den_matrix_t *, const den_matrix_t *, den_matrix_t **, char);
 
+int den_count_nnz(const den_matrix_t *);
+
 /***************************************************************************/
 
 void dense_matrix_matrix_mul(den_matrix_t *a, den_matrix_t *b, den_matrix_t *c);

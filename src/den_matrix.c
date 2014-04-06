@@ -67,6 +67,20 @@ double den_distance(den_matrix_t *a, den_matrix_t *b) {
 	return ret;
 }
 
+int den_count_nnz(const den_matrix_t *a) {
+
+	int nnz = 0;
+	int i;
+	int j;
+
+	for (i = 0; i < a->_.h; i++)
+		for (j = 0; j < a->_.w; j++)
+			if (a->v[i][j] != ((datatype_t) 0))
+				nnz++;
+
+	return nnz;
+}
+
 /***************************************************************************/
 
 void den_vm_init(den_matrix_t **den, va_list va) {
@@ -309,10 +323,10 @@ double den_mul_naive(const den_matrix_t *a, const den_matrix_t *b,
 			for (i = c->_.h - 1; i >= 0; i--) {
 
 #if 0
-				if(a->v[row][i] == 0. ||  b->v[i][col] == 0.)
-					zero++;
+				if(a->v[row][i] == 0. || b->v[i][col] == 0.)
+				zero++;
 				else
-					nonzero++;
+				nonzero++;
 #endif /* 0 */
 
 				sum += a->v[row][i] * b->v[i][col];
