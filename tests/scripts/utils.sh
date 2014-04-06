@@ -1,4 +1,6 @@
 #!/bin/bash
+# Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
+# https://github.com/nesro/sparse-matrices
 
 function gnuplot_wrapper {
 	input_filename=$1

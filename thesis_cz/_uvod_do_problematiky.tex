@@ -1,0 +1,85 @@
+\chapter{Úvod do problematiky}
+
+\section{Použití násobení matic}
+
+% inverze matic: Matrix multiplication and matrix inversion ItA
+
+TODO: kde se pouziva nasobeni matic
+
+\section{Matice}
+
+Matice \textbf{A} typu ($m$, $n$) je $m n$ uspořádaných prkvů z množiny $\mathbf{R}$. O prvku $a_{r,s} \in \mathbf{R}, r \in \{1,2,\hdots,m\},s \in \{1,2,\hdots,n\}$ říkáme, že je na r-tém řádku a~s-tém sloupci matice \textbf{A}. Matici \textbf{A} zapisujeme do řádků a~sloupců takto:
+\begin{align}
+\mathbf{A}=\begin{pmatrix}
+a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
+a_{2,1} & a_{2,2} & \cdots & a_{2,n} \\
+\vdots  & \vdots  & \ddots & \vdots  \\
+a_{m,1} & a_{m,2} & \cdots & a_{m,n}
+\end{pmatrix}
+\end{align}
+
+Matici \textbf{M} typu ($m$, $n$), kde všechny její prvky jsou rovny nule, nazýváme \textit{nulovou maticí.}
+
+O~matici typu ($m$, $n$) budeme říkat, že je $m$~široká a~$n$~vysoká. Pokud o~matici řekneme že má velikost $n$, myslíme tím, že je typu ($n$, $n$).
+
+\section{Vektor}
+
+Matici \textbf{V} typu (1, n) nazveme vektorem.
+
+TODO=popsat vektory poradne
+FIXME=muzu to takhle zjednodusit?
+
+\section{Násobení matic}
+
+Buď \textbf{A} matice typu ($m$,$n$) s prvky $a_{i,j}$ a \textbf{B} matice typu ($n$,$p$) s prvky $b_{j,k}$. Definujeme součin matic $\mathbf{A} \cdot \mathbf{B}$ jako matici \textbf{C} typu ($m$,$p$) s prvky $c_{i,k}$ které vypočteme jako:
+
+\begin{align}
+c_{row,col}=\sum_{k=1}^{N} a_{row,k} b_{k,col}
+\end{align}
+
+Výsledek součinu matic se nezmění, pokud matice doplníme o~libovovolný počet nulových řádků a~nebo sloupců. Této vlastnosti můžeme využít pro získání potřebných rozměrů:
+
+\begin{enumerate}
+  \item Při násobení matice A typu ($m$,$n$) s maticí B typu ($o$,$p$), kde $ n \neq o $.
+  \item Pokud potřebujeme matice stejné velikosti.
+  \item Pokud potřebujeme matice určité velikosti, například $ 2^{ \mathbf{N}} $.
+\end{enumerate}
+
+\section{Složitosti}
+
+TODO: popsat notace
+
+% IntroductionToAlgoritms 3.1 asymptotic notations 43-97 (1217, 1222).
+
+\section{Řídké matice}
+
+Matice, které obsahují velké množství nulových prvků, nazýváme řídké. Nebudeme přesně uvádět kolik procent z celkového počtu prvků musí být nulových, abychom matici nazývali řídkou. Stejně jako řídkou matici můžeme uložit do formátu pro husté matice, můžeme hustou matici uložit do formátu pro řídké matice.
+
+Řídkost matice budeme vyjadřovat pomocí $nnz$ (Number of NonZero elements), tedy počtem nenulových prvků z celkových $mn$, pro matici A typu ($m$, $n$).
+
+TODO: typy ridkych matic (pasova, atd, pattern, real)
+
+\section{Numerická stabilita}
+
+TODO: numerická stabilita (viz strassen?)
+
+\section{Optimalizace kódu}
+
+Dnešní překladače umí velice dobře optimalizovat vygenerovaný kód. Pokusy o nějaké mikrooptimalizace program spíše zpomalí.
+
+Je vhodné používat funkce standartních knihoven, protože bývají optimalizované přímo v assembleru.
+
+\subsection{Rozděl a panuj}
+divide, conquer, combine
+
+\subsection{Rozbalování cyklů}
+
+\subsection{AoS -> SoA}
+
+\subsection{Loop tiling}
+
+% https://edux.fit.cvut.cz/courses/BI-EIA/_media/lectures/kompilator.pdf
+
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
