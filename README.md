@@ -23,4 +23,8 @@ features
  * dense matrix multiplication:
    * naive
    * recursive
+   * strassen
+
+ * quadtree matrix multiplication
+   * csr leaves optimized
    
