@@ -100,9 +100,7 @@ upravitelne vs neupravitelne
 
 \section{?}
 
-TODO: tady jsem chtel spocictat kdy  se vyplati mit ridkou matici, ale lepsi bude tabulka
-
-Pokud například uložíme matici o rozměrech 100x100 v dvojté přestnosti, bude zabírat \texttt{M x N x sizeof(double) = 100 x 100 x 8 = 80000B = 80kB}. Pokud zvolíme řídký formát matice, kde ke každému elementu uložíme i jeho x a y souřadnici, tak do 80kB uložíme \texttt{80000 / (sizeof(int)+sizeof(int)+sizeof(double)) = 80000/16= 5000} elementů. Pokud matice obsahuje více jak 50  \% nulových elementů, vyplatí se nám ji uložit do řídkého formátu.
+TODO: tady jsem chtel spocictat kdy  se vyplati mit ridkou matici, ale lepsi bude tabulka. Pokud například uložíme matici o rozměrech 100x100 v dvojté přestnosti, bude zabírat \texttt{M x N x sizeof(double) = 100 x 100 x 8 = 80000B = 80kB}. Pokud zvolíme řídký formát matice, kde ke každému elementu uložíme i jeho x a y souřadnici, tak do 80kB uložíme \texttt{80000 / (sizeof(int)+sizeof(int)+sizeof(double)) = 80000/16= 5000} elementů. Pokud matice obsahuje více jak 50  \% nulových elementů, vyplatí se nám ji uložit do řídkého formátu.
 
 %-----------------------------------------------------------------------------
 
@@ -117,32 +115,25 @@ neco jako quadtree loop unrolling
 
 \chapter{Analýza a návrh}
 
-? bud to nechapu nebo tuhle chapter smazu
-
-XXX: napsat o tom, jak jsem pouzil spoustu knihoven. napr libc nebo math.
-napsat o tom, jak jsem chtel scipy sparse, ale chtel jsem to co nejjednodussi
+TODO: moznosti implementace, zvolene reseni, ostatni reseni
 
 \chapter{Realizace}
 
 \section{MatrixMarket}
 
-TODO: posat format matrixmarket, ve kterem budu vsechno delat
+TODO: posat format matrixmarket
 
 \section{Optimalizace}
 
-TODO: rict ze budeme verit -O3, ale popsat transformaci cyklu a loop-unrolling
+TODO: popsat moznosti optimalizace
 
 \section{? Design implementace}
 
-TODO: popsat OOP v C, moje testy
+TODO: C, testy
 
 \section{Měření}
 
-TODO: popsat jak to budu měřit, tedy cas z omp a cachegrind/callgrind (mozna solaris)
-
-
-
-
+TODO: popsat jak to budu měřit, tedy cas z omp a cachegrind/callgrind
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

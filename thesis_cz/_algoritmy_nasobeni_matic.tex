@@ -47,9 +47,9 @@ Pokud nám formát uložení matice nedovolí procházet prvky po sloupcích, je
 	\end{algorithmic}
 \end{algorithm}
 
-Podobný algoritmus můžeme použít i~pokud nám formát nedovolí procházet prvky po řádcích, ale pouze po sloupcích. Například v této práci neuvedený Compresed Sparse Columns.
+Podobný algoritmus můžeme použít i~pokud nám formát nedovolí procházet prvky po řádcích, ale pouze po sloupcích. Například v této práci neuvedený Compressed Sparse Columns.
 
-Pro matice musí platit, že výška matice A musí být stejná jako výška matice B. (FIXME: je to opravdu tak?)
+%XXX: Pro matice musí platit, že výška matice A musí být stejná jako výška matice B. (FIXME: je to opravdu tak?)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -200,7 +200,7 @@ Volker Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou mat
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen}
-	\caption{Strassen (převzato z wikipedie, předělat?)}
+	\caption{Strassen (TODO: převzato z wikipedie: předělat?)}
 	\label{fig:StrVis}
 \end{figure}
 
@@ -292,7 +292,7 @@ V každém kroku rekurze počítáme $\Theta(n^2)$ operací na vytvoření pomoc
 
 Protože platí, že $a=7, b=2, r=\log_{2} 7, n^r=n^{\log_{2} 7}=\Omega(n^2)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-strassen}(n) = $O(n^{\log_{2} 7}) \approx O(n^{2.8})$.
 
-Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme konkrétní desetinná čísla, abysme ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
+Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme konkrétní desetinná čísla, abychom ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
 
 Pomocí algoritmu podle definice, by takový počítač vypočítal součin dvou matic následnovně:
 
@@ -338,17 +338,17 @@ M_{7} = (0.5678 - 10.456) \cdot (0.7891 + 9.999) = -106.67 \\
 
 % zdroj http://math.nist.gov/MatrixMarket/data/Harwell-Boeing/oilgen/orsirr_1.html
 
-Jak můžeme vidět, zatímco u algoritmu podle definice jsme pouze ztratili desetinnou přesnost, výsledek Strassenva algoritmu se lišil už v prvním desetinném čísle. 
+Jak můžeme vidět, zatímco u algoritmu podle definice jsme pouze ztratili desetinnou přesnost, výsledek Strassenova algoritmu se lišil už v prvním desetinném čísle. 
 
-Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na velikost 1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu je vidět exponencionální růst chyby.
+Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na velikost 1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu \ref{fig:StrassenStability} je vidět exponencionální závislost mezi velikostí prahu a celkovou chybou.
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen_stability}
-	\caption{Strassen stability}
-	\label{fig:Ukázka numerické stability Strassenova algoritmu}
+	\caption{Ukázka numerické stability Strassenova algoritmu}
+	\label{fig:StrassenStability}
 \end{figure}
 
-Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se říká Strassen-like. Pro sedm operací násobení je monžné snížit počet sčítání a odečítání. Pro jednoduchost zde ovšem uvádíme originalní algoritmus.
+Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se říká Strassen-like \cite{DBLP:journals/iacr/CenkH13}. Pro sedm operací násobení je monžné snížit počet sčítání a odečítání. Pro jednoduchost zde ovšem uvádíme originalní algoritmus.
 
 \section{Rychlé algoritmy}
 
@@ -356,7 +356,7 @@ Po tom, co Strassen ukázal, že existují rychlejší algoritmy než $O(n^3)$, 
 
 Nejpomalejší algoritmus s $\omega=3$ je podle definice. Strassenův algoritmus se sedmi násobeními má $\omega\approx2.807354$. Jeden z nejrychlejších algoritmů je algoritmus Virginie Williamsové \cite{DBLP:conf/stoc/Williams12}\cite{BreakigCWB}, pro který je $\omega<2.3727$. 
 
-Hranicí nejlepší možné složitosti může být $\omega=2$, protože každý prvek z matice musíme nějak započítat. Existují z velké části podložené doměnky na základě teroie grup \cite{complexityMM}, že $\omega=2$ skutečně platí, ale přímý důkaz ještě neexistuje.
+Hranicí nejlepší možné složitosti může být $\omega=2$, protože každý prvek z matice musíme nějak započítat. Existují z velké části podložené domněnky na základě teorie grup \cite{complexityMM}, že $\omega=2$ skutečně platí, ale přímý důkaz ještě neexistuje.
 
 \section{Algoritmus podle definice upravený pro řídké matice}
 
@@ -368,26 +368,28 @@ Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat n�
 
 Složitost tohoto algoritmu pro násobení dvou matic $A$ a $B$ o velikosti $n$ tedy můžeme vyjádřit jako $O(mn)$, kde $m = max(nnz(A),nnz(B)$. Pro husté matice bez jediného nulového prvku samozřejmě platí, že $m=n^2$. Nutno podotknout, že $O(mn)$ je nejhorší případ, kdy se všechny nenulové prvky matice $A$ budou násobit se všemy nenulovými prvky matice $B$.
 
-Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se jedná o dvě matice orsirr\_1. Matice orsirr\_1 má velikost $n=1030$ a~$m=6858$ nnz. Rozmístění nnz před respektive po vynásobení ukazují obrázky \ref{fig:befOrsirr1} respektive \ref{fig:aftOrsirr1}. Kdyby nastal nejhorší možný případ, počet operací násobení při použití algoritmu podle definice pro řídké matice by byl $1030 \times 6858 = 7063740$. Pro tento případ ovšem stačí $46976$ operací násobení. Oproti nejhoršímu možnému případu nastalo $7063740 - 46976 = 7016764$ situací, kdy jeden ze dvou prkvů byl nulový a operace násobení nemusela být provedena. Při násobení algoritmem podle definice pro husté matice by v $1092680024$ případech operace násobení nemusela být provedena, protože alespoň jeden ze dvou prvků by byl nula. Po vynásobení matice orsirr\_1 sama se sebou, stoupl její počet nnz z $m=6858$ na $m=23532$. V tomto případě to bylo především z důvodu, že všechny prvky z diagonály matice jsou nenulové, každý prvek se tedy započítá.
+Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se jedná o dvě matice orsirr\_1. Matice orsirr\_1 má velikost $n=1030$ a~$m=6858$ nnz. Rozmístění nnz před respektive po vynásobení ukazují obrázky \ref{fig:befOrsirr1} respektive \ref{fig:aftOrsirr1}.
 
-\begin{figure}[p]
+\begin{figure}[H]
 	\includegraphics[width=1.0\textwidth]{./images/orsirr_1_orig}
 	\caption{Matice orsirr\_1 před vynásobením}
 	\label{fig:befOrsirr1}
 \end{figure}
 
-\begin{figure}[p]
+\begin{figure}[H]
 	\includegraphics[width=1.0\textwidth]{./images/orsirr_1_mul}
 	\caption{Matice orsirr\_1 po vynásobením sama se sebou}
 	\label{fig:aftOrsirr1}
 \end{figure}
 
+Kdyby nastal nejhorší možný případ, počet operací násobení při použití algoritmu podle definice pro řídké matice by byl $1030 \times 6858 = 7063740$. Pro tento případ ovšem stačí $46976$ operací násobení. Oproti nejhoršímu možnému případu nastalo $7063740 - 46976 = 7016764$ situací, kdy jeden ze dvou prkvů byl nulový a operace násobení nemusela být provedena. Při násobení algoritmem podle definice pro husté matice by v $1092680024$ případech operace násobení nemusela být provedena, protože alespoň jeden ze dvou prvků by byl nula. Po vynásobení matice orsirr\_1 sama se sebou, stoupl její počet nnz z $6858$ na $23532$. V tomto případě to bylo především z důvodu, že všechny prvky z diagonály matice jsou nenulové, každý prvek se tedy započítá.
+
 \section{Rychlé násobení řídkých matic}
 
-Strassenův algoritmus $\omega=2.8$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega=2.3$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $O(mn)$, kdy $m=nnz$. Na příklad, pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
+Strassenův algoritmus $\omega=2.8$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega=2.3$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $O(mn)$. Například pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
 
-Raphael Yuster a Uri Zwick ukázali algoritmus \cite{DBLP:journals/talg/YusterZ05} s asymototickou složitostí $O(m^{0.7}n^{1.2}+n^{2+o(1)}$, který rozdělí permutace řádků a sloupců na řídké a husté. Řídké permutace násobí algoritmem podle definice upravém pro řídké matice $O(mn)$. Husté permutace vynásobí v té době nejznámějším nejrychlejším algoritmem a to od Dona Coppersmitha a Shmuela Winograda s asymtotickou složitostí $\omega=2.3$ \cite{DBLP:journals/jsc/CoppersmithW90}.
+Raphael Yuster a Uri Zwick ukázali algoritmus \cite{DBLP:journals/talg/YusterZ05} s asymptotickou složitostí $O(m^{0.7}n^{1.2}+n^{2+o(1)}$, který rozdělí permutace řádků a sloupců na řídké a husté. Řídké permutace násobí algoritmem podle definice v úpravě pro řídké matice $O(mn)$. Husté permutace vynásobí v té době nejznámějším nejrychlejším algoritmem a to od Dona Coppersmitha a Shmuela Winograda s asymptotickou složitostí $\omega=2.3$ \cite{DBLP:journals/jsc/CoppersmithW90}.
 
-\section{Další algoritmy pro řídké maticice}
+\section{Další algoritmy pro řídké matice}
 
 Algoritmů násobení řídkých matic je mnoho. Často se odvíjejí od typu řídkých matic a formátu v jakém jsou uloženy. Příkladem může být formát, ve kterém se ukládají diagonály \cite{diagonalTvrdikSimecek}.

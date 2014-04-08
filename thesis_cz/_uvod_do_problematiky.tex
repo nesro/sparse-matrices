@@ -26,9 +26,6 @@ O~matici typu ($m$, $n$) budeme říkat, že je $m$~široká a~$n$~vysoká. Poku
 
 Matici \textbf{V} typu (1, n) nazveme vektorem.
 
-TODO=popsat vektory poradne
-FIXME=muzu to takhle zjednodusit?
-
 \section{Násobení matic}
 
 Buď \textbf{A} matice typu ($m$,$n$) s prvky $a_{i,j}$ a \textbf{B} matice typu ($n$,$p$) s prvky $b_{j,k}$. Definujeme součin matic $\mathbf{A} \cdot \mathbf{B}$ jako matici \textbf{C} typu ($m$,$p$) s prvky $c_{i,k}$ které vypočteme jako:
@@ -37,7 +34,7 @@ Buď \textbf{A} matice typu ($m$,$n$) s prvky $a_{i,j}$ a \textbf{B} matice typu
 c_{row,col}=\sum_{k=1}^{N} a_{row,k} b_{k,col}
 \end{align}
 
-Výsledek součinu matic se nezmění, pokud matice doplníme o~libovovolný počet nulových řádků a~nebo sloupců. Této vlastnosti můžeme využít pro získání potřebných rozměrů:
+Výsledek součinu matic se nezmění, pokud matice doplníme o~libovolný počet nulových řádků a~nebo sloupců. Této vlastnosti můžeme využít pro získání potřebných rozměrů:
 
 \begin{enumerate}
   \item Při násobení matice A typu ($m$,$n$) s maticí B typu ($o$,$p$), kde $ n \neq o $.
@@ -47,13 +44,13 @@ Výsledek součinu matic se nezmění, pokud matice doplníme o~libovovolný po�
 
 \section{Složitosti}
 
-TODO: popsat notace
+TODO: popsat notace, mistrovskou metodu
 
 % IntroductionToAlgoritms 3.1 asymptotic notations 43-97 (1217, 1222).
 
 \section{Řídké matice}
 
-Matice, které obsahují velké množství nulových prvků, nazýváme řídké. Nebudeme přesně uvádět kolik procent z celkového počtu prvků musí být nulových, abychom matici nazývali řídkou. Stejně jako řídkou matici můžeme uložit do formátu pro husté matice, můžeme hustou matici uložit do formátu pro řídké matice.
+Matice, které obsahují velké množství nulových prvků, nazýváme řídké. Nebudeme přesně uvádět, kolik procent z celkového počtu prvků musí být nulových, abychom matici nazývali řídkou. Stejně jako řídkou matici můžeme uložit do formátu pro husté matice, můžeme hustou matici uložit do formátu pro řídké matice.
 
 Řídkost matice budeme vyjadřovat pomocí $nnz$ (Number of NonZero elements), tedy počtem nenulových prvků z celkových $mn$, pro matici A typu ($m$, $n$).
 
@@ -61,13 +58,15 @@ TODO: typy ridkych matic (pasova, atd, pattern, real)
 
 \section{Numerická stabilita}
 
-TODO: numerická stabilita (viz strassen?)
+TODO: numerická stabilita obecne (viz strassen)
 
 \section{Optimalizace kódu}
 
 Dnešní překladače umí velice dobře optimalizovat vygenerovaný kód. Pokusy o nějaké mikrooptimalizace program spíše zpomalí.
 
 Je vhodné používat funkce standartních knihoven, protože bývají optimalizované přímo v assembleru.
+
+TODO: priklady, zdroje
 
 \subsection{Rozděl a panuj}
 divide, conquer, combine
