@@ -4,12 +4,13 @@
 # 
 
 OBJECTS=utils.o \
+	mmio.o \
 	mm_load.o \
 	virtual_matrix.o \
 	den_matrix.o \
 	csr_matrix.o \
 	qdt_matrix.o \
-	mmio.o \
+	kat_matrix.o \
 	coo_matrix.o \
 	vector.o \
 	generator.o
@@ -21,7 +22,8 @@ TESTS=test_utils.o \
 	mulres_distance \
 	matrix_generator \
 	test_den_matrix \
-	test_qdt_matrix
+	test_qdt_matrix \
+	test_kat_matrix \
 
 BINARY=./main
 
@@ -161,6 +163,9 @@ csr_matrix.o: $(SOURCE_DIR)/csr_matrix.c $(SOURCE_DIR)/csr_matrix.h
 
 qdt_matrix.o: $(SOURCE_DIR)/qdt_matrix.c $(SOURCE_DIR)/qdt_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+	
+kat_matrix.o: $(SOURCE_DIR)/kat_matrix.c $(SOURCE_DIR)/kat_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 mmio.o: $(SOURCE_DIR)/mmio.c $(SOURCE_DIR)/mmio.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
@@ -206,12 +211,22 @@ test_den_matrix.o: $(TEST_SRC)/test_den_matrix.c $(CASSERTION)/cassertion.h \
 $(SRC)/virtual_matrix.h $(SRC)/den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
+
 test_qdt_matrix: test_qdt_matrix.o
 	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_qdt_matrix.o \
 	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
 
 test_qdt_matrix.o: $(TEST_SRC)/test_qdt_matrix.c $(CASSERTION)/cassertion.h \
 $(SRC)/virtual_matrix.h $(SRC)/qdt_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
+
+test_kat_matrix: test_kat_matrix.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_kat_matrix.o \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+
+test_kat_matrix.o: $(TEST_SRC)/test_kat_matrix.c $(CASSERTION)/cassertion.h \
+$(SRC)/virtual_matrix.h $(SRC)/kat_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------

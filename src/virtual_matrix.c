@@ -1,14 +1,13 @@
-/*
- * virtual_matrix.c
- *
- *  Created on: Feb 9, 2014
- *      Author: n
+/**
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
+ * https://github.com/nesro/sparse-matrices
  */
 
 #include "virtual_matrix.h"
 #include "den_matrix.h"
 #include "csr_matrix.h"
 #include "qdt_matrix.h"
+#include "kat_matrix.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +28,9 @@ void vm_create(vm_t **vm, vm_type_t type, ...) {
 		break;
 	case QDT:
 		qdt_vm_init((qdt_matrix_t **) vm, vl);
+		break;
+	case KAT:
+		kat_vm_init((kat_matrix_t **) vm, vl);
 		break;
 	default:
 		break;
@@ -52,6 +54,9 @@ void vm_load_mm(vm_t **vm, vm_type_t type, const char *mm, ...) {
 		break;
 	case QDT:
 		qdt_from_mm((qdt_matrix_t **) vm, mm, vl);
+		break;
+	case KAT:
+		kat_from_mm((kat_matrix_t **) vm, mm, vl);
 		break;
 	default:
 		break;

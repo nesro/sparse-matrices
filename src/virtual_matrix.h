@@ -1,3 +1,8 @@
+/**
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
+ * https://github.com/nesro/sparse-matrices
+ */
+
 #include "vector.h"
 #include "utils.h"
 
@@ -19,10 +24,7 @@ typedef enum vm_type {
 	CSR, /* compressed sparse rows */
 	BSR, /* block sparse row*/
 	QDT, /* quadtree */
-	QTP, /* quadtree - leaves points to the root */
-	QTM, /* quadtree - leaves are separate matrices */
-	MQP, /* modified quadtree - leaves points to the root */
-	MQM, /* modified quadtree - leaves are separate matrices */
+	KAT, /* k-ary tree matrix */
 }vm_type_t;
 
 enum {

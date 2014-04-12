@@ -1,7 +1,4 @@
 %%MatrixMarket matrix coordinate real general
-2 2 4
+64 64 2
 1 1  2.0
-1 2  3.0
-2 1  4.0
-2 2  5.0
-
+64 64  3.0

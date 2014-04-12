@@ -1,8 +1,12 @@
+/**
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
+ * https://github.com/nesro/sparse-matrices
+ */
+
+#include "virtual_matrix.h"
 
 #ifndef MM_LOAD_H_
 #define MM_LOAD_H_
-
-#include "virtual_matrix.h"
 
 typedef struct mm_item {
 	int row;
@@ -13,7 +17,7 @@ typedef struct mm_item {
 typedef struct mm_file {
 	int width; /* cols */
 	int height; /* rows */
-	int items;
+	int nnz;
 	mm_item_t *data;
 } mm_file_t;
 

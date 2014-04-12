@@ -34,6 +34,25 @@ void error(const char *fmt, ...);
 
 /* debugging ***************************************************************/
 
+/*
+ * status debug: if the status is true, the message is print
+ */
+#define _s_debug(status,fmt) do { \
+	if (status) \
+		fprintf(stdout, "d:%s:%s:%d(): " fmt, __FILE__ , \
+			__func__ , __LINE__ ); \
+		fflush(stdout); \
+	} while (0)
+#define _s_debugf(status,fmt, ...) do { \
+	if (status) \
+		fprintf(stdout, "d:%s:%s:%d(): " fmt "", __FILE__ , \
+			__func__ , __LINE__ , __VA_ARGS__ ); \
+		fflush(stdout); \
+	} while (0)
+
+
+/***************************************************************************/
+
 #define _debug(fmt, ...) do { \
 	if (1 || _PRINT_DEBUG) \
 		fprintf(stderr, "d:%s:%s:%d(): " fmt "\n", __FILE__ , \

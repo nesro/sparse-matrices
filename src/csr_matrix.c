@@ -76,15 +76,15 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 
 	mm_file = mm_load(mm_filename);
 
-	csr_matrix_init(csr, mm_file->width, mm_file->height, mm_file->items);
+	csr_matrix_init(csr, mm_file->width, mm_file->height, mm_file->nnz);
 
-	for (i = mm_file->items - 1; i >= 0; i--)
+	for (i = mm_file->nnz - 1; i >= 0; i--)
 		(*csr)->rp[mm_file->data[i].row + 1]++;
 
 	for (i = 0; i < (*csr)->_.h; i++)
 		(*csr)->rp[i + 1] += (*csr)->rp[i];
 
-	for (i = 0; i < mm_file->items; i++) {
+	for (i = 0; i < mm_file->nnz; i++) {
 		j = (*csr)->rp[mm_file->data[i].row];
 
 		(*csr)->v[j] = mm_file->data[i].value;

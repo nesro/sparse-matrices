@@ -24,6 +24,7 @@ typedef struct test_matrices_pair {
 /* tm = test matrices */
 /* tp = test pair */
 extern test_matrix_t tm_small[];
+extern test_matrix_t kat_tm[];
 extern test_matrices_pair_t tm_pairs[];
 
 const test_matrix_t *foreach_matrix(const test_matrix_t *);

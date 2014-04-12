@@ -1,13 +1,15 @@
 /**
- * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013, 2014
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013,2014
  * https://github.com/nesro/sparse-matrices
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <omp.h>
 
-#include "omp.h"
+#include "utils.h"
+#include "mm_load.h"
 #include "virtual_matrix.h"
 #include "qdt_matrix.h"
 #include "den_matrix.h"

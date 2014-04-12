@@ -72,6 +72,16 @@ test_matrices_pair_t tm_pairs[] = {
 		{ { { 0 } } } /**/
 };
 
+
+test_matrix_t kat_tm[] = {
+//
+		{ MTX_DIR "64x64_2nz_01.mtx", 64, 64, 2 }, /**/
+		{ MTX_DIR "64x64_2nz_02.mtx", 64, 64, 2 }, /**/
+		{ MTX_DIR "64x64_4nz_01.mtx", 64, 64, 4 }, /**/
+		{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
+		{ { 0 } }, /**/
+};
+
 const test_matrix_t *foreach_matrix(const test_matrix_t *tm_array) {
 	static int i = 0;
 

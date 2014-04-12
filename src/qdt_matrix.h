@@ -20,6 +20,7 @@ typedef struct qdt_submatrix {
 	int x;
 	int y;
 
+	/* FIXME: use pointers instead of indexes? */
 #if QDT_CSR
 	int iv; /* index in the values array */
 	int irp; /* index in the row pointer array */

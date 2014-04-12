@@ -1,3 +1,8 @@
+/**
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
+ * https://github.com/nesro/sparse-matrices
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -30,17 +35,20 @@ mm_file_t *mm_load(const char *filename) {
 	mm_file = malloc(sizeof(mm_file_t));
 
 	if (mm_read_mtx_crd_size(f, &mm_file->height, &mm_file->width,
-		&mm_file->items) != 0) {
+		&mm_file->nnz) != 0) {
 		die("wrong mm_read_mtx_crd_size");
 	}
 
-	mm_file->data = malloc(mm_file->items * sizeof(mm_item_t));
+	mm_file->data = malloc(mm_file->nnz * sizeof(mm_item_t));
 
-	for (i = 0; i < mm_file->items; i++) {
+	for (i = 0; i < mm_file->nnz; i++) {
 		if (fscanf(f, "%d %d %lg\n", &mm_file->data[i].row,
 			&mm_file->data[i].col, &mm_file->data[i].value) != 3) {
 			fdie("fscanf failed for file %s and item no. %i\n", filename, i);
 		}
+
+		mm_file->data[i].row--;
+		mm_file->data[i].col--;
 	}
 
 	if (f != stdin)

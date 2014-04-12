@@ -51,9 +51,6 @@ void _debug_msg(const char * fmt, ...) {
 
 	va_list ap;
 
-	if (0 && ! _PRINT_DEBUG)
-		return;
-
 	va_start(ap, fmt);
 	fprintf(stdout, "debug: ");
 	vfprintf(stdout, fmt, ap), putc('\n', stdout);
@@ -102,7 +99,7 @@ int rand_is_nonzero(int space, int items) {
 }
 
 int is_power_of_two(unsigned int x) {
-	assert(x > 1);
+	assert(x > 0);
 	return ((x != 0) && ((x & (~x + 1)) == x));
 }
 
