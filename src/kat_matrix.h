@@ -23,7 +23,7 @@
  * will be a constatnt
  */
 #define KAT_N_IS_CONSTANT 1
-#define KAT_N_DEFAULT 16
+#define KAT_N_DEFAULT 4
 
 #if KAT_N_IS_CONSTANT
 #define KAT_N KAT_N_DEFAULT

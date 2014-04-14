@@ -27,7 +27,7 @@ static void load() {
 	}
 }
 
-static void rASDFun() {
+static void run() {
 
 	vm_t *da = NULL;
 	vm_t *db = NULL;
@@ -45,13 +45,13 @@ static void rASDFun() {
 	//		printf("%s\n", tm->path);
 	//	}
 
-//	for (sms = 2; sms < 64; sms *= 2) {
-	for (sms = 1; sms <= 1; sms *= 2) {
+	for (sms = 2; sms < 256; sms *= 2) {
 		while ((tp = foreach_pair(kat_tm_pairs)) != NULL) {
 
-
-				CASSERTION_MSG("INFO a=%s,b=%s,sms=%d,N=%d,katK*sms=%d\n", tp->a.path, tp->b.path,
-									sms,KAT_N, KAT_K * sms);
+			CASSERTION_DONTRUN(sms >= tp->a.height, "sms=%d > tp->a.height=%d\n",
+					sms, tp->a.height);
+			if (cassertion.dontrun)
+				continue;
 
 			if (KAT_K * sms >= tp->a.height * tp->a.width) {
 				continue;
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
 //	load();
 
-	rASDFun();
+	run();
 
 	CASSERTION_RESULTS();
 
