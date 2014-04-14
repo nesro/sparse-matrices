@@ -3,6 +3,8 @@
 # https://github.com/nesro/sparse-matrices
 # 
 
+# make DEBUG=1 tests && make BIN=./tests/bin/test_kat_matrix valgrind
+
 OBJECTS=utils.o \
 	mmio.o \
 	mm_load.o \

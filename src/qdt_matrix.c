@@ -157,7 +157,7 @@ vm_t *qdt_convert(qdt_matrix_t *qdt, vm_type_t type) {
 	switch (type) {
 	case DEN:
 		vm_create(&vm, DEN, 1, qdt->_.w, qdt->_.h);
-		//inner_qt_matrix_to_dense(qdt, qdt->root, (den_matrix_t*) vm);
+		inner_qt_matrix_to_dense(qdt, qdt->root, (den_matrix_t*) vm);
 		break;
 	default:
 		fdie("unknown format to convert %d\n", type);

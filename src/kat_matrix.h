@@ -3,22 +3,44 @@
  * https://github.com/nesro/sparse-matrices
  */
 
+#include "den_matrix.h"
+
 #ifndef KAT_MATRIX_H_
 #define KAT_MATRIX_H_
 
-#define KAT_DEBUG 1
+#define KAT_DEBUG 0
+
+
 
 /*
- * The actual k of k-ary tree is N*N;
+ * The actual k of k-ary tree is N*N
+ * If it's a constant, we may be sure that compiler will unroll it,
+ * but we cannot modify it when testing.
+ *
+ * Is k is not set and it's not a constant, it's set by KAT_N_DEFAULT.
+ *
+ * TODO: kat node pointers will have to be calloc'd. so for now, it just
+ * will be a constatnt
  */
-#define KAT_N 4
+#define KAT_N_IS_CONSTANT 1
+#define KAT_N_DEFAULT 16
+
+#if KAT_N_IS_CONSTANT
+#define KAT_N KAT_N_DEFAULT
 #define KAT_K (KAT_N*KAT_N)
+#define GET_KAT_N(kat) \
+	((void)0)
+#else /* KAT_N_IS_CONSTANT */
+#define GET_KAT_N(kat) \
+	int KAT_N = kat->kat_n; \
+	int KAT_K = kat->kat_k /* no ; */
+#endif /* KAT_N_IS_CONSTANT */
 
 /*
- * If a submatrix will have KAT_DENSE_TRESHOLD % of nnz, it will be treated
- * like a dense matrix.
+ * If a submatrix will have at least KAT_DENSE_TRESHOLD of nnz, it will be
+ * treated like a dense matrix.
  */
-#define KAT_DENSE_TRESHOLD ((double)0.8)
+#define KAT_DENSE_TRESHOLD 0
 
 /*
  * If true, leaves of k-ary tree will be (also) in csr format.
@@ -82,6 +104,7 @@ typedef struct kat_matrix {
 	kat_node_t *root;
 	datatype_t *v; /* values */
 	datatype_t *last_v;
+	int v_length;
 
 	int sm_size;
 	int height;
@@ -90,19 +113,24 @@ typedef struct kat_matrix {
 	int den_blocks;
 	int den_blocks_nnz;
 
+#if KAT_N_IS_CONSTANT == 0
+	int kat_k;
+	int kat_n;
+#endif
+
 #if KAT_CSR
 	int *ci; /* column indices */
+	int *last_ci;
+
 	int *rp; /* row pointers */
+	int *last_rp;
 
 	int csr_blocks;
-	int last_index_ci;
-	int last_index_rp;
 #endif /* KAT_CSR */
 
 	/* private */
 	datatype_t *rows_block;
 } kat_matrix_t;
-
 
 void kat_vm_init(kat_matrix_t **kat, va_list va);
 void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size);
@@ -110,6 +138,7 @@ void kat_free(kat_matrix_t *kat);
 void kat_determine_node(kat_matrix_t *kat, kat_node_t *kat_node);
 void kat_from_mm(kat_matrix_t **kat, const char *file, va_list va);
 double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size);
-
+double kat_mul(const kat_matrix_t *a, const kat_matrix_t *b, den_matrix_t **c, char flag);
+vm_t *kat_convert(kat_matrix_t *kat, vm_type_t type);
 
 #endif /* KAT_MATRIX_H_ */

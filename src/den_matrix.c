@@ -109,7 +109,7 @@ void den_from_mm(den_matrix_t **den, const char *mm_filename, va_list va) {
 	den_matrix_init(den, mm_file->width, mm_file->height, 1);
 
 	for (i = 0; i < mm_file->nnz; i++) {
-		(*den)->v[mm_file->data[i].row - 1][mm_file->data[i].col - 1] +=
+		(*den)->v[mm_file->data[i].row][mm_file->data[i].col] +=
 				mm_file->data[i].value;
 	}
 

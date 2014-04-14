@@ -9,7 +9,7 @@
 #ifndef VIRTUAL_MATRIX_H_
 #define VIRTUAL_MATRIX_H_
 
-#define DPF "%lf" /* datatype_t printf format */
+#define DPF "%.lf" /* datatype_t printf format */
 typedef double datatype_t;
 
 #define UNROLL 8

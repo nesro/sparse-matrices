@@ -25,7 +25,6 @@ mkdir -p ./tests/matrices/generated
 generate "f64x64_01" -n 64 -S 100000.009
 generate "f64x64_02" -n 64 -S 1
 
-
 generate "16x16_01" -n 16 -S -200
 generate "16x16_02" -n 16 -S -201
 
@@ -37,3 +36,9 @@ generate "64x64_02" -n 64 -S -201
 
 generate "128x128_01" -n 128 -S -200
 generate "128x128_02" -n 128 -S -201
+
+generate "256x256_01" -n 256 -S -200
+generate "256x256_02" -n 256 -S -201
+
+generate "512x512_01" -n 512 -S -200
+generate "512x512_02" -n 512 -S -201

@@ -1,3 +1,4 @@
+# Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
 all:
 	latexmk -pdf BP_Nesrovnal_Tomas_2014.tex
 
