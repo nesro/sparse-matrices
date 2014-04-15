@@ -232,6 +232,14 @@ $(SRC)/virtual_matrix.h $(SRC)/kat_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------
+# These things are just for the author. Feel free to ignore it.
+#-------------------------------------------------------------------------------
+
+# Tunel for licencing Wolram Mathematica. It can visualize .mtx files.
+matunel:
+	echo "ssh nesrotom@fray1.fit.cvut.cz -L 16286:leibniz.feld.cvut.cz:16286"
+
+#-------------------------------------------------------------------------------
 # STAR.fit.cvut.cz helpers
 
 USERNAME=nesrotom

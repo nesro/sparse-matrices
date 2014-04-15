@@ -5,33 +5,241 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <time.h>
+#include <errno.h>
 
+/*
+ * strdup is not a C standard function
+ */
+char *strdup(const char *s) {
+	int n = strlen(s) + 1;
+	char *d = malloc(n);
+	if (d)
+		(void) strcpy(d, s);
+	return d;
+}
+
+/*
+ * Because this is a stand-alone file, we can use a lot of global variables.
+ */
 double sparsity = 1.;
 int diagonals = 0;
 int center_diagonal = 0;
 const char *output = NULL;
 int verbose = 0;
 int n = 0;
-int w = 0;
-int h = 0;
+int w = -1;
+int h = -1;
 int random = 0;
 int float_values = 0;
-double start = 2.;
+double g_start = 2.;
 
-/* TODO: */
-double random_double() {
+/************************************************************ position vector */
 
-	double d = 0;
+typedef struct position {
+	int y;
+	int x;
+} position_t;
 
-	return d;
+typedef struct mtx {
+	position_t *data;
+	int len;
+	int items;
+	int width;
+	int height;
+} mtx_t;
+
+static mtx_t *mtx_init(int height, int width, double sparsity) {
+
+	mtx_t *v;
+	v = malloc(sizeof(mtx_t));
+	v->items = 0;
+	v->height = height;
+	v->width = width;
+	v->len = height * width * sparsity + 1;
+	v->data = malloc(v->len * sizeof(position_t));
+	return v;
 }
+
+static void mtx_free(mtx_t *mtx) {
+
+	if (mtx == NULL)
+		return;
+
+	free(mtx->data);
+	free(mtx);
+}
+
+static void mtx_add(mtx_t *mtx, int y, int x) {
+
+	if (mtx->items >= mtx->len - 1) {
+
+		printf("Reallocing...\n");
+
+		position_t *new = NULL;
+		mtx->len *= 2;
+
+		new = realloc(mtx->data, mtx->len * sizeof(position_t));
+
+		if (new != NULL) {
+			mtx->data = new;
+		} else {
+			free(mtx->data);
+			free(mtx);
+			fprintf(stderr, "position_v_add: realloc %s", strerror(errno));
+			exit(1);
+		}
+	}
+
+	mtx->data[mtx->items].y = y;
+	mtx->data[mtx->items].x = x;
+	mtx->items++;
+}
+
+static int pos_cmp(const void *a, const void *b) {
+	position_t *pa = ((position_t *) a);
+	position_t *pb = ((position_t *) b);
+
+	if (pa->y > pb->y)
+		return 1;
+	else if (pa->y < pb->y)
+		return 0;
+	else
+		return (pa->x > pb->x);
+}
+
+static void mtx_uniqsort(mtx_t *mtx) {
+
+	int i;
+	int j;
+
+	qsort(mtx->data, mtx->items, sizeof(int), pos_cmp);
+
+	for (i = j = 0; i < mtx->items; i++)
+		if (mtx->data[i].x != mtx->data[j].x
+				&& mtx->data[i].y != mtx->data[j].y)
+			mtx->data[++j] = mtx->data[i];
+
+	mtx->items = j;
+
+}
+
+static void mtx_write(mtx_t *mtx, FILE *f) {
+
+	int i;
+	double v = g_start;
+
+	//mtx_uniqsort(mtx);
+
+	fprintf(f, "%%%%MatrixMarket matrix coordinate real general\n");
+	fprintf(f, "%d %d %d\n", mtx->width, mtx->height, mtx->items);
+
+	for (i = 0; i < mtx->items; i++) {
+		fprintf(f, "%d %d %lf\n", mtx->data[i].y, mtx->data[i].x, v++);
+	}
+}
+
+static void mtx_sparse_fill(mtx_t *mtx, int ay, int ax, int by, int bx,
+		double sparsity) {
+
+	int i;
+	int j;
+	int w = bx - ax;
+	int h = by - ay;
+	int space = w * h;
+	int items = space * sparsity;
+	double prob = (double) items / (double) space;
+
+	printf("w=%d,h=%d,space=%d,items=%d,prob=%lf\n", w, h, space, items, prob);
+	fflush(stdout);
+
+	for (i = 0; i < h; i++) {
+		for (j = 0; j < w; j++) {
+
+//			printf("w=%d,h=%d,space=%d,items=%d,prob=%lf\n", w, h, space, items,
+//					prob);
+//			fflush(stdout);
+
+			if (items == space
+					|| ((double) rand() / (double) RAND_MAX) < prob) {
+				items--;
+				prob = (double) items / (double) space;
+
+				mtx_add(mtx, i + 1, j + 1);
+
+			}
+
+			space--;
+
+			if (items == 0) {
+				//			return;
+			}
+		}
+	}
+
+	printf("items=%d\n", items);
+	assert(items == 0);
+}
+
+static void mtx_sparse_blocks(mtx_t *mtx, char *blocks) {
+
+	int ay;
+	int ax;
+	int by;
+	int bx;
+	int sparsity;
+	char *tmp;
+	char* end;
+
+	for (tmp = strtok(blocks, ",");; tmp = strtok(NULL, ",")) {
+
+		if (tmp == NULL)
+			goto bad_format;
+
+		ay = strtol(tmp, &end, 10);
+		if (*end)
+			goto bad_format;
+
+		tmp = strtok(NULL, ",");
+		ax = strtol(tmp, &end, 10);
+		if (*end)
+			goto bad_format;
+
+		tmp = strtok(NULL, ",");
+		by = strtol(tmp, &end, 10);
+		if (*end)
+			goto bad_format;
+
+		tmp = strtok(NULL, ",");
+		bx = strtol(tmp, &end, 10);
+		if (*end)
+			goto bad_format;
+
+		tmp = strtok(NULL, ",");
+		sparsity = strtol(tmp, &end, 10);
+		if (*end)
+			goto bad_format;
+
+		mtx_sparse_fill(mtx, ay, ax, by, bx, sparsity);
+	}
+
+	return;
+
+	bad_format: /**/
+	fprintf(stderr, "Bad block format. Use -h for help.\n");
+	exit(1);
+}
+
+/******************************************************************************/
 
 static void usage(const char *argv0) {
 	printf("%s [OPTIONS]\n"
+			" -b              blocks in format: ay,ax,by,bx,sparsity,..."
 			" -c              add a center diagonal\n"
 			" -d diagonals    number of diagonals\n"
 			" -f              values will be float numbers\n"
@@ -43,14 +251,17 @@ static void usage(const char *argv0) {
 			" -s sparsity     how many %% of matrix will be filled\n"
 			" -S start        starting value"
 			" -v              verbose mode\n"
-			" -w width        width of a matrix\n", argv0);
+			" -W width        width of a matrix\n", argv0);
 }
 
-static void generate_dense(FILE* f) {
+/*
+ * Fast function for generating 100% dense matrices.
+ */
+static void generate_dense(FILE *f) {
 
 	int i;
 	int j;
-	double v = start;
+	double v = g_start;
 
 	if (verbose)
 		printf("Generating dense matrix.\n");
@@ -58,25 +269,27 @@ static void generate_dense(FILE* f) {
 	fprintf(f, "%%%%MatrixMarket matrix coordinate real general\n");
 	fprintf(f, "%d %d %d\n", n, n, n * n);
 
-	for (i = 1; i <= n; i++) {
-		//printf("%04d/%04d\n", i, n);
-
+	for (i = 1; i <= n; i++)
 		for (j = 1; j <= n; j++)
 			fprintf(f, "%d %d %lf\n", i, j, v++);
-	}
-
 }
 
 int main(int argc, char *argv[]) {
 
 	int c;
 	int index;
+	FILE *f;
+	mtx_t *mtx = NULL;
+	char *blocks = NULL;
 
-	srand(time(NULL));
+	srand((unsigned) time(NULL));
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "cf:hn:o:s:S:v")) != -1) {
+	while ((c = getopt(argc, argv, "cf:hH:n:o:s:S:vW:")) != -1) {
 		switch (c) {
+		case 'b':
+			blocks = strdup(optarg);
+			break;
 		case 'c':
 			center_diagonal = 1;
 			break;
@@ -86,6 +299,9 @@ int main(int argc, char *argv[]) {
 		case 'h':
 			usage(argv[0]);
 			return EXIT_SUCCESS;
+		case 'H':
+			h = atoi(optarg);
+			break;
 		case 'n':
 			n = atoi(optarg);
 			w = n;
@@ -95,13 +311,16 @@ int main(int argc, char *argv[]) {
 			output = optarg;
 			break;
 		case 's':
-			sparsity = (atoi(optarg) / ((double) 100));
+			sscanf(optarg, "%lf", &sparsity);
 			break;
 		case 'S':
-			start = atof(optarg);
+			g_start = atof(optarg);
 			break;
 		case 'v':
 			verbose = 1;
+			break;
+		case 'W':
+			w = atoi(optarg);
 			break;
 		case '?':
 			if (optopt == 'o')
@@ -126,7 +345,10 @@ int main(int argc, char *argv[]) {
 
 	/**********************************************************************/
 
-	FILE *f;
+	if (w < 0 || h < 0) {
+		fprintf(stderr, "Width and height must be set and positive.\n");
+		return EXIT_FAILURE;
+	}
 
 	if (output != NULL)
 		f = fopen(output, "w");
@@ -148,8 +370,24 @@ int main(int argc, char *argv[]) {
 		goto done;
 	}
 
+	/*
+	 *  our matrix will be sparse. we need **pos now.
+	 */
+	mtx = mtx_init(h, w, sparsity);
+
+	/* general sparsity */
+	mtx_sparse_fill(mtx, 0, 0, h, w, sparsity);
+
+	if (blocks != NULL)
+		mtx_sparse_blocks(mtx, blocks);
+
+	mtx_write(mtx, f);
+
 	done: /**/
 	if (output != NULL)
 		fclose(f);
+	mtx_free(mtx);
+	free(blocks);
+
 	return EXIT_SUCCESS;
 }
