@@ -12,6 +12,9 @@
 #include <getopt.h>
 #include <time.h>
 #include <errno.h>
+#include <math.h>
+
+#define MATRIX_GENERATOR_DEBUG 1
 
 /*
  * strdup is not a C standard function
@@ -28,6 +31,7 @@ char *strdup(const char *s) {
  * Because this is a stand-alone file, we can use a lot of global variables.
  */
 double sparsity = 1.;
+int has_diagonal = 1;
 int diagonals = 0;
 int center_diagonal = 0;
 const char *output = NULL;
@@ -44,6 +48,12 @@ double g_start = 2.;
 typedef struct position {
 	int y;
 	int x;
+
+	/*
+	 * Wolfram Mathematica highlights big items. We want to highlignt diagonals
+	 * for example.
+	 */
+	int is_big;
 } position_t;
 
 typedef struct mtx {
@@ -61,7 +71,7 @@ static mtx_t *mtx_init(int height, int width, double sparsity) {
 	v->items = 0;
 	v->height = height;
 	v->width = width;
-	v->len = height * width * sparsity + 1;
+	v->len = (4 * height * width * sparsity) + 1000;
 	v->data = malloc(v->len * sizeof(position_t));
 	return v;
 }
@@ -75,7 +85,13 @@ static void mtx_free(mtx_t *mtx) {
 	free(mtx);
 }
 
-static void mtx_add(mtx_t *mtx, int y, int x) {
+static void mtx_add(mtx_t *mtx, int y, int x, int is_big) {
+
+	if (0 && MATRIX_GENERATOR_DEBUG)
+		printf("mtx_add y=%d, x=%d\n", y, x);
+
+	if (y < 0 || y > mtx->height - 1 || x < 0 || x > mtx->width - 1)
+		return;
 
 	if (mtx->items >= mtx->len - 1) {
 
@@ -98,6 +114,7 @@ static void mtx_add(mtx_t *mtx, int y, int x) {
 
 	mtx->data[mtx->items].y = y;
 	mtx->data[mtx->items].x = x;
+	mtx->data[mtx->items].is_big = is_big;
 	mtx->items++;
 }
 
@@ -118,12 +135,15 @@ static void mtx_uniqsort(mtx_t *mtx) {
 	int i;
 	int j;
 
-	qsort(mtx->data, mtx->items, sizeof(int), pos_cmp);
+	qsort(mtx->data, mtx->items, sizeof(position_t), pos_cmp);
 
-	for (i = j = 0; i < mtx->items; i++)
-		if (mtx->data[i].x != mtx->data[j].x
-				&& mtx->data[i].y != mtx->data[j].y)
-			mtx->data[++j] = mtx->data[i];
+	for (i = j = 0; i < mtx->items; i++) {
+		if (mtx->data[i].y == mtx->data[j].y
+				&& mtx->data[i].x == mtx->data[j].x)
+			continue;
+
+		mtx->data[++j] = mtx->data[i];
+	}
 
 	mtx->items = j;
 
@@ -134,17 +154,61 @@ static void mtx_write(mtx_t *mtx, FILE *f) {
 	int i;
 	double v = g_start;
 
-	//mtx_uniqsort(mtx);
+	if (f != stdout)
+		printf("Sorting...\n");
+
+	mtx_uniqsort(mtx);
 
 	fprintf(f, "%%%%MatrixMarket matrix coordinate real general\n");
 	fprintf(f, "%d %d %d\n", mtx->width, mtx->height, mtx->items);
 
+	if (f != stdout)
+		printf("Writing...\n");
+
 	for (i = 0; i < mtx->items; i++) {
-		fprintf(f, "%d %d %lf\n", mtx->data[i].y, mtx->data[i].x, v++);
+		if (mtx->data[i].is_big) {
+			fprintf(f, "%d %d %lf\n", mtx->data[i].y, mtx->data[i].x,
+					v++ + 1000000);
+		} else {
+			fprintf(f, "%d %d %lf\n", mtx->data[i].y, mtx->data[i].x, v++);
+		}
 	}
 }
 
-static void mtx_sparse_fill(mtx_t *mtx, int ay, int ax, int by, int bx,
+static void mtx_diagonal(mtx_t *mtx, int ay, int ax, int by, int bx,
+		double sparsity) {
+
+	double i;
+	double steps = sqrt(
+			pow((double) (ay - by), 2) + pow((double) (ax - bx), 2));
+
+	double step_y = abs(ay - by) / steps;
+	double step_x = abs(ax - bx) / steps;
+
+	double curr_y = ay;
+	double curr_x = ax;
+	/* TODO: space probabilty */
+	/* double prob = (double) 1 / steps * sparsity; */
+
+	if (MATRIX_GENERATOR_DEBUG)
+		printf(
+				"mtx_diagonal: ay=%d, ax=%d, steps=%lf, step_y=%lf, step_x=%lf, prob=%lf\n",
+				ay, ax, steps, step_y, step_x, sparsity);
+
+	for (i = 0; i < steps; i++) {
+		curr_y += step_y;
+		curr_x += step_x;
+
+		if (((double) rand() / (double) RAND_MAX) < sparsity) {
+			mtx_add(mtx, 1 + ((int) curr_y), 1 + ((int) curr_x), 1);
+		}
+	}
+
+	mtx_add(mtx, ay + 1, ax + 1, 1);
+	mtx_add(mtx, by + 1, bx + 1, 1);
+}
+
+static void mtx_fill(mtx_t *mtx, int ay, int ax, int by, int bx,
 		double sparsity) {
 
 	int i;
@@ -158,8 +222,11 @@ static void mtx_sparse_fill(mtx_t *mtx, int ay, int ax, int by, int bx,
 	printf("w=%d,h=%d,space=%d,items=%d,prob=%lf\n", w, h, space, items, prob);
 	fflush(stdout);
 
-	for (i = 0; i < h; i++) {
-		for (j = 0; j < w; j++) {
+	assert(ay < by);
+	assert(ax < bx);
+
+	for (i = ay; i < by; i++) {
+		for (j = ax; j < bx; j++) {
 
 //			printf("w=%d,h=%d,space=%d,items=%d,prob=%lf\n", w, h, space, items,
 //					prob);
@@ -170,7 +237,7 @@ static void mtx_sparse_fill(mtx_t *mtx, int ay, int ax, int by, int bx,
 				items--;
 				prob = (double) items / (double) space;
 
-				mtx_add(mtx, i + 1, j + 1);
+				mtx_add(mtx, i + 1, j + 1, 0);
 
 			}
 
@@ -182,50 +249,147 @@ static void mtx_sparse_fill(mtx_t *mtx, int ay, int ax, int by, int bx,
 		}
 	}
 
-	printf("items=%d\n", items);
 	assert(items == 0);
 }
 
-static void mtx_sparse_blocks(mtx_t *mtx, char *blocks) {
+static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
+
+	enum {
+		/* ay, ax, by, bx, sparsity */
+		BLOCK, /**/
+		MIRRORED_BLOCK, /**/
+
+		/* y, x, h, w, sparsity */
+		BLOCK_WH, /**/
+		MIRRORED_BLOCK_WH, /**/
+
+		/* ay, ax, by, bx, sparsity */
+		DIAGONAL, /**/
+		MIRRORED_DIAGONAL, /**/
+
+		/* count, size_probability, h, w, sparsity */
+		RANDOM_BLOCKS, /**/
+		MIRRORED_RANDOM_BLOCKS, /**/
+	} type;
 
 	int ay;
 	int ax;
 	int by;
 	int bx;
-	int sparsity;
+	double sparsity;
 	char *tmp;
 	char* end;
 
+	int i;
+	int tmp_y;
+	int tmp_x;
+	int tmp_size;
+
 	for (tmp = strtok(blocks, ",");; tmp = strtok(NULL, ",")) {
 
+		printf("a\n");
+
 		if (tmp == NULL)
+			return;
+
+		if (strcmp(tmp, "block") == 0) {
+			type = BLOCK;
+		} else if (strcmp(tmp, "mblock") == 0) {
+			type = MIRRORED_BLOCK;
+		} else if (strcmp(tmp, "blockwh") == 0) {
+			type = BLOCK_WH;
+		} else if (strcmp(tmp, "mblockwh") == 0) {
+			type = MIRRORED_BLOCK_WH;
+		} else if (strcmp(tmp, "diagonal") == 0) {
+			type = DIAGONAL;
+		} else if (strcmp(tmp, "mdiagonal") == 0) {
+			type = MIRRORED_DIAGONAL;
+		} else if (strcmp(tmp, "rblocks") == 0) {
+			type = RANDOM_BLOCKS;
+		} else if (strcmp(tmp, "mrblocks") == 0) {
+			type = MIRRORED_RANDOM_BLOCKS;
+		} else {
+			if (MATRIX_GENERATOR_DEBUG)
+				printf("matrix_sparse_items: not a valid item\n");
 			goto bad_format;
+		}
+		tmp = strtok(NULL, ",");
+
+		printf("b\n");
 
 		ay = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
+
+		printf("c\n");
 
 		tmp = strtok(NULL, ",");
 		ax = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
 
+		printf("d\n");
+
 		tmp = strtok(NULL, ",");
 		by = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
+
+		printf("e\n");
 
 		tmp = strtok(NULL, ",");
 		bx = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
 
+		printf("f\n");
+
 		tmp = strtok(NULL, ",");
-		sparsity = strtol(tmp, &end, 10);
+		sparsity = strtod(tmp, &end);
 		if (*end)
 			goto bad_format;
 
-		mtx_sparse_fill(mtx, ay, ax, by, bx, sparsity);
+		switch (type) {
+		case BLOCK:
+			mtx_fill(mtx, ay, ax, by, bx, sparsity);
+			break;
+		case MIRRORED_BLOCK:
+			mtx_fill(mtx, ay, ax, by, bx, sparsity);
+			mtx_fill(mtx, ax, ay, bx, by, sparsity);
+			break;
+		case BLOCK_WH:
+			mtx_fill(mtx, ay, ax, ay + by, ax + bx, sparsity);
+			break;
+		case MIRRORED_BLOCK_WH:
+			mtx_fill(mtx, ay, ax, ay + by, ax + bx, sparsity);
+			mtx_fill(mtx, ax, ay, ax + bx, ay + by, sparsity);
+			break;
+		case DIAGONAL:
+			mtx_diagonal(mtx, ay, ax, by, bx, sparsity);
+			break;
+		case MIRRORED_DIAGONAL:
+			mtx_diagonal(mtx, ay, ax, by, bx, sparsity);
+			mtx_diagonal(mtx, ax, ay, bx, by, sparsity);
+			break;
+		case RANDOM_BLOCKS:
+		case MIRRORED_RANDOM_BLOCKS:
+			for (i = 0; i < ay; i++) {
+				tmp_y = rand() % (mtx->height - by - 1);
+				tmp_x = rand() % (mtx->width - bx - 1);
+				tmp_size = rand() % ax;
+
+				mtx_fill(mtx, tmp_y, tmp_x, tmp_y + bx + tmp_size,
+						tmp_x + by + tmp_size, sparsity);
+
+				if (type == MIRRORED_RANDOM_BLOCKS) {
+					mtx_fill(mtx, tmp_x, tmp_y, tmp_x + bx + tmp_size,
+							tmp_y + by + tmp_size, sparsity);
+				}
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
 	return;
@@ -280,16 +444,13 @@ int main(int argc, char *argv[]) {
 	int index;
 	FILE *f;
 	mtx_t *mtx = NULL;
-	char *blocks = NULL;
+	char *items = NULL;
 
 	srand((unsigned) time(NULL));
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "cf:hH:n:o:s:S:vW:")) != -1) {
+	while ((c = getopt(argc, argv, "cf:hH:i:n:o:s:S:vW:")) != -1) {
 		switch (c) {
-		case 'b':
-			blocks = strdup(optarg);
-			break;
 		case 'c':
 			center_diagonal = 1;
 			break;
@@ -301,6 +462,9 @@ int main(int argc, char *argv[]) {
 			return EXIT_SUCCESS;
 		case 'H':
 			h = atoi(optarg);
+			break;
+		case 'i':
+			items = strdup(optarg);
 			break;
 		case 'n':
 			n = atoi(optarg);
@@ -375,11 +539,15 @@ int main(int argc, char *argv[]) {
 	 */
 	mtx = mtx_init(h, w, sparsity);
 
-	/* general sparsity */
-	mtx_sparse_fill(mtx, 0, 0, h, w, sparsity);
+	if (has_diagonal) {
+		mtx_diagonal(mtx, 0, 0, h, w, 1.);
+	}
 
-	if (blocks != NULL)
-		mtx_sparse_blocks(mtx, blocks);
+	/* general sparsity */
+	mtx_fill(mtx, 0, 0, h, w, sparsity);
+
+	if (items != NULL)
+		mtx_sparse_items(mtx, items);
 
 	mtx_write(mtx, f);
 
@@ -387,7 +555,7 @@ int main(int argc, char *argv[]) {
 	if (output != NULL)
 		fclose(f);
 	mtx_free(mtx);
-	free(blocks);
+	free(items);
 
 	return EXIT_SUCCESS;
 }

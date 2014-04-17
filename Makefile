@@ -35,7 +35,7 @@ MKDIR_P=mkdir -p
 MAKE=make
 
 CLIBS=-lm -fopenmp
-CFLAGS=-std=c99 -Wall -pedantic
+CFLAGS=-std=c99 -Wall -pedantic -Werror
 
 SOURCE_DIR=./src
 

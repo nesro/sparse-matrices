@@ -17,10 +17,10 @@ function gnuplot_wrapper {
 	# set term png size 1024,786
 	
 	gnuplot << __EOF__
-		set term svg
+		set term pdf
 		set output "$output_filename"
 		set pointsize 2
-		set style data points
+		set style data point
 		
 		set logscale y
 

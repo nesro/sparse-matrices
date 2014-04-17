@@ -15,4 +15,4 @@ gp=./tests/graphs/strassen_stability/gp
 #	echo "$($prog $mm_dir/orsirr_1.mtx $mm_dir/orsirr_1.mtx $i) $i">>$gp.txt
 #done
 
-gnuplot_wrapper $gp.txt $gp.svg "strassen treshold block size" "sum of differences" 2
+gnuplot_wrapper $gp.txt $gp.pdf "práh velikosti podmatice" "suma rozdílu součtů" 2

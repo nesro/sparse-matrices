@@ -12,7 +12,7 @@
 #include "../../cassertion/cassertion.h"
 #include "test_utils.h"
 
-static void load() {
+void load() {
 
 	vm_t *kat = NULL;
 	const test_matrix_t *tm;
@@ -36,7 +36,6 @@ static void run() {
 	vm_t *kb = NULL;
 	vm_t *kc = NULL;
 
-	const test_matrix_t *tm;
 	const test_matrices_pair_t *tp;
 
 	int sms; /* submatrix size */
