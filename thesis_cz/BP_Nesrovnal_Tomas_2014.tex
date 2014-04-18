@@ -86,36 +86,32 @@
 
 \include{_algoritmy_nasobeni_matic}
 
-\chapter{Formáty uložení řídkých matic}
-
-Formáty uložení řídkých matic obecně ukládají jednotlivé elementy zvlášť a tedy nemusí ukládat ty nulové. To ale přináší řadu nevýhod. Za prvé se musí ukládat informace o souřadicních jednotliých prvcích. Za druhé, ztrácíme možnost přístupu k prvku na libovolných šouřadnicích v čase $\Theta(1)$, protože prvky nemáme přímo indexované podle jejich umístění v řádku a sloupci.
-
-upravitelne vs neupravitelne 
-
-\section{COO - Coordinate list}
-
-\section{CSR - Compressed sparse row}
-
-\section{BSR - Block Sparse Row}
-
-\section{Quadtree}
-
-\section{?}
-
-TODO: tady jsem chtel spocictat kdy  se vyplati mit ridkou matici, ale lepsi bude tabulka. Pokud například uložíme matici o rozměrech 100x100 v dvojté přestnosti, bude zabírat \texttt{M x N x sizeof(double) = 100 x 100 x 8 = 80000B = 80kB}. Pokud zvolíme řídký formát matice, kde ke každému elementu uložíme i jeho x a y souřadnici, tak do 80kB uložíme \texttt{80000 / (sizeof(int)+sizeof(int)+sizeof(double)) = 80000/16= 5000} elementů. Pokud matice obsahuje více jak 50  \% nulových elementů, vyplatí se nám ji uložit do řídkého formátu.
-
-%-----------------------------------------------------------------------------
-
-\chapter{Modifikace formátu quadtree}
-
-je to samostatnej bod v zadani tak by to mohla byt cela chapter
-
-TODO: popsat nevyhody quadtree a obrazkama ukazat jak to udelat lip
-
-neco jako quadtree loop unrolling
-
+\include{_formaty}
 
 \chapter{Analýza a návrh}
+
+\section{Práce s řídkými maticemi v moderním software}
+
+\subsection{SciPy.sparse}
+
+SciPy je knihovna skriptovacího jazyka Python.
+
+ZDROJ: http://docs.scipy.org/doc/scipy/reference/sparse.html
+
+
+\subsection{Wolfram Mathematica}
+
+Wolfram Mathematica je TODO
+
+Pomocí Wolfram Mathematicy vizualizujeme řídké matice z formátu \texttt{.mtx}. MatrixMarket nabízí matice v souborech \texttt{.mtx.gz} Wolfram Mathematica umí pracovat i s těmito komprimovanými soubory. Příkaz pro importování řídké matice a její vizualizaci je \texttt{Import["/tmp/matrix2.mtx", "Graphics"]}
+
+ZDROJ: http://reference.wolfram.com/mathematica/ref/format/MTX.html
+
+
+
+
+
+
 
 TODO: moznosti implementace, zvolene reseni, ostatni reseni
 
@@ -124,6 +120,60 @@ TODO: moznosti implementace, zvolene reseni, ostatni reseni
 \section{MatrixMarket}
 
 TODO: posat format matrixmarket
+
+\subsection{Generátor řídkých matic}
+
+\begin{algorithm}[H]
+	\caption{Generování řídkých matic}\label{mmm-recursive}
+	\begin{algorithmic}[1]
+		\Procedure{SparseMatrixGenerator}{$file,width,height,ItemList$}
+		\State \texttt{$MtxWrapper \gets InitMtxWrapper();$}
+		\State \texttt{$MtxWrapper.PositionVector \gets InitVector();$}	
+		\ForAll{\texttt{$Item \in ItemList$}}
+			\State \texttt{$MtxWrapper.addItem(Item.y, Item.x, Item.properties);$}
+			\If{$Item.type == Mirrored$}
+				\State \texttt{$MtxWrapper.addItem(Item.x, Item.y, Item.properties);$}
+			\EndIf
+		\EndFor
+		\State \texttt{$MtxWrapper.PositionVector.sort();$}
+		\State \texttt{$MtxWrapper.PositionVector.removeDuplicates();$}
+		\State \texttt{$MtxWrapper.write(file);$}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět s následujícími parametry:
+
+\begin{itemize}
+	\item \texttt{-c} matice bude obsahovat hlavní diagonálu
+	\item \texttt{-H <celé číslo>} výška matice
+	\item \texttt{-i <typ,a,b,c,d,...>} seznam objektů, které se do matice přidají
+	\begin{itemize}
+	\item \texttt{diagonal,ay,ax,by,bx,sparsity} prvky v přímce od bodu \texttt{[ax,ay]} do bodu \texttt{[bx,by]} s řídkostí \texttt{sparsity}
+	\item \texttt{block,ay,ax,by,bx,sparsity} blok prvků v obdelníku ohraničiného body \texttt{[ax,ay]} a \texttt{[bx,by]} s řídkostí \texttt{sparsity}
+	\end{itemize}
+	\item \texttt{-n <celé číslo>} velikost matice
+	\item \texttt{-o <soubor>} cílový soubor (lze použít i stdout)
+	\item \texttt{-s <desetinné číslo>} řídkost matice (\texttt{sparsity})
+	\item \texttt{-S <desetine číslo>} startovací číslo
+	\item \texttt{-W <celé číslo>} šířka matice
+\end{itemize}
+
+\begin{itemize}
+	\item \texttt{-h} zobraz nápovědu
+	\item \texttt{-o <soubor>} cílový soubor (lze použít i \texttt{stdout}) 
+	\item \texttt{-v} vypisuj průběh generování (\texttt{verbose})
+\end{itemize}
+
+\texttt{$ ./tests/bin/matrix_generator -n 8192 -s 0.00001 -i mdiagonal,150,0,8192,8042,0.95,mdiagonal,200,10,4000,3000,0.75,mblockwh,300,1500,256,256,0.95,mblockwh,700,2000,128,128,0.95,mrblocks,10,128,64,64,0.75 -o /tmp/matrix2.mtx$}
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/generated_matrix}
+	\caption{Matice vygenerovaná generátorem}
+	\label{fig:aftOrsirr1}
+\end{figure}
+
+
 
 \section{Optimalizace}
 
