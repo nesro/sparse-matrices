@@ -24,6 +24,7 @@ tests/bin/*
 # Eclipse
 .cproject
 .project
+.settings
 
 # Ignore generated matrices, a user will generate them by itself
 tests/matrices/generated/*
