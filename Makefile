@@ -5,6 +5,9 @@
 
 # make DEBUG=1 tests && make BIN=./tests/bin/test_kat_matrix valgrind
 
+# make DEBUG=1 tests && nice -n 19 valgrind --leak-check=full --show-reachable=yes ./tests/bin/matrix_generator -n 512 -s 0.1 -i block,50,100,75,150,0.9,block,100,100,150,150,0.8,diagonal,200,200,300,300 -o /tmp/matrix2.mtx 2> >(while read l; do echo -e "\e[01;31m$l\e[0m" >&2; done)
+
+
 OBJECTS=utils.o \
 	mmio.o \
 	mm_load.o \
@@ -17,12 +20,10 @@ OBJECTS=utils.o \
 	vector.o \
 	generator.o
 
-
-# $(addsuffix .o, $(OBJECTS))
-
 TESTS=test_utils.o \
 	mulres_distance \
 	matrix_generator \
+	test_coo_matrix \
 	test_den_matrix \
 	test_qdt_matrix \
 	test_kat_matrix \
@@ -204,6 +205,15 @@ $(CASSERTION)/cassertion.h
 
 #-------------------------------------------------------------------------------
 # cassertion test suites
+
+test_coo_matrix: test_coo_matrix.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_coo_matrix.o \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+	
+test_coo_matrix.o: $(TEST_SRC)/test_coo_matrix.c $(CASSERTION)/cassertion.h \
+$(SRC)/virtual_matrix.h $(SRC)/coo_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
 
 test_den_matrix: test_den_matrix.o
 	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_den_matrix.o \

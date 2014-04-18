@@ -3,55 +3,215 @@
  * https://github.com/nesro/sparse-matrices
  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <omp.h>
 
 #include "utils.h"
 #include "mmio.h"
 #include "coo_matrix.h"
 
-int coo_matrix_init(coo_matrix_t *coo_matrix, int nnz, int width, int height) {
+static vm_vmt_t coo_vmt = { /**/
+(reset_t) NULL, /**/
+(free_t) coo_free, /**/
+(mm_load_t) NULL,/**/
+(mm_save_t) NULL, /**/
+(print_t) NULL, /**/
+(compare_t) NULL, /**/
+(distance_t) NULL, /**/
+(convert_t) coo_convert, /**/
+(mul_t) coo_mul, /**/
+};
 
+void coo_vm_init(coo_matrix_t **coo, va_list va) {
+
+	int va_flag = 0;
+	int width;
+	int height;
+	int nnz;
+
+	nnz = va_get_int(va, 1, &va_flag);
+	height = va_get_int(va, -1, &va_flag);
+	width = va_get_int(va, -1, &va_flag);
+
+	coo_init(coo, width, height, nnz);
+}
+
+void coo_init(coo_matrix_t **coo, int width, int height, int nnz) {
+
+	/* XXX: */
+	assert(width == height);
+
+	*coo = calloc(1, sizeof(coo_matrix_t));
+	assert(*coo != NULL);
+
+	(*coo)->_.type = COO;
+	(*coo)->_.f = coo_vmt;
+	(*coo)->_.w = width;
+	(*coo)->_.h = height;
+	(*coo)->_.nnz = nnz;
+
+	(*coo)->v = malloc(nnz * sizeof(datatype_t));
+	assert((*coo)->v != NULL);
+
+	/*
+	 * Because col and row are the same type, we'll call only one malloc.
+	 */
+	(*coo)->c = malloc(2 * nnz * sizeof(int));
+	assert((*coo)->c != NULL);
+	(*coo)->r = &((*coo)->c[nnz]);
+
+}
+
+void coo_free(coo_matrix_t *coo) {
+	free(coo->v);
+	free(coo->c);
+	free(coo);
+}
+
+vm_t *coo_convert(coo_matrix_t *coo, vm_type_t type) {
+
+	printf("coo_convert\n");
+
+	vm_t *vm = NULL;
 	int i;
 
-	coo_matrix->info.nnz = nnz;
-	coo_matrix->info.w = width;
-	coo_matrix->info.h = height;
+	switch (type) {
+	case COO:
+		vm_create(&vm, COO, coo->_.nnz, coo->_.w, coo->_.h);
 
-	coo_matrix->values = malloc(coo_matrix->info.nnz * sizeof(datatype_t));
-	if (coo_matrix->values == NULL) {
-		perror("coo_matrix->values");
-		exit(1);
+		/*
+		 * After the array of column indices are row indices. See
+		 * initialization at the coo_init function.
+		 */
+		memcpy(((coo_matrix_t*) vm)->c, coo->c, 2 * coo->_.nnz * sizeof(int));
+		memcpy(((coo_matrix_t*) vm)->v, coo->v,
+				coo->_.nnz * sizeof(datatype_t));
+
+		break;
+	case DEN:
+		vm_create(&vm, DEN, 1, coo->_.w, coo->_.h);
+
+		for (i = 0; i < coo->_.nnz; i++)
+			((den_matrix_t *) vm)->v[coo->r[i]][coo->c[i]] += coo->v[i];
+
+		break;
+	default:
+		fdie("Unknown format to convert: %d\n", type);
+		break;
 	}
 
-	coo_matrix->col = malloc(coo_matrix->info.nnz * sizeof(int));
-	if (coo_matrix->values == NULL) {
-		perror("coo_matrix->col");
-		exit(1);
-	}
-
-	coo_matrix->row = malloc(coo_matrix->info.nnz * sizeof(int));
-	if (coo_matrix->values == NULL) {
-		perror("coo_matrix->row");
-		exit(1);
-	}
-
-	for (i = 0; i < coo_matrix->info.nnz; i++) {
-		coo_matrix->col[i] = 0;
-		coo_matrix->row[i] = 0;
-		coo_matrix->values[i] = 0;
-	}
-
-	return 1;
+	return vm;
 }
 
-void coo_matrix_free(coo_matrix_t *coo_matrix) {
-	free(coo_matrix->values);
-	free(coo_matrix->col);
-	free(coo_matrix->row);
+/******************************************************************************/
+
+/*
+ * When we transpose COO matrix, the arrays are not anymore sorted by y coords
+ * and then by x coords.
+ */
+static void coo_sort(coo_matrix_t *coo) {
+
+	int i;
+	int j;
+
+	int swap_r;
+	int swap_c;
+	datatype_t swap_v;
+
+	/* bubble sort */
+	for (i = 0; i < (coo->_.nnz - 1); i++) {
+		for (j = 0; j < coo->_.nnz - i - 1; j++) {
+			if (coo->r[j] > coo->r[j + 1]) {
+				swap_r = coo->r[j];
+				swap_c = coo->c[j];
+				swap_v = coo->v[j];
+
+				coo->r[j] = coo->r[j + 1];
+				coo->c[j] = coo->c[j + 1];
+				coo->v[j] = coo->v[j + 1];
+
+				coo->r[j + 1] = swap_r;
+				coo->c[j + 1] = swap_c;
+				coo->v[j + 1] = swap_v;
+			}
+		}
+	}
 }
 
-int coo_matrix_load_mm(coo_matrix_t *coo_matrix, const char *filename) {
+/*
+ * This is implemented for no reason.
+ */
+void coo_transpose(coo_matrix_t *coo) {
+
+	int i;
+	int swap;
+
+	for (i = 0; i < coo->_.nnz; i++) {
+		swap = coo->r[i];
+		coo->r[i] = coo->c[i];
+		coo->c[i] = swap;
+	}
+
+	coo_sort(coo);
+}
+
+/******************************************************************************/
+
+/*
+ * Matrix-Matrix multiplication in COO format.
+ */
+double coo_mul(const coo_matrix_t *a, const coo_matrix_t *b, den_matrix_t **c,
+		char flag /* unused */) {
+
+	double start_time;
+	double end_time;
+
+	if (*c == NULL)
+		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
+
+	int *arp;
+	int *brp;
+	int i;
+	int r;
+	int ac;
+	int bc;
+
+	start_time = omp_get_wtime();
+
+	/*
+	 * We need to compute row pointers like in CSR matrix.
+	 */
+	arp = calloc((a->_.h + b->_.h + 2), sizeof(int));
+	assert(arp != NULL);
+	brp = &(arp[a->_.h + 1]);
+
+	for (i = 0; i < a->_.nnz; i++)
+		arp[a->r[i] + 1]++;
+	for (i = 0; i < a->_.h; i++)
+		arp[i + 1] += arp[i];
+
+	for (i = 0; i < b->_.nnz; i++)
+		brp[b->r[i] + 1]++;
+	for (i = 0; i < b->_.h; i++)
+		brp[i + 1] += brp[i];
+
+	for (r = 0; r < a->_.h; r++)
+		for (ac = arp[r]; ac < arp[r + 1]; ac++)
+			for (bc = brp[a->c[ac]]; bc < brp[a->c[ac] + 1]; bc++)
+				(*c)->v[r][a->c[bc]] += a->v[ac] * b->v[bc];
+
+	free(arp);
+	end_time = omp_get_wtime();
+	return end_time - start_time;
+}
+
+/******************************************************************************/
+
+double coo_from_mm(coo_matrix_t **coo, const char *filename,
+		va_list va /* unused */) {
 
 	MM_typecode matcode;
 	FILE *f;
@@ -59,6 +219,7 @@ int coo_matrix_load_mm(coo_matrix_t *coo_matrix, const char *filename) {
 	int M;
 	int N;
 	int nz;
+	int success;
 
 	if ((f = fopen(filename, "r")) == NULL) {
 		fprintf(stderr, "File %s doesn't exists. Exiting.\n", filename);
@@ -81,148 +242,23 @@ int coo_matrix_load_mm(coo_matrix_t *coo_matrix, const char *filename) {
 		exit(1);
 	}
 
-	coo_matrix_init(coo_matrix, nz, N, M); /* N=width, M=height */
+	coo_init(coo, N, M, nz); /* N=width, M=height */
 
 	for (i = 0; i < nz; i++) {
+		/* TODO: make better error */
+		if ((success = fscanf(f, "%d %d %lg\n", &(*coo)->r[i], &(*coo)->c[i],
+				&(*coo)->v[i])) != 2) {
+			/*printf("ounou: %d\n", success);*/
 
-		if (LOAD_VALUE) {
-			int success = -1;
-
-			/* TODO: make better error */
-			if ((success = fscanf(f, "%d %d %lg\n", &coo_matrix->row[i],
-				&coo_matrix->col[i], &coo_matrix->values[i])) != 2) {
-				/*printf("ounou: %d\n", success);*/
-
-			}
-		} else {
-			if (fscanf(f, "%d %d \n", &coo_matrix->row[i], &coo_matrix->col[i])
-				!= 2) {
-				exit(1);
-			}
-			coo_matrix->values[i] = 1;
 		}
 
-		/*EIA adjust from 1-based to 0-based because of Matrix Market EIA*/
-		coo_matrix->row[i]--;
-		coo_matrix->col[i]--;
+		/* BI-EIA: adjust from 1-based to 0-based because of Matrix Market */
+		(*coo)->r[i]--;
+		(*coo)->c[i]--;
 	}
 
 	if (f != stdin)
 		fclose(f);
 
-	return 1;
-}
-
-void sort(int *col_idx, double *a, int start, int end) {
-
-	int i;
-	int j;
-	int it;
-	double dt;
-
-	for (i = end - 1; i > start; i--) {
-		for (j = start; j < i; j++) {
-			if (col_idx[j] > col_idx[j + 1]) {
-				if (a) {
-					dt = a[j];
-					a[j] = a[j + 1];
-					a[j + 1] = dt;
-				}
-
-				it = col_idx[j];
-				col_idx[j] = col_idx[j + 1];
-				col_idx[j + 1] = it;
-			}
-		}
-	}
-}
-
-//void coo_to_csr(coo_matrix_t *coo_matrix, csr_t *csr_matrix) {
-//
-//	int row;
-//	int col;
-//
-//	csr_matrix_init(csr_matrix, coo_matrix->info.nnz, coo_matrix->info.w,
-//		coo_matrix->info.h);
-//
-//	/*EIA reset row_pointers EIA*/
-//	for (row = 0; row < csr_matrix->info.h; row++) {
-//		csr_matrix->rp[row] = 0;
-//	}
-//
-//	/*EIA pocet prvku v row EIA*/
-//	for (row = 0; row < csr_matrix->info.nnz; row++) {
-//		csr_matrix->rp[coo_matrix->row[row] + 1]++;
-//	}
-//
-//	/*EIA posunuti prvku v poli EIA*/
-//	for (row = 0; row < csr_matrix->info.h; row++) {
-//		csr_matrix->rp[row + 1] += csr_matrix->rp[row];
-//	}
-//
-//	for (col = 0; col < coo_matrix->info.nnz; col++) {
-//		row = csr_matrix->rp[coo_matrix->row[col]];
-//		csr_matrix->v[row] = coo_matrix->values[col];
-//		csr_matrix->ci[row] = coo_matrix->col[col];
-//		csr_matrix->rp[coo_matrix->row[col]]++;
-//	}
-//
-//	/* shift back row_start */
-//	for (row = csr_matrix->info.h; row > 0; row--)
-//		csr_matrix->rp[row] = csr_matrix->rp[row - 1];
-//
-//	csr_matrix->rp[0] = 0;
-//
-//	/* FIXME: is this necessary? */
-//	/*for (row = 0; row < csr_matrix->info.height; row++) {
-//	 int i;
-//	 int j;
-//	 int it;
-//	 double dt;
-//
-//	 for (i = csr_matrix->row_pointers[row + 1] - 1;
-//	 i > csr_matrix->row_pointers[row]; i--) {
-//	 for (j = csr_matrix->row_pointers[row]; j < i; j++) {
-//	 if (csr_matrix->col_indicies[j]
-//	 > csr_matrix->col_indicies[j + 1]) {
-//	 if (csr_matrix->values) {
-//	 dt = csr_matrix->values[j];
-//	 csr_matrix->values[j] = csr_matrix->values[j + 1];
-//	 csr_matrix->values[j + 1] = dt;
-//	 }
-//
-//	 it = csr_matrix->col_indicies[j];
-//	 csr_matrix->col_indicies[j] =
-//	 csr_matrix->col_indicies[j + 1];
-//	 csr_matrix->col_indicies[j + 1] = it;
-//	 }
-//	 }
-//	 }
-//
-//	 }*/
-//}
-
-void coo_to_vector(coo_matrix_t *coo_matrix, vector_t *vector) {
-
-	int el;
-
-	vector_init(vector, coo_matrix->info.h);
-
-	for (el = 0; el < coo_matrix->info.nnz; el++) {
-		vector->v[coo_matrix->row[el]] = coo_matrix->values[el];
-	}
-}
-
-void coo_to_dense(coo_matrix_t *coo_matrix, den_matrix_t *dense_matrix) {
-
-	int i;
-
-//	FIXME:
-//	den_matrix_init(&dense_matrix, (den_matrix_init_t ) { coo_matrix->info.w,
-//			coo_matrix->info.h, 1 });
-
-	for (i = 0; i < coo_matrix->info.nnz; i++) {
-		dense_matrix->v[coo_matrix->row[i]][coo_matrix->col[i]] =
-			coo_matrix->values[i];
-	}
+	return 1.;
 }

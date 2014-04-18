@@ -5,6 +5,7 @@
 
 #include "virtual_matrix.h"
 #include "den_matrix.h"
+#include "coo_matrix.h"
 #include "csr_matrix.h"
 #include "qdt_matrix.h"
 #include "kat_matrix.h"
@@ -22,6 +23,9 @@ void vm_create(vm_t **vm, vm_type_t type, ...) {
 	switch (type) {
 	case DEN:
 		den_vm_init((den_matrix_t **) vm, vl);
+		break;
+	case COO:
+		coo_vm_init((coo_matrix_t **) vm, vl);
 		break;
 	case CSR:
 		csr_vm_init((csr_t **) vm, vl);
@@ -48,6 +52,9 @@ void vm_load_mm(vm_t **vm, vm_type_t type, const char *mm, ...) {
 	switch (type) {
 	case DEN:
 		den_from_mm((den_matrix_t **) vm, mm, vl);
+		break;
+	case COO:
+		coo_from_mm((coo_matrix_t **) vm, mm, vl);
 		break;
 	case CSR:
 		csr_from_mm((csr_t **) vm, mm, vl);

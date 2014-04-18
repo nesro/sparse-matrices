@@ -98,6 +98,32 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 	mm_free(mm_file);
 }
 
+/******************************************************************************/
+
+double csr_mul(const csr_t *a, const csr_t *b, den_matrix_t **c,
+		char flag /* unused */) {
+
+	double start_time;
+	double end_time;
+
+	int r; /* row */
+	int ac; /* col of A */
+	int bc; /* col of B */
+
+	if (*c == NULL)
+		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
+
+	start_time = omp_get_wtime();
+
+	for (r = 0; r < a->_.h; r++)
+		for (ac = a->rp[r]; ac < a->rp[r + 1]; ac++)
+			for (bc = b->rp[a->ci[ac]]; bc < b->rp[a->ci[ac] + 1]; bc++)
+				(*c)->v[r][b->ci[bc]] += a->v[ac] * b->v[bc];
+
+	end_time = omp_get_wtime();
+	return end_time - start_time;
+}
+
 ///**
 // * Algorithm has been taken from:
 // * https://fedcsis.org/proceedings/2013/pliks/19.pdf

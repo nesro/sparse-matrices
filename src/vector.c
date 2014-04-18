@@ -27,20 +27,20 @@ void vector_free(vector_t *vector) {
 
 int vector_load_mm(vector_t *vector, const char *filename) {
 
-	coo_matrix_t coo_matrix;
-
-	coo_matrix_load_mm(&coo_matrix, filename);
-
-	if (coo_matrix.info.w != 1) {
-		fprintf(stderr,
-			"vector_load_mm failed: loaded matrix %s is not width 1 element",
-			filename);
-		coo_matrix_free(&coo_matrix);
-		return 0;
-	}
-
-	coo_to_vector(&coo_matrix, vector);
-	coo_matrix_free(&coo_matrix);
+//	coo_matrix_t *coo_matrix = NULL;
+//
+//	coo_from_mm(&coo_matrix, filename, 0);
+//
+//	if (coo_matrix->_.w != 1) {
+//		fprintf(stderr,
+//			"vector_load_mm failed: loaded matrix %s is not width 1 element",
+//			filename);
+//		coo_matrix_free(&coo_matrix);
+//		return 0;
+//	}
+//
+//	coo_(&coo_matrix, vector);
+//	coo_free(coo_matrix);
 
 	return 1;
 }

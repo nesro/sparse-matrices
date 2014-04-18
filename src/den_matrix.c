@@ -32,19 +32,23 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 
 	int i;
 	int j;
+	vm_t *tmp = NULL;
 
 	if (a->_.w != b->w || a->_.h != b->h)
 		return 2;
 
 	if (b->type != DEN)
-		b->f.convert(b, DEN);
+		tmp = b->f.convert(b, DEN);
+	else
+		tmp = b;
 
-	for (i = 0; i < a->_.h; i++) {
-		for (j = 0; j < a->_.w; j++) {
-			if (a->v[i][j] != ((den_matrix_t *) b)->v[i][j])
+	for (i = 0; i < a->_.h; i++)
+		for (j = 0; j < a->_.w; j++)
+			if (a->v[i][j] != ((den_matrix_t *) tmp)->v[i][j])
 				return 1;
-		}
-	}
+
+	if (b != tmp && tmp != NULL)
+		tmp->f.free(tmp);
 
 	return 0;
 }
@@ -99,7 +103,8 @@ void den_vm_init(den_matrix_t **den, va_list va) {
 	den_matrix_init(den, width, height, zero);
 }
 
-void den_from_mm(den_matrix_t **den, const char *mm_filename, va_list va) {
+void den_from_mm(den_matrix_t **den, const char *mm_filename,
+		va_list va /* unused */) {
 
 	mm_file_t *mm_file;
 	int i;

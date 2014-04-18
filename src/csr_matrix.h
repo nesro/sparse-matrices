@@ -10,7 +10,6 @@
 
 typedef struct csr_matrix {
 	vm_t _;
-
 	datatype_t *v;
 	int *ci;
 	int *rp;
