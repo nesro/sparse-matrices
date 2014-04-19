@@ -69,6 +69,18 @@ test_matrices_pair_t tm_pairs[] = {
 		{ MTX_GEN_DIR "128x128_02.mtx", 128, 128, 16384 }, /**/
 		}, /**/
 
+		/* big, sparse matrices*/
+
+		{ /**/
+		{ MTX_DIR "generated_1024_5p_01.mtx", 1024, 1024, 53309 }, /**/
+		{ MTX_DIR "generated_1024_5p_02.mtx", 1024, 1024, 53285 }, /**/
+		}, /**/
+
+		{ /**/
+		{ MTX_DIR "generated_8192_001p_01.mtx", 8192, 8192, 14899 }, /**/
+		{ MTX_DIR "generated_8192_001p_02.mtx", 8192, 8192, 14897 }, /**/
+		}, /**/
+
 		{ { { 0 } } } /**/
 };
 
@@ -89,7 +101,6 @@ test_matrices_pair_t kat_tm_pairs[] = {
 		{ MTX_DIR "64x64_1nz_01.mtx", 64, 64, 2 }, /**/
 		}, /**/
 
-
 		{ /**/
 		{ MTX_DIR "64x64_1nz_01.mtx", 64, 64, 2 }, /**/
 		{ MTX_DIR "64x64_1nz_02.mtx", 64, 64, 2 }, /**/
@@ -100,18 +111,15 @@ test_matrices_pair_t kat_tm_pairs[] = {
 		{ MTX_DIR "64x64_2nz_02.mtx", 64, 64, 2 }, /**/
 		}, /**/
 
-
 		{ /**/
 		{ MTX_DIR "64x64_2nz_01.mtx", 64, 64, 2 }, /**/
 		{ MTX_DIR "64x64_2nz_03.mtx", 64, 64, 2 }, /**/
 		}, /**/
 
-
 		{ /**/
 		{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
 		{ MTX_GEN_DIR "64x64_02.mtx", 64, 64, 4096 }, /**/
 		}, /**/
-
 
 		{ /**/
 		{ MTX_GEN_DIR "128x128_01.mtx", 128, 128, 16384 }, /**/
@@ -126,6 +134,11 @@ test_matrices_pair_t kat_tm_pairs[] = {
 		{ /**/
 		{ MTX_GEN_DIR "512x512_01.mtx", 512, 512, 262144 }, /**/
 		{ MTX_GEN_DIR "512x512_02.mtx", 512, 512, 262144 }, /**/
+		}, /**/
+
+		{ /**/
+		{ MTX_DIR "generated_1024_5p_01.mtx", 1024, 1024, 53309 }, /**/
+		{ MTX_DIR "generated_1024_5p_02.mtx", 1024, 1024, 53285 }, /**/
 		}, /**/
 
 		{ { { 0 } } }, /**/

@@ -287,8 +287,6 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 
 	for (tmp = strtok(blocks, ",");; tmp = strtok(NULL, ",")) {
 
-		printf("a\n");
-
 		if (tmp == NULL)
 			return;
 
@@ -309,42 +307,55 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 		} else if (strcmp(tmp, "mrblocks") == 0) {
 			type = MIRRORED_RANDOM_BLOCKS;
 		} else {
-			if (MATRIX_GENERATOR_DEBUG)
-				printf("matrix_sparse_items: not a valid item\n");
+			fprintf(stderr, "matrix_sparse_items: not a valid item\n");
 			goto bad_format;
 		}
 		tmp = strtok(NULL, ",");
-
-		printf("b\n");
+		if (tmp == NULL) {
+			fprintf(stderr,
+					"matrix_sparse_items: Missing the first parameter!\n");
+			goto bad_format;
+		}
 
 		ay = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
 
-		printf("c\n");
-
 		tmp = strtok(NULL, ",");
+		if (tmp == NULL) {
+			fprintf(stderr,
+					"matrix_sparse_items: Missing the second parameter!\n");
+			goto bad_format;
+		}
 		ax = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
 
-		printf("d\n");
-
 		tmp = strtok(NULL, ",");
+		if (tmp == NULL) {
+			fprintf(stderr,
+					"matrix_sparse_items: Missing the third parameter!\n");
+			goto bad_format;
+		}
 		by = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
 
-		printf("e\n");
-
 		tmp = strtok(NULL, ",");
+		if (tmp == NULL) {
+			fprintf(stderr,
+					"matrix_sparse_items: Missing the fourth parameter!\n");
+			goto bad_format;
+		}
 		bx = strtol(tmp, &end, 10);
 		if (*end)
 			goto bad_format;
 
-		printf("f\n");
-
 		tmp = strtok(NULL, ",");
+		if (tmp == NULL) {
+			fprintf(stderr, "matrix_sparse_items: Missing sparsity!\n");
+			goto bad_format;
+		}
 		sparsity = strtod(tmp, &end);
 		if (*end)
 			goto bad_format;
@@ -395,7 +406,7 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 	return;
 
 	bad_format: /**/
-	fprintf(stderr, "Bad block format. Use -h for help.\n");
+	fprintf(stderr, "matrix_sparse_items: Bad block format. Use -h for help.\n");
 	exit(1);
 }
 

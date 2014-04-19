@@ -201,7 +201,7 @@ double coo_mul(const coo_matrix_t *a, const coo_matrix_t *b, den_matrix_t **c,
 	for (r = 0; r < a->_.h; r++)
 		for (ac = arp[r]; ac < arp[r + 1]; ac++)
 			for (bc = brp[a->c[ac]]; bc < brp[a->c[ac] + 1]; bc++)
-				(*c)->v[r][a->c[bc]] += a->v[ac] * b->v[bc];
+				(*c)->v[r][b->c[bc]] += a->v[ac] * b->v[bc];
 
 	free(arp);
 	end_time = omp_get_wtime();
