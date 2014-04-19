@@ -46,6 +46,52 @@ Pro ukázku v tomto formátu uložíme matici o velikosti $n=8$ s $nnz=5$ nenulo
 
 Jak můžeme vidět, délka polí je závislá pouze na $nnz$. Pro velké matice s malým počtem neuspořádaných nenulových prvků je tento formát velmi efektivní. Pokud by bylo prvků velké množství, informace o uložení \texttt{y} nebo \texttt{x} souřadnic by byla často redundatní.
 
+Formát COO je velmi jednoduchý a přímočarý. Při procházení jeho prvků nám stačí jedna iterace přes tři stejně dlouhé pole. Tím je tedy například algoritmus násobení řídké matice ve formátu COO s vektorem velmi jednoduchý:
+
+\begin{algorithm}[H]
+	\caption{Násobení matice COO s vektorem}\label{mmm-mvm}
+	\begin{algorithmic}[1]
+		\Procedure{COO-MVM}{$COO,V,C$}
+		\For{\texttt{$i\gets0$\TO$COO.nnz$}}
+			\State \texttt{$V.v[COO.r[i]] += COO.v[i] * V.v[COO.c[i]];$}
+		\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Při násobení dvou matic ale narazíme na problém. Při násobení dvou matic se každý prvek násobí dvakrát. Potřebujeme způsob, jak se v matici vrátit zpátky na určité místo. Naivní algoritmus pro násobení dvou matic by byl složitý. Museli bychom si pamatovat začátky řádků a neustále kontrolovat, jestli jsme nepřesáhli další řádek. Lepším řešením je dopředu si předpočítat, kde který řádek začíná a končí. Předpočítáme si tedy pole o délce $výška\_ matice + 1$, obsahující index začátku a konce řádku.
+
+\begin{algorithm}[H]
+	\caption{Násobení dvou COO matic}\label{coo-mmm}
+	\begin{algorithmic}[1]
+		\Procedure{COO-MMM}{$A,B,C$}
+		\State \texttt{$arp\gets InitArray(A.nnz + 1);$}
+		\State \texttt{$brp\gets InitArray(B.nnz + 1);$}
+		\For{\texttt{$i\gets0$\TO$A.nnz$}}\Comment{předpočítání prvků v řádcích matice A}
+			\State \texttt{$arp[A.r[i]+1] = arp[A.r[i]+1] + 1;$}
+		\EndFor
+		\For{\texttt{$i\gets0$\TO$A.height$}}
+			\State \texttt{$arp[i+1] = arp[i+1] + arp[i];$}
+		\EndFor
+		\For{\texttt{$i\gets0$\TO$B.nnz$}}\Comment{předpočítání prvků v řádcích matice B}
+			\State \texttt{$brp[B.r[i]+1] = brp[B.r[i]+1] + 1;$}
+		\EndFor
+		\For{\texttt{$i\gets0$\TO$A.height$}}
+			\State \texttt{$brp[i+1] = brp[i+1] + brp[i];$}
+		\EndFor
+		\For{\texttt{$i\gets0$\TO$A.height$}}\Comment{násobení}
+			\For{\texttt{$ac\gets arp[r]$\TO$arp[r+1]$}}
+				\For{\texttt{$bc\gets brp[A.c[ac]]$\TO$brp[A.c[ac]+1]$}}
+					\State \texttt{$C.v[r][A.c[bc]] += A.v[ac] * B.v[bc];$}
+				\EndFor
+			\EndFor
+		\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+V části s násobením již pole s \texttt{y} souřadnicemi nepotřebujeme. Lepší formát uložení řídkých matic pro násobení by byl takový, který namíto pole s \texttt{y} souřadnicemi obsahuje předpočítané začátky a konce řídků. Takovým formátem je CSR.
+
 \section{CSR - Compressed sparse row}
 
 Problém efektivnosti formátu COO pro větší množství prvků řeší formát CSR, česky řádky komprimovaných vektorů. Formát CSR obsahuje pole $row\_pointers$, které obsahuje informaci o tom, kolik se v daném řádku nachází prvků. K poli s hodnotami je další pole $col\_indicies$, přiřazující ke každému prvku informaci o sloupci.
