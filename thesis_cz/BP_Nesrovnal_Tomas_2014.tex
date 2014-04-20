@@ -43,6 +43,11 @@
 \mylistof{algorithm}{Seznam algoritmů}%
 }
 
+% macro to define a local label
+%\newcommand\locallabel[1]{\label{\currentprefix:#1}}
+% macro to use a local reference
+%\newcommand\localref[1]{\ref{\currentprefix:#1}}
+
 %\mylistof{algorithm}{}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% </nesrotom>
@@ -105,17 +110,21 @@ Wolfram Mathematica je TODO
 
 Pomocí Wolfram Mathematicy vizualizujeme řídké matice z formátu \texttt{.mtx}. MatrixMarket nabízí matice v souborech \texttt{.mtx.gz} Wolfram Mathematica umí pracovat i s těmito komprimovanými soubory. Příkaz pro importování řídké matice a její vizualizaci je \texttt{Import["/tmp/matrix2.mtx", "Graphics"]}
 
-ZDROJ: http://reference.wolfram.com/mathematica/ref/format/MTX.html
+\url{http://reference.wolfram.com/mathematica/ref/format/MTX.html}
 
 
+\subsection{Boost}
 
-
-
+http://www.boost.org/doc/libs/1_55_0/libs/numeric/ublas/doc/matrix_sparse.htm
 
 
 TODO: moznosti implementace, zvolene reseni, ostatni reseni
 
 \chapter{Realizace}
+
+\subsection{Pseudokódy}
+
+(XXX: ?) Pro pseudokódy v této práci platí, že pole jsou indexovaná od nuly a for cyklus $for i \gets 0 to 10$ bude iterovat do devátého prvku. 
 
 \section{MatrixMarket}
 

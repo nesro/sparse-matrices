@@ -1,8 +1,11 @@
 \chapter{Formáty uložení řídkých matic}
 
+
 Formáty uložení řídkých matic obecně ukládají jednotlivé elementy zvlášť a tedy nemusí ukládat ty nulové. To ale přináší řadu nevýhod. Za prvé se musí ukládat informace o souřadicních jednotliých prvcích. Za druhé, ztrácíme možnost přístupu k prvku na libovolných šouřadnicích v čase $\Theta(1)$, protože prvky nemáme přímo indexované podle jejich umístění v řádku a sloupci.
 
 Protože řídké matice můžeme rozdělit do mnoha kategorií a provádět nad nimi mnoho operací, existuje hodně formátů, jak řídkou matici efektivně uložit a pracovat s ní.
+
+\url{http://www.cs.colostate.edu/~mroberts/toolbox/c++/sparseMatrix/sparse_matrix_compression.html}
 
 \subsection{Modifikace řídké matice}
 
@@ -59,7 +62,10 @@ Formát COO je velmi jednoduchý a přímočarý. Při procházení jeho prvků 
 	\end{algorithmic}
 \end{algorithm}
 
-Při násobení dvou matic ale narazíme na problém. Při násobení dvou matic se každý prvek násobí dvakrát. Potřebujeme způsob, jak se v matici vrátit zpátky na určité místo. Naivní algoritmus pro násobení dvou matic by byl složitý. Museli bychom si pamatovat začátky řádků a neustále kontrolovat, jestli jsme nepřesáhli další řádek. Lepším řešením je dopředu si předpočítat, kde který řádek začíná a končí. Předpočítáme si tedy pole o délce $výška\_ matice + 1$, obsahující index začátku a konce řádku.
+\label{alg:coo-mmm}
+Při násobení dvou matic ale narazíme na problém. Při této operaci se každý prvek násobí dvakrát. Potřebujeme způsob, jak se v matici vrátit zpátky na určité místo. Takový naivní algoritmus pro násobení dvou COO matic by byl složitý. Museli bychom si pamatovat začátky řádků a neustále kontrolovat, jestli jsme nepřesáhli další řádek. Lepším řešením je dopředu si předpočítat, kde který řádek začíná a končí. Předpočítáme si tedy pole, nazvané $row\_pointers$, o délce $M.height + 1$, obsahující indexy začátků a konců řádek.
+
+Při procháchezní matice se tak v poli s prvky mezi indexy $row\_pointers[i]$ a $row\_pointers[i+1]$ nachází prkvy na řádku $i$. Proto je pole právě o jedna delší než výska matice, abychom mohli určit konec posledního řádku.
 
 \begin{algorithm}[H]
 	\caption{Násobení dvou CSR matic}\label{coo-mmm}
@@ -80,7 +86,7 @@ Při násobení dvou matic ale narazíme na problém. Při násobení dvou matic
 			\State \texttt{$brp[i+1] = brp[i+1] + brp[i];$}
 		\EndFor
 		\For{\texttt{$i\gets0$\TO$A.height$}}\Comment{násobení}
-			\For{\texttt{$ac\gets arp[r]$\TO$arp[r+1]$}}
+			\For{\texttt{$ac\gets arp[i]$\TO$arp[i+1]$}}
 				\For{\texttt{$bc\gets brp[A.c[ac]]$\TO$brp[A.c[ac]+1]$}}
 					\State \texttt{$C.v[r][A.c[bc]] \gets C.v[r][A.c[bc]] + A.v[ac] * B.v[bc];$}
 				\EndFor
@@ -90,11 +96,18 @@ Při násobení dvou matic ale narazíme na problém. Při násobení dvou matic
 	\end{algorithmic}
 \end{algorithm}
 
-V části s násobením již pole s \texttt{y} souřadnicemi nepotřebujeme. Lepší formát uložení řídkých matic pro násobení by byl takový, který namíto pole s \texttt{y} souřadnicemi obsahuje předpočítané začátky a konce řídků. Takovým formátem je CSR.
+V části s násobením již pole s \texttt{y} souřadnicemi nepotřebujeme. Lepší formát uložení řídkých matic pro násobení by byl takový, který namíto pole s \texttt{y} souřadnicemi obsahuje předpočítané začátky a konce řádků. Takovým formátem je CSR.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{CSR - Compressed sparse row}
 
-Problém efektivnosti formátu COO pro větší množství prvků řeší formát CSR, česky řádky komprimovaných vektorů. Formát CSR obsahuje pole $row\_pointers$, které obsahuje informaci o tom, kolik se v daném řádku nachází prvků. K poli s hodnotami je další pole $col\_indicies$, přiřazující ke každému prvku informaci o sloupci.
+Problém efektivnosti formátu COO pro větší množství prvků řeší formát CSR, česky komprimované řídké řádky. Formát CSR obsahuje pole $row\_pointers$, které ukládá informace o tom, kolik se v daném řádku nachází prvků. K poli s hodnotami je další pole $col\_indicies$, přiřazující ke každému prvku informaci o sloupci.
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/csr/csr}
@@ -102,6 +115,9 @@ Problém efektivnosti formátu COO pro větší množství prvků řeší formá
 	\label{fig:CSR}
 \end{figure}
 
+Jak je vidět z ilustrace \ref{fig:CSR}, řádek s více prvky je uložen efektivně. Díky prázdným řádkům se nezdá pole $row\_pointers$ rozumně využité.
+
+Při násobení matice CSR s vektorem potřebujeme o jeden for cyklus více než v případě násobení matice COO s vektorem. Důvodem je ztráta informace o řádku prvku.
 
 \begin{algorithm}[H]
 	\caption{Násobení matice CSR s vektorem}\label{csr-mvm}
@@ -116,12 +132,15 @@ Problém efektivnosti formátu COO pro větší množství prvků řeší formá
 	\end{algorithmic}
 \end{algorithm}
 
+Násobení dvou CSR matic je stejné jak v případě násobení dvou COO matic popsaném v sekci \nameref{alg:coo-mmm}. Jediný rozdíl je, že předpočíné začátky a konce řádků jsou součástí formátu.
+
+\label{alg:csr-mmm}
 \begin{algorithm}[H]
 	\caption{Násobení dvou COO matic}\label{csr-mmm}
 	\begin{algorithmic}[1]
 		\Procedure{CSR-MMM}{$A,B,C$}
 		\For{\texttt{$i\gets0$\TO$A.height$}}\Comment{násobení}
-			\For{\texttt{$ac\gets A.rp[r]$\TO$A.rp[r+1]$}}
+			\For{\texttt{$ac\gets A.rp[i]$\TO$A.rp[i+1]$}}
 				\For{\texttt{$bc\gets B.rp[A.ci[ac]]$\TO$B.rp[A.ci[ac]+1]$}}
 					\State \texttt{$C.v[r][B.ci[bc]] \gets C.v[r][B.ci[bc]] + A.v[ac] * B.v[bc];$}
 				\EndFor
@@ -131,9 +150,14 @@ Problém efektivnosti formátu COO pro větší množství prvků řeší formá
 	\end{algorithmic}
 \end{algorithm}
 
+Existuje varianta tohoto formátu, nazvaná CSC - compressed sparse columns, která místo ukládání řádku ukládá sloupce.
+
 
 \section{BSR - Block Sparse Row}
 
+Jako formát CSR využívá uložení prvků v řádku, formát BSR detekuje a ukládá prvky v blocích.
+
+\url{http://docs.scipy.org/doc/scipy-0.13.0/reference/generated/scipy.sparse.bsr_matrix.html}
 \url{https://software.intel.com/sites/products/documentation/doclib/mkl_sa/11/mklman/GUID-9FCEB1C4-670D-4738-81D2-F378013412B0.htm}
 
 
