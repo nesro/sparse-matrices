@@ -145,6 +145,13 @@ test_matrices_pair_t kat_tm_pairs[] = {
 
 };
 
+test_matrices_pair_t bsr_pairs[] = {
+{ /**/
+{ MTX_DIR "4x4_4nz_01.mtx", 4, 4, 4 }, /**/
+{ MTX_DIR "4x4_4nz_02.mtx", 4, 4, 4 } /**/
+}, /**/
+};
+
 const test_matrix_t *foreach_matrix(const test_matrix_t *tm_array) {
 	static int i = 0;
 

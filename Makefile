@@ -16,6 +16,7 @@ OBJECTS=utils.o \
 	csr_matrix.o \
 	qdt_matrix.o \
 	kat_matrix.o \
+	bsr_matrix.o \
 	coo_matrix.o \
 	vector.o \
 	generator.o
@@ -23,6 +24,7 @@ OBJECTS=utils.o \
 TESTS=test_utils.o \
 	mulres_distance \
 	matrix_generator \
+	test_bsr_matrix \
 	test_coo_matrix \
 	test_den_matrix \
 	test_qdt_matrix \
@@ -163,6 +165,9 @@ virtual_matrix.o: $(SOURCE_DIR)/virtual_matrix.c $(SOURCE_DIR)/virtual_matrix.h
 
 csr_matrix.o: $(SOURCE_DIR)/csr_matrix.c $(SOURCE_DIR)/csr_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
+	
+bsr_matrix.o: $(SOURCE_DIR)/bsr_matrix.c $(SOURCE_DIR)/bsr_matrix.h
+	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 qdt_matrix.o: $(SOURCE_DIR)/qdt_matrix.c $(SOURCE_DIR)/qdt_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
@@ -212,6 +217,15 @@ test_coo_matrix: test_coo_matrix.o
 	
 test_coo_matrix.o: $(TEST_SRC)/test_coo_matrix.c $(CASSERTION)/cassertion.h \
 $(SRC)/virtual_matrix.h $(SRC)/coo_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+	
+	
+test_bsr_matrix: test_bsr_matrix.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_bsr_matrix.o \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+	
+test_bsr_matrix.o: $(TEST_SRC)/test_bsr_matrix.c $(CASSERTION)/cassertion.h \
+$(SRC)/virtual_matrix.h $(SRC)/bsr_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 

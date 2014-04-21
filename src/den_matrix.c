@@ -128,7 +128,7 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 	if (den != NULL && *den != NULL)
 		den_matrix_free(*den);
 
-	*den = malloc(sizeof(den_matrix_t));
+	*den = calloc(1, sizeof(den_matrix_t));
 
 	//_debug("w=%d h=%d z=%d\n", width, height, zero);
 

@@ -5,6 +5,7 @@
 
 #include "virtual_matrix.h"
 #include "den_matrix.h"
+#include "bsr_matrix.h"
 #include "coo_matrix.h"
 #include "csr_matrix.h"
 #include "qdt_matrix.h"
@@ -23,6 +24,9 @@ void vm_create(vm_t **vm, vm_type_t type, ...) {
 	switch (type) {
 	case DEN:
 		den_vm_init((den_matrix_t **) vm, vl);
+		break;
+	case BSR:
+		bsr_vm_init((bsr_t **) vm, vl);
 		break;
 	case COO:
 		coo_vm_init((coo_matrix_t **) vm, vl);
@@ -53,6 +57,9 @@ void vm_load_mm(vm_t **vm, vm_type_t type, const char *mm, ...) {
 	case DEN:
 		den_from_mm((den_matrix_t **) vm, mm, vl);
 		break;
+	case BSR:
+		bsr_from_mm((bsr_t **) vm, mm, vl);
+		break;
 	case COO:
 		coo_from_mm((coo_matrix_t **) vm, mm, vl);
 		break;
@@ -82,8 +89,23 @@ void vm_print(vm_t *vm) {
 	case DEN:
 		printf("dense\n");
 		break;
+	case BSR:
+		printf("bsr\n");
+		break;
+	case CSR:
+		printf("csr\n");
+		break;
+	case QDT:
+		printf("qdt\n");
+		break;
+	case KAT:
+		printf("kat\n");
+		break;
+	case COO:
+		printf("kat\n");
+		break;
 	default:
-		printf("<unknown>\n");
+		printf("<unknown or not defined>\n");
 		break;
 	}
 }
