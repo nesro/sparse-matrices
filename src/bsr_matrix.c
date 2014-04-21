@@ -11,6 +11,7 @@
 
 #include "utils.h"
 #include "bsr_matrix.h"
+#include "den_matrix.h"
 #include "virtual_matrix.h"
 #include "mm_load.h"
 
@@ -22,8 +23,8 @@ static vm_vmt_t bsr_vmt = { /**/
 (print_t) NULL, /**/
 (compare_t) NULL, /**/
 (distance_t) NULL, /**/
-(convert_t) NULL, /**/
-(mul_t) NULL, /**/
+(convert_t) bsr_convert, /**/
+(mul_t) bsr_mul, /**/
 };
 
 void bsr_vm_init(bsr_t **bsr, va_list va) {
@@ -56,6 +57,7 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 	int *tmp_last_col;
 	int blocks_in_row;
 	datatype_t **tmp_block_beginnigs;
+	int last_row;
 
 	mm_file = mm_load(filename);
 
@@ -87,39 +89,55 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 	}
 	free(tmp_last_col);
 
+	_s_debug(BSR_DEBUG, "Let's construct a BSR matrix:\n");
+
 	/* construct a bsr matrix */
 	bsr_init(bsr, mm_file->width, mm_file->height, mm_file->nnz, b_size,
 			blocks);
 	blocks = 0;
 	tmp_block_beginnigs = calloc(blocks_in_row, sizeof(datatype_t *));
 	assert(tmp_block_beginnigs != NULL);
+	(*bsr)->rp[0] = 0;
+	last_row = -1;
 	for (i = 0; i < mm_file->nnz; i++) {
 
 		block_row = mm_file->data[i].row / b_size;
 		block_col = mm_file->data[i].col / b_size;
 
+		if (block_row > last_row) {
+			if (last_row == -1) {
+				last_row = block_row;
+			} else {
+				last_row = block_row;
+				_s_debugf(BSR_DEBUG, "deleting! block_row=%d\n", block_row);
+				memset(tmp_block_beginnigs, 0,
+						blocks_in_row * sizeof(datatype_t *));
+			}
+		}
+
 		if (tmp_block_beginnigs[block_col] == NULL) {
 			tmp_block_beginnigs[block_col] = &((*bsr)->v[b_size * b_size
 					* blocks]);
 
-			printf("%d\n", blocks);
+			_s_debug(BSR_DEBUG, "found a block!\n");
+			_s_debugf(BSR_DEBUG, "blocks=%d\n", blocks);
 			(*bsr)->ci[blocks] = block_col;
 			blocks++;
 		}
 
 		/*
 		 * Place the item in the right place in a block.
-		 * FIXME: not right place
 		 */
-		printf("v=%p tbb=%p r=%d c=%d br=%d bc=%d\n", (void *) (*bsr)->v,
-				(void *) tmp_block_beginnigs[block_col], (block_row % b_size),
+		_s_debugf(BSR_DEBUG, "it=%lf v=%p tbb=%p r=%d c=%d br=%d bc=%d\n",
+				mm_file->data[i].value, (void * ) (*bsr)->v,
+				(void * ) tmp_block_beginnigs[block_col], (block_row % b_size),
 				(block_col % b_size), block_row, block_col);
 
 		*(tmp_block_beginnigs[block_col] + /**/
-		b_size * (mm_file->data[i].row % b_size) + /**/
+		(mm_file->data[i].row % b_size) * b_size + /**/
 		(mm_file->data[i].col % b_size)) += mm_file->data[i].value;
 
-		(*bsr)->rp[mm_file->data[i].row + 1] = blocks;
+		(*bsr)->rp[block_row + 1] = blocks;
 	}
 	free(tmp_block_beginnigs);
 
@@ -160,7 +178,8 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 	(*bsr)->v = calloc(((*bsr)->bc * b_size * b_size), sizeof(datatype_t));
 	assert((*bsr)->v != NULL);
 
-	(*bsr)->rp = malloc(((height / b_size) + 1) * sizeof(int));
+	/* XXX: this should be malloc'd */
+	(*bsr)->rp = calloc(((height / b_size) + 1), sizeof(int));
 	assert((*bsr)->rp != NULL);
 
 	(*bsr)->ci = calloc((*bsr)->bc, sizeof(int));
@@ -173,3 +192,134 @@ void bsr_free(bsr_t *bsr) {
 	free(bsr->v);
 	free(bsr);
 }
+
+vm_t *bsr_convert(bsr_t *bsr, vm_type_t type) {
+
+	vm_t *vm = NULL;
+	int i;
+	int j;
+	int k;
+	int l;
+
+	switch (type) {
+	/* Convert a BSR matrix to a DENSE matrix. */
+	case DEN:
+		vm_create(&vm, DEN, 1, bsr->_.w, bsr->_.h);
+
+		for (i = 0; i < bsr->bc * bsr->bs * bsr->bs; i++) {
+			_s_debugf(BSR_DEBUG, "i=%d v=%lf\n", i, bsr->v[i]);
+		}
+
+		for (i = 0; i < ((bsr->_.h / bsr->bs) + 1); i++) {
+			_s_debugf(BSR_DEBUG, "i=%d, rp=%d\n", i, bsr->rp[i]);
+		}
+
+		for (i = 0; i < bsr->bc; i++) {
+			_s_debugf(BSR_DEBUG, "i=%d, ci=%d\n", i, bsr->ci[i]);
+		}
+
+		for (i = 0; i < (bsr->_.h / bsr->bs); i++) {
+			_s_debugf(BSR_DEBUG, "cvt i=%d\n", i);
+			for (j = bsr->rp[i]; j < bsr->rp[i + 1]; j++) {
+				_s_debugf(BSR_DEBUG, "cvt j=%d col=%d\n", j, bsr->ci[j]);
+				for (k = 0; k < bsr->bs; k++) {
+					for (l = 0; l < bsr->bs; l++) {
+						_s_debugf(BSR_DEBUG, "c[%d][%d]=%lf\n",
+								(i * bsr->bs) + k, (j * bsr->bs) + l,
+								bsr->v[j * (bsr->bs * bsr->bs) + (k * bsr->bs)
+										+ l]);
+						((den_matrix_t *) vm)->v /**/
+						[(i * bsr->bs) + k] /**/
+						[(bsr->ci[j] * bsr->bs) + l] = /**/
+						bsr->v[j * (bsr->bs * bsr->bs) + (k * bsr->bs) + l];
+					}
+				}
+			}
+		}
+		break;
+	default:
+		fdie("unknown format to convert %d\n", type);
+		break;
+	}
+
+	return vm;
+}
+
+/******************************************************************************/
+
+double bsr_mul(const bsr_t *a, const bsr_t *b, den_matrix_t **c,
+		char flag /* unused */) {
+
+	double start_time;
+	double end_time;
+
+	int i;
+	int j;
+	int k;
+	int l;
+	int m;
+	int n;
+
+	assert(a->_.w == b->_.w);
+	assert(a->_.h == b->_.h);
+	assert(a->bs == b->bs);
+
+	if (*c == NULL)
+		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
+
+	start_time = omp_get_wtime();
+
+	_s_debug(BSR_DEBUG, "--- multiplication ---\n");
+
+	/*
+	 * For each row of blocks
+	 */
+	for (i = 0; i < (a->_.h / a->bs); i++) {
+		_s_debugf(BSR_DEBUG, "blockrow=%d, from=%d, to=%d\n", i, a->rp[i],
+				a->rp[i + 1]);
+		/*
+		 * For each block in the row
+		 */
+		for (j = a->rp[i]; j < a->rp[i + 1]; j++) {
+			_s_debugf(BSR_DEBUG,
+					"j=%d a->ci[j]=%d, b->rp[a->ci[j]]=%d, b->rp[a->ci[j] + 1]=%d\n",
+					j, a->ci[j], b->rp[a->ci[j]], b->rp[a->ci[j] + 1]);
+
+			/*
+			 * For each row in the matrix B corresponding to the column
+			 * from the matrix A
+			 */
+			for (k = b->rp[a->ci[j]]; k < b->rp[a->ci[j] + 1]; k++) {
+				_s_debugf(BSR_DEBUG, "k=%d\n", k);
+				/*
+				 * Multiply block like two dense matrices.
+				 */
+				for (l = 0; l < a->bs; l++) {
+					for (m = 0; m < a->bs; m++) {
+						for (n = 0; n < a->bs; n++) {
+
+//							_s_debugf(BSR_DEBUG, "k=%d\n", k);
+//
+//							_s_debugf(BSR_DEBUG, "c[%d][%d]=%lf*%lf\n",
+//									(j * a->bs) + l,/**/
+//									(b->ci[k] * a->bs) + m,/**/
+//									a->v[j * (a->bs * a->bs) + (k * a->bs) + l],/**/
+//									b->v[k * (a->bs * a->bs) + (k * a->bs) + m]);
+
+							((den_matrix_t *) *c)->v /**/
+							[(i * a->bs) + l] /**/
+							[(b->ci[k] * a->bs) + m] += /**/
+							a->v[j * (a->bs * a->bs) + (l * a->bs) + n] * /**/
+							b->v[k * (a->bs * a->bs) + (n * a->bs) + m];
+						}
+					}
+				}
+			}
+		}
+	}
+
+	end_time = omp_get_wtime();
+
+	return end_time - start_time;
+}
+

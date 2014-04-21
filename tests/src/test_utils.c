@@ -145,11 +145,41 @@ test_matrices_pair_t kat_tm_pairs[] = {
 
 };
 
-test_matrices_pair_t bsr_pairs[] = {
+test_matrices_pair_t bsr_pairs[] = { /**/
+
+{ /**/
+{ MTX_GEN_DIR "128x128_01.mtx", 128, 128, 16384 }, /**/
+{ MTX_GEN_DIR "128x128_02.mtx", 128, 128, 16384 }, /**/
+}, /**/
+
+{ /**/
+{ MTX_GEN_DIR "256x256_01.mtx", 256, 256, 65536 }, /**/
+{ MTX_GEN_DIR "256x256_02.mtx", 256, 256, 65536 }, /**/
+}, /**/
+
+{ { { 0 } } }, /**/
+
 { /**/
 { MTX_DIR "4x4_4nz_01.mtx", 4, 4, 4 }, /**/
-{ MTX_DIR "4x4_4nz_02.mtx", 4, 4, 4 } /**/
+{ MTX_DIR "4x4_4nz_01.mtx", 4, 4, 4 }, /**/
 }, /**/
+
+{ /**/
+{ MTX_DIR "4x4_8nz_01.mtx", 4, 4, 4 }, /**/
+{ MTX_DIR "4x4_8nz_01.mtx", 4, 4, 4 }, /**/
+}, /**/
+
+{ /**/
+{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
+{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
+}, /**/
+
+{ /**/
+{ MTX_DIR "generated_1024_5p_01.mtx", 1024, 1024, 53309 }, /**/
+{ MTX_DIR "generated_1024_5p_02.mtx", 1024, 1024, 53285 }, /**/
+}, /**/
+
+{ { { 0 } } }, /**/
 };
 
 const test_matrix_t *foreach_matrix(const test_matrix_t *tm_array) {

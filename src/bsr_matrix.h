@@ -8,7 +8,10 @@
 #ifndef BSR_MATRIX_H_
 #define BSR_MATRIX_H_
 
-#define BSR_DEBUG 1
+#define BSR_DEBUG 0
+
+#include "den_matrix.h"
+#include "virtual_matrix.h"
 
 typedef struct bsr_matrix {
 	vm_t _;
@@ -24,5 +27,7 @@ void bsr_from_mm(bsr_t **bsr, const char *mm_filename, va_list va);
 void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 		int b_cnt);
 void bsr_free(bsr_t *bsr);
-
+vm_t *bsr_convert(bsr_t *bsr, vm_type_t type);
+double bsr_mul(const bsr_t *a, const bsr_t *b, den_matrix_t **c,
+		char flag /* unused */);
 #endif /* BSR_MATRIX_H_ */
