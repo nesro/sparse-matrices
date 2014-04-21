@@ -155,7 +155,12 @@ Existuje varianta tohoto formátu, nazvaná CSC - compressed sparse columns, kte
 
 \section{BSR - Block Sparse Row}
 
+Protože při násobení matic násobíme každý prvek dvakrát, bylo by dobré tyto dvě operace provést co nejdříve, abychom při druhém znovunačtení prvku mohli sáhnout pro prvek do cahce.
+
 Jako formát CSR využívá uložení prvků v řádku, formát BSR detekuje a ukládá prvky v blocích.
+
+
+
 
 \url{http://docs.scipy.org/doc/scipy-0.13.0/reference/generated/scipy.sparse.bsr_matrix.html}
 \url{https://software.intel.com/sites/products/documentation/doclib/mkl_sa/11/mklman/GUID-9FCEB1C4-670D-4738-81D2-F378013412B0.htm}
