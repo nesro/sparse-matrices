@@ -68,9 +68,9 @@ Při násobení dvou matic ale narazíme na problém. Při této operaci se kaž
 Při procháchezní matice se tak v poli s prvky mezi indexy $row\_pointers[i]$ a $row\_pointers[i+1]$ nachází prkvy na řádku $i$. Proto je pole právě o jedna delší než výska matice, abychom mohli určit konec posledního řádku.
 
 \begin{algorithm}[H]
-	\caption{Násobení dvou CSR matic}\label{coo-mmm}
+	\caption{Násobení dvou COO matic}\label{coo-mmm}
 	\begin{algorithmic}[1]
-		\Procedure{CSR-MMM}{$A,B,C$}
+		\Procedure{COO-MMM}{$A,B,C$}
 		\State \texttt{$arp\gets InitArray(A.nnz + 1);$}
 		\State \texttt{$brp\gets InitArray(B.nnz + 1);$}
 		\For{\texttt{$i\gets0$\TO$A.nnz$}}\Comment{předpočítání prvků v řádcích matice A}
@@ -136,7 +136,7 @@ Násobení dvou CSR matic je stejné jak v případě násobení dvou COO matic 
 
 \label{alg:csr-mmm}
 \begin{algorithm}[H]
-	\caption{Násobení dvou COO matic}\label{csr-mmm}
+	\caption{Násobení dvou CSR matic}\label{csr-mmm}
 	\begin{algorithmic}[1]
 		\Procedure{CSR-MMM}{$A,B,C$}
 		\For{\texttt{$i\gets0$\TO$A.height$}}\Comment{násobení}
@@ -155,10 +155,45 @@ Existuje varianta tohoto formátu, nazvaná CSC - compressed sparse columns, kte
 
 \section{BSR - Block Sparse Row}
 
-Protože při násobení matic násobíme každý prvek dvakrát, bylo by dobré tyto dvě operace provést co nejdříve, abychom při druhém znovunačtení prvku mohli sáhnout pro prvek do cahce.
+Jako formát CSR využívá uložení prvků v řádku, formát BSR ještě navíc detekuje a ukládá prvky v blocích.
 
-Jako formát CSR využívá uložení prvků v řádku, formát BSR detekuje a ukládá prvky v blocích.
+Protože při násobení matic násobíme každý prvek dvakrát, bylo by dobré tyto dvě operace provést co nejdříve, abychom při druhém znovunačtení prvku mohli sáhnout pro prvek do cache. Pokud jsou prkvy procházené po menších blocích, dostaneme se k prvku podruhé dříve, než jej z cache přemaže jiný prvek.
 
+Matici $A$ ve formátu BSR uklákáme, velice podobně jako u formátu CSR, pomocí tří polí a jedné proměnné, která uchovává velikost bloku. Tuto proměnnou nazveme ji $block\_size$. Matici rozdělíme do bloků Pole $col\_indices$ označuje sloupec, ve kterém se blok nachází. Sloupcem rozumíme $A.width / A.block\_size$.
+
+\begin{figure}[H]\centering
+	\includegraphics[width=\textwidth]{./images/bsr/bsr}
+	\caption{Matice uložená ve formátu BSR}
+	\label{fig:CSR}
+\end{figure}
+
+
+Pokud vezmeme algoritmus násobení dvou CSR matic a místo prvků násobíme bloky, vznikne nám algoritmus pro násobení dvou BSR matric. Za povšimnutí stojí větší počet for cyklů s menším rozsahem iterace. To nám v nejvnitřnejších cyklech dovoluje lépe využívat cache. Jedná se tedy o přístup podobný loop tilingu.
+
+\label{alg:bsr-mmm}
+\begin{algorithm}[H]
+	\caption{Násobení dvou BSR matic}\label{bsr-mmm}
+	\begin{algorithmic}[1]
+		\Procedure{BSR-MMM}{$A,B,C$}
+		\State \texttt{$bs\gets A.block\_size;$}
+		\For{\texttt{$i\gets0$\TO$A.height / bs$}}
+			\For{\texttt{$ac\gets A.rp[i]$\TO$A.rp[i+1]$}}
+				\For{\texttt{$bc\gets B.rp[A.ci[ac]]$\TO$B.rp[A.ci[ac]+1]$}}
+					\For{\texttt{$l\gets0$\TO$A.bs$}}\Comment{násobení bloku}
+						\For{\texttt{$m\gets0$\TO$bs$}}
+							\For{\texttt{$n\gets0$\TO$bs$}}
+								\State \texttt{$C.v[(i * bs) + l][(B.ci[bc] * bs) + m]$ += \\
+									$ A.v[ac * (bs * bs) + (l * bs) + n] *$
+									$ B.v[bc * (bs * bs) + (n * bs) + m];$}
+							\EndFor
+						\EndFor
+					\EndFor
+				\EndFor
+			\EndFor
+		\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
 
 
 
