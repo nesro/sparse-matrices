@@ -15,19 +15,33 @@
 void load() {
 
 	vm_t *kat = NULL;
+	vm_t *den = NULL;
 	const test_matrix_t *tm;
 
 	while ((tm = foreach_matrix(kat_tm)) != NULL) {
 		printf("%s\n", tm->path);
-		vm_load_mm(&kat, KAT, tm->path, 4);
+		vm_load_mm(&kat, KAT, tm->path, 2);
+
+		den = kat->f.convert(kat, DEN);
+
+#if KAT_DEBUG == 1
+			printf("=============================================================\n");
+			den->f.print(den);
+			printf("=============================================================\n");
+#endif
+
 		kat->f.free(kat);
+		den->f.free(den);
 		kat = NULL;
+		den = NULL;
 
 		CASSERTION(1, "I survived: %s", tm->path);
+
+		break;
 	}
 }
 
-static void run() {
+void run() {
 
 	vm_t *da = NULL;
 	vm_t *db = NULL;
@@ -44,11 +58,12 @@ static void run() {
 	//		printf("%s\n", tm->path);
 	//	}
 
-	for (sms = 2; sms < 256; sms *= 2) {
+//	for (sms = 2; sms < 256; sms *= 2) {
+	for (sms = 2; sms <=2; sms *= 2) {
 		while ((tp = foreach_pair(kat_tm_pairs)) != NULL) {
 
-			CASSERTION_DONTRUN(sms >= tp->a.height, "sms=%d > tp->a.height=%d\n",
-					sms, tp->a.height);
+			CASSERTION_DONTRUN(sms >= tp->a.height,
+					"sms=%d > tp->a.height=%d\n", sms, tp->a.height);
 			if (cassertion.dontrun)
 				continue;
 
@@ -100,7 +115,7 @@ int main(int argc, char *argv[]) {
 
 	CASSERTION_INIT(argc, argv);
 
-//	load();
+	load();
 
 	run();
 

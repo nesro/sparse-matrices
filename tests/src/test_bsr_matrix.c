@@ -33,7 +33,7 @@ static void run() {
 	vm_t *bc = NULL;
 	int bs; /* block size */
 
-#if BSR_MATRIX == 1
+#if BSR_DEBUG == 1
 	vm_t *bsr_den = NULL;
 #endif
 
@@ -49,7 +49,7 @@ static void run() {
 
 			vm_load_mm(&ba, BSR, tp->a.path, bs);
 
-#if BSR_MATRIX == 1
+#if BSR_DEBUG == 1
 			printf("=============================================================\n");
 			bsr_den = ba->f.convert(ba, DEN);
 			bsr_den->f.print(bsr_den);
@@ -66,7 +66,7 @@ static void run() {
 			CASSERTION(dc->f.compare(dc, bc) == 0, "a=%s,b=%s,bs=%d bsr",
 					tp->a.path, tp->b.path, bs);
 
-#if BSR_MATRIX == 1
+#if BSR_DEBUG == 1
 			printf("---- dense:\n");
 			dc->f.print(dc);
 			printf("---- bsr:\n");

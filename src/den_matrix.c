@@ -32,6 +32,7 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 
 	int i;
 	int j;
+	int diff = 0;
 	vm_t *tmp = NULL;
 
 	if (a->_.w != b->w || a->_.h != b->h)
@@ -44,13 +45,20 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 
 	for (i = 0; i < a->_.h; i++)
 		for (j = 0; j < a->_.w; j++)
-			if (a->v[i][j] != ((den_matrix_t *) tmp)->v[i][j])
-				return 1;
+			if (a->v[i][j] != ((den_matrix_t *) tmp)->v[i][j]) {
+				diff++;
+				fprintf(stdout, ">>> diff y=%d x=%d v1=%lf v2=%lf\n", i, j,
+						a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
+				fflush(stdout);
+			}
 
 	if (b != tmp && tmp != NULL)
 		tmp->f.free(tmp);
 
-	return 0;
+	fprintf(stdout, "diff=%d\n", diff);
+	fflush(stdout);
+
+	return diff;
 }
 
 double den_distance(den_matrix_t *a, den_matrix_t *b) {

@@ -10,8 +10,6 @@
 
 #define KAT_DEBUG 0
 
-
-
 /*
  * The actual k of k-ary tree is N*N
  * If it's a constant, we may be sure that compiler will unroll it,
@@ -20,10 +18,10 @@
  * Is k is not set and it's not a constant, it's set by KAT_N_DEFAULT.
  *
  * TODO: kat node pointers will have to be calloc'd. so for now, it just
- * will be a constatnt
+ * will be a constant
  */
 #define KAT_N_IS_CONSTANT 1
-#define KAT_N_DEFAULT 4
+#define KAT_N_DEFAULT 2
 
 #if KAT_N_IS_CONSTANT
 #define KAT_N KAT_N_DEFAULT
@@ -40,10 +38,10 @@
  * If a submatrix will have at least KAT_DENSE_TRESHOLD of nnz, it will be
  * treated like a dense matrix.
  */
-#define KAT_DENSE_TRESHOLD 0
+#define KAT_DENSE_TRESHOLD (2)
 
 /*
- * If true, leaves of k-ary tree will be (also) in csr format.
+ * If true, leaves of k-ary tree will be (also) in CSR format.
  */
 #define KAT_CSR 1
 
@@ -138,7 +136,8 @@ void kat_free(kat_matrix_t *kat);
 void kat_determine_node(kat_matrix_t *kat, kat_node_t *kat_node);
 void kat_from_mm(kat_matrix_t **kat, const char *file, va_list va);
 double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size);
-double kat_mul(const kat_matrix_t *a, const kat_matrix_t *b, den_matrix_t **c, char flag);
+double kat_mul(const kat_matrix_t *a, const kat_matrix_t *b, den_matrix_t **c,
+		char flag);
 vm_t *kat_convert(kat_matrix_t *kat, vm_type_t type);
 
 #endif /* KAT_MATRIX_H_ */

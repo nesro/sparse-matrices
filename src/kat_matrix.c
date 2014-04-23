@@ -31,7 +31,7 @@ void kat_print_node(kat_node_t *kat_node, int depth) {
 	int j;
 
 	if (kat_node->node_type != INNER) {
-		printf("%*s END \n", depth, "");
+		printf("%*s END type=%d \n", depth, "", kat_node->node_type);
 		return;
 	}
 
@@ -76,7 +76,7 @@ void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 	assert(is_power_of_two(width));
 
 	assert(is_power_of_two(sm_size));
-	assert(width*height > sm_size*KAT_K);
+	assert(width*height % sm_size*KAT_K == 0);
 
 	*kat = calloc(1, sizeof(kat_matrix_t));
 	assert(*kat != NULL);
@@ -123,6 +123,9 @@ static void kat_node_free(kat_node_t *kat_node) {
 
 void kat_free(kat_matrix_t *kat) {
 
+	printf("dense blocks=%d csr=%d\n", kat->den_blocks,
+			kat->blocks - kat->den_blocks);
+
 	kat_node_free(kat->root);
 	free(kat->v);
 
@@ -136,6 +139,10 @@ void kat_free(kat_matrix_t *kat) {
 
 /******************************************************************************/
 
+/*
+ * This function return a pointer to the right block. Automatically build
+ * the path to the block.
+ */
 static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 
 	int i;
@@ -146,17 +153,14 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 	int oy; /* offset */
 	int ox;
 
-//	int fy = 0;
-//	int fx = 0;
-
-	_s_debugf(KAT_DEBUG, "Searching for node for [y,x]=[%d,%d]\n", y, x);
+	_s_debugf(KAT_DEBUG, "Searching for a node for y=%d,x=%d\n", y, x);
 
 	for (i = 0; i < kat->height; i++) {
 
-	_s_debugf(KAT_DEBUG, "block_size=%d]\n",block_size);
+		_s_debugf(KAT_DEBUG, "block_size=%d\n", block_size);
 
-	if (block_size < 1) block_size = 1;
-
+		if (block_size < 1)
+			block_size = 1;
 
 		oy = (y / block_size);
 		_s_debugf(KAT_DEBUG, "--- computing oy=(y/block_size) as %d=(%d/%d)\n",
@@ -269,6 +273,9 @@ static void kat_csr_rp(kat_matrix_t *kat, kat_node_t *kat_node) {
 	int sum;
 
 	if (kat_node->node_type == KAT_N_CSR) {
+		_s_debugf(KAT_DEBUG, "computing block at y=%d, x=%d\n",
+				kat_node->node.sm.y, kat_node->node.sm.x);
+
 		sum = 0;
 
 		for (i = 0; i < kat->sm_size; i++) {
@@ -285,8 +292,7 @@ static void kat_csr_rp(kat_matrix_t *kat, kat_node_t *kat_node) {
 	if (kat_node->node_type == INNER)
 		for (i = 0; i < KAT_N; i++)
 			for (j = 0; j < KAT_N; j++)
-				if (kat_node->node.knp[i][j]
-						&& kat_node->node.knp[i][j]->node_type == INNER)
+				if (kat_node->node.knp[i][j])
 					kat_csr_rp(kat, kat_node->node.knp[i][j]);
 }
 
@@ -309,7 +315,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 	double start_time;
 	double end_time;
 	mm_file_t *mm_file;
-	kat_node_t *tmp_node;
+	kat_node_t *tn; /* temporary node */
 	int i;
 
 	mm_file = mm_load(filename);
@@ -326,65 +332,59 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 
 		_s_debugf(KAT_DEBUG, "i=%d v=%lf\n", i, mm_file->data[i].value);
 
-		tmp_node = kat_get_node(*kat, mm_file->data[i].row,
-				mm_file->data[i].col);
+		tn = kat_get_node(*kat, mm_file->data[i].row, mm_file->data[i].col);
 
-		if (tmp_node->node_type != KAT_N_DEN) {
+		/*
+		 * If the matrix is dense, there is no reason to count its elements.
+		 */
+		if (tn->node_type != KAT_N_DEN) {
 			(*kat)->v_length++;
-			tmp_node->node.sm.nnz++;
+			tn->node.sm.nnz++;
 		}
 
-		if (tmp_node->node_type
-				!= KAT_N_DEN&& tmp_node->node.sm.nnz > KAT_DENSE_TRESHOLD) {
+		/*
+		 * Every block is CSR by default. If there is too many elemtents
+		 * inside, we'll treat it like a dense matrix.
+		 */
+		if (tn->node_type != KAT_N_DEN && tn->node.sm.nnz > KAT_DENSE_TRESHOLD) {
 
 			_s_debugf(KAT_DEBUG, "tmp_node at y=%d x=%d is now DENSE\n",
-					tmp_node->node.sm.y, tmp_node->node.sm.x);
+					tn->node.sm.y, tn->node.sm.x);
 
-			tmp_node->node_type = KAT_N_DEN;
+			tn->node_type = KAT_N_DEN;
 			(*kat)->den_blocks++;
-			(*kat)->v_length += sm_size * sm_size - tmp_node->node.sm.nnz;
+			(*kat)->v_length += sm_size * sm_size - tn->node.sm.nnz;
 		}
-
 	}
 
 	/*
-	 * Allocating memory for matrix data.
+	 * Allocating memory for the matrix data.
 	 */
 	(*kat)->v = calloc((*kat)->v_length, sizeof(datatype_t));
 	(*kat)->last_v = (*kat)->v;
 
 	/*
-	 * XXX: here we are computing size of csr arrays. if there will be
+	 * XXX: here we are computing size of CSR arrays. if there will be
 	 * another format, this part must be redesigned
 	 */
 	(*kat)->ci = calloc((*kat)->_.nnz, sizeof(int));
+	(*kat)->last_ci = (*kat)->ci;
 	(*kat)->rp = calloc(
 			((*kat)->blocks - (*kat)->den_blocks) * ((*kat)->sm_size + 1),
 			sizeof(int));
+	(*kat)->last_rp = (*kat)->rp;
 
 	kat_prepare(*kat, (*kat)->root);
-
-//	kat_print_node((*kat)->root, 0);
 
 	/*
 	 * We'll put each element to the right place in its submatrix.
 	 */
 	for (i = 0; i < mm_file->nnz; i++) {
-		tmp_node = kat_get_node(*kat, mm_file->data[i].row,
-				mm_file->data[i].col);
 
-		switch (tmp_node->node_type) {
+		tn = kat_get_node(*kat, mm_file->data[i].row, mm_file->data[i].col);
+
+		switch (tn->node_type) {
 		case KAT_N_DEN:
-
-//			printf("Will write to dense sumbatrix. %d, %d, %p\n",
-//					((mm_file->data[i].row % (*kat)->sm_size) * (*kat)->sm_size)
-//							+ (mm_file->data[i].col % (*kat)->sm_size),
-//					((*kat)->den_blocks * sm_size + sm_size) + (*kat)->_.nnz
-//							- (*kat)->den_blocks_nnz,
-//					(void*) (&(tmp_node->node.sm.v)));
-
-//			assert(tmp_node->node.sm.v == (*kat)->v);
-
 			/*
 			 * tmp_node->node.sm.v is a pointer to the (*kat)->v array.
 			 * It's a one dimensional array, but dense matrix is a two
@@ -400,9 +400,9 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 					mm_file->data[i].col,
 					((mm_file->data[i].row % (*kat)->sm_size) * (*kat)->sm_size)
 							+ (mm_file->data[i].col % (*kat)->sm_size),
-					tmp_node->node.sm.y, tmp_node->node.sm.x);
+					tn->node.sm.y, tn->node.sm.x);
 
-			tmp_node->node.sm.v[((mm_file->data[i].row % (*kat)->sm_size)
+			tn->node.sm.v[((mm_file->data[i].row % (*kat)->sm_size)
 					* (*kat)->sm_size)
 					+ (mm_file->data[i].col % (*kat)->sm_size)] =
 					mm_file->data[i].value;
@@ -410,26 +410,28 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 			break;
 		case KAT_N_CSR:
 
-			_s_debugf(KAT_DEBUG, "adding %lf at y=%d x=%d to CSR\n",
+			_s_debugf(KAT_DEBUG, "adding %lf at y=%d x=%d to CSR. n_nnz=%d\n",
 					mm_file->data[i].value, mm_file->data[i].row,
-					mm_file->data[i].col);
+					mm_file->data[i].col, tn->node.sm.n_nnz);
 
-			tmp_node->node.sm.v[tmp_node->node.sm.n_nnz] =
-					mm_file->data[i].value;
-			tmp_node->node.sm.s.csr.ci[tmp_node->node.sm.n_nnz] =
-					(mm_file->data[i].col % (*kat)->sm_size);
-			tmp_node->node.sm.s.csr.rp[(mm_file->data[i].row % (*kat)->sm_size)]++;
-			tmp_node->node.sm.n_nnz++;
+			tn->node.sm.v[tn->node.sm.n_nnz] = mm_file->data[i].value;
+			tn->node.sm.s.csr.ci[tn->node.sm.n_nnz] = (mm_file->data[i].col
+					% (*kat)->sm_size);
+			tn->node.sm.s.csr.rp[(mm_file->data[i].row % (*kat)->sm_size)]++;
 			break;
 		default:
 			_s_debugf(KAT_DEBUG, "Node type should be specific. node_type=%d\n",
-					tmp_node->node_type);
+					tn->node_type);
 			assert(0);
 			break;
 		}
 
-		tmp_node->node.sm.n_nnz++;
+		tn->node.sm.n_nnz++;
 	}
+
+#if KAT_DEBUG
+	kat_print_node((*kat)->root, 0);
+#endif
 
 #if KAT_CSR
 	kat_csr_rp(*kat, (*kat)->root);
@@ -449,13 +451,36 @@ static void kat_node_to_dense(kat_matrix_t *kat, kat_node_t *kat_node,
 	int j;
 
 	if (kat_node->node_type == KAT_N_CSR) {
+		_s_debugf(KAT_DEBUG, "converting CSR node at y=%d, x=%d\n",
+				kat_node->node.sm.y, kat_node->node.sm.x);
+
+		for (i = 0; i <= kat->sm_size; i++) {
+			_s_debugf(KAT_DEBUG, "csr i=%d rp=%d\n", i,
+					kat_node->node.sm.s.csr.rp[i]);
+		}
+		for (i = 0; i < kat_node->node.sm.n_nnz; i++) {
+			_s_debugf(KAT_DEBUG, "csr i=%d ci=%d v=%lf\n", i,
+					kat_node->node.sm.s.csr.ci[i], kat_node->node.sm.v[i]);
+		}
+
+		for (i = 0; i < kat->sm_size; i++) {
+			for (j = kat_node->node.sm.s.csr.rp[i];
+					j < kat_node->node.sm.s.csr.rp[i + 1]; j++) {
+				_s_debugf(KAT_DEBUG, "i=%d, j=%d\n", i, j);
+				den->v /**/
+				[kat_node->node.sm.y + i] /**/
+				[kat_node->node.sm.x + kat_node->node.sm.s.csr.ci[j]] +=
+						kat_node->node.sm.v[j];
+			}
+		}
 		return;
 	}
 
 	if (kat_node->node_type == KAT_N_DEN) {
 		for (i = 0; i < kat->sm_size; i++)
 			for (j = 0; j < kat->sm_size; j++)
-				den->v[i][j] += kat_node->node.sm.v[i * kat->sm_size + j];
+				den->v[kat_node->node.sm.y + i][kat_node->node.sm.x + j] +=
+						kat_node->node.sm.v[i * kat->sm_size + j];
 		return;
 	}
 
@@ -521,17 +546,86 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 
 static void kat_mul_den_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
-	printf("cccc\n\n\n\n");
+	printf("den x csr\n");
+
+	int i;
+	int j;
+	int k;
+	int sms = ma->sm_size;
+
+	_s_debugf(KAT_DEBUG,
+			"mul_den_csr a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
+			(void* )a, a->node_type, (void* )a->node.sm.v,
+			(void* )b->node.sm.v);
+
+	for (i = 0; i < sms; i++) {
+		for (j = 0; j < sms; j++) {
+			for (k = b->node.sm.s.csr.rp[j]; k < b->node.sm.s.csr.rp[j + 1];
+					k++) {
+
+//					_s_debugf(KAT_DEBUG,
+//							"mul %lf at y=%d x=%d with %lf at y=%d x=%d to y=%d x=%d\n",
+//							a->node.sm.v[i * sms + k], i, k,
+//							b->node.sm.v[k * sms + j], k, j, i + a->node.sm.y,
+//							j + b->node.sm.x);
+
+
+				_s_debugf(KAT_DEBUG, "j=%d", j);
+				c->v[i + a->node.sm.y]
+				     [
+				      b->node.sm.s.csr.ci[k]
+				                          + b->node.sm.x] +=
+						a->node.sm.v[i * sms + j] * b->node.sm.v[k];
+			}
+		}
+	}
 
 }
+
 static void kat_mul_csr_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
-	printf("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n\n\n\n");
 
+	printf("csr x den\n");
+	int r;
+	int ac;
+	int i;
+
+	_s_debugf(KAT_DEBUG,
+			"mul_csr_den a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
+			(void* )a, a->node_type, (void* )a->node.sm.v,
+			(void* )b->node.sm.v);
+
+	for (r = 0; r < ma->sm_size; r++)
+		for (ac = a->node.sm.s.csr.rp[r]; ac < a->node.sm.s.csr.rp[r + 1]; ac++)
+			for (i = 0; i < ma->sm_size; i++) {
+
+				_s_debugf(KAT_DEBUG,
+						">> mul %lf at y=%d x=%d with %lf at y=%d x=%d to y=%d x=%d\n",
+						a->node.sm.v[ac], 0, 0,
+						b->node.sm.v[r * a->node.sm.s.csr.ci[ac] + i], 0, 0,
+						a->node.sm.y + r, b->node.sm.x + i);
+
+//				c->v[a->node.sm.y + r][b->node.sm.x + i] += a->node.sm.v[ac]
+//						* b->node.sm.v[r * ma->sm_size + i];
+				c->v[a->node.sm.y + r][b->node.sm.x + i] += a->node.sm.v[ac]
+						* b->node.sm.v[ ma->sm_size *a->node.sm.s.csr.ci[ac]  + i];
+			}
 }
+
 static void kat_mul_csr_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
-	printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n\n");
+
+	int r;
+	int ac;
+	int bc;
+
+	for (r = 0; r < ma->sm_size; r++)
+		for (ac = a->node.sm.s.csr.rp[r]; ac < a->node.sm.s.csr.rp[r + 1]; ac++)
+			for (bc = b->node.sm.s.csr.rp[a->node.sm.s.csr.ci[ac]];
+					bc < b->node.sm.s.csr.rp[a->node.sm.s.csr.ci[ac] + 1]; bc++)
+				c->v[a->node.sm.y + r][b->node.sm.x + b->node.sm.s.csr.ci[bc]] +=
+						a->node.sm.v[ac] * b->node.sm.v[bc];
+
 }
 
 __attribute__((optimize("unroll-loops")))

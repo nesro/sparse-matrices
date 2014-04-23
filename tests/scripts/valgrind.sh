@@ -12,5 +12,9 @@ if [[ ! -x $1 ]]; then
 	exit 1
 fi
 
+# running this dangerous program should be less dangerous with nice -19
+# the linux kernel set the lowest priority to this program so you SHOULD
+# be able to kill it when some problem occurs
+
 nice -n 19 valgrind --leak-check=full --show-reachable=yes \
 	$1 2> >(while read l; do echo -e "\e[01;31m$l\e[0m" >&2; done)
