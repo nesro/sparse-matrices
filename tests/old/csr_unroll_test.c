@@ -272,12 +272,12 @@ void csr_mmm_test(void) {
 
 void csr_mvm_test(void) {
 	csr_t csr_a = { { 0 } };
-	vector_t vector_b = { 0 };
+	vec_t vector_b = { 0 };
 
-	vector_t vector_c = { 0 };
-	vector_t vector_c_unrolled = { 0 };
-	vector_t vector_c_parallel = { 0 };
-	vector_t vector_c_unrolled_parallel = { 0 };
+	vec_t vector_c = { 0 };
+	vec_t vector_c_unrolled = { 0 };
+	vec_t vector_c_parallel = { 0 };
+	vec_t vector_c_unrolled_parallel = { 0 };
 
 	int i, j;
 

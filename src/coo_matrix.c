@@ -161,17 +161,12 @@ void coo_transpose(coo_matrix_t *coo) {
 /******************************************************************************/
 
 /*
- * Matrix-Matrix multiplication in COO format.
+ * [BI-BAP: COO matrix X COO matrix]
  */
-double coo_mul(const coo_matrix_t *a, const coo_matrix_t *b, den_matrix_t **c,
-		char flag /* unused */) {
+static double mul_coo_coo(const coo_matrix_t *a, const coo_matrix_t *b,
+		den_matrix_t *c) {
 
 	double start_time;
-	double end_time;
-
-	if (*c == NULL)
-		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
-
 	int *arp;
 	int *brp;
 	int i;
@@ -201,11 +196,46 @@ double coo_mul(const coo_matrix_t *a, const coo_matrix_t *b, den_matrix_t **c,
 	for (r = 0; r < a->_.h; r++)
 		for (ac = arp[r]; ac < arp[r + 1]; ac++)
 			for (bc = brp[a->c[ac]]; bc < brp[a->c[ac] + 1]; bc++)
-				(*c)->v[r][b->c[bc]] += a->v[ac] * b->v[bc];
+				c->v[r][b->c[bc]] += a->v[ac] * b->v[bc];
 
 	free(arp);
-	end_time = omp_get_wtime();
-	return end_time - start_time;
+	return omp_get_wtime() - start_time;
+}
+
+/*
+ * [BI-BAP: COO matrix X vector]
+ */
+static double mul_coo_vec(const coo_matrix_t *a, const vec_t *b, vec_t *c) {
+
+	double start_time;
+	int n;
+
+	start_time = omp_get_wtime();
+
+	for (n = 0; n < a->_.nnz; n++)
+		c->v[a->r[n]] += a->v[n] * b->v[a->c[n]];
+
+	return omp_get_wtime() - start_time;
+}
+
+/*
+ * Matrix-Matrix multiplication in COO format.
+ */
+double coo_mul(const coo_matrix_t *a, const vm_t *b, vm_t **c,
+		char flag /* unused */) {
+
+	switch (b->type) {
+	case VEC:
+		vec_init((vec_t **) c, a->_.w);
+		return mul_coo_vec(a, (vec_t *) b, (vec_t *) *c);
+	case COO:
+		den_matrix_init((den_matrix_t **) c, a->_.w, b->h, 1);
+		return mul_coo_coo(a, (coo_matrix_t *) b, (den_matrix_t *) c);
+	default:
+		fprintf(stderr, "Unknown matrix type: %d\n", b->type);
+		exit(1);
+		return 0.;
+	}
 }
 
 /******************************************************************************/

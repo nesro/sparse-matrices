@@ -29,6 +29,7 @@ TESTS=test_utils.o \
 	test_den_matrix \
 	test_qdt_matrix \
 	test_kat_matrix \
+	test_mat_vec \
 
 BINARY=./main
 
@@ -253,6 +254,16 @@ test_kat_matrix: test_kat_matrix.o
 
 test_kat_matrix.o: $(TEST_SRC)/test_kat_matrix.c $(CASSERTION)/cassertion.h \
 $(SRC)/virtual_matrix.h $(SRC)/kat_matrix.h
+	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
+
+
+test_mat_vec: test_mat_vec.o
+	$(LD) $(CFLAGS) $(TEST_BUILD)/test_utils.o $(TEST_BUILD)/test_mat_vec.o \
+	$(addprefix $(BUILD)/, $(OBJECTS)) -o $(TEST_BIN)/$@ $(CLIBS)
+
+test_mat_vec.o: $(TEST_SRC)/test_mat_vec.c $(CASSERTION)/cassertion.h \
+$(SRC)/virtual_matrix.h $(SRC)/bsr_matrix.h $(SRC)/coo_matrix.h \
+ $(SRC)/csr_matrix.h $(SRC)/den_matrix.h $(SRC)/kat_matrix.h
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------

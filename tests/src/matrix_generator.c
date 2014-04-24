@@ -442,10 +442,10 @@ static void generate_dense(FILE *f) {
 		printf("Generating dense matrix.\n");
 
 	fprintf(f, "%%%%MatrixMarket matrix coordinate real general\n");
-	fprintf(f, "%d %d %d\n", n, n, n * n);
+	fprintf(f, "%d %d %d\n", h, w, w * h);
 
-	for (i = 1; i <= n; i++)
-		for (j = 1; j <= n; j++)
+	for (i = 1; i <= h; i++)
+		for (j = 1; j <= w; j++)
 			fprintf(f, "%d %d %lf\n", i, j, v++);
 }
 

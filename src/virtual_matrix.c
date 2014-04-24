@@ -72,6 +72,9 @@ void vm_load_mm(vm_t **vm, vm_type_t type, const char *mm, ...) {
 	case KAT:
 		kat_from_mm((kat_matrix_t **) vm, mm, vl);
 		break;
+	case VEC:
+		vec_from_mm((vec_t **) vm, mm, vl);
+		break;
 	default:
 		break;
 	}
@@ -103,6 +106,9 @@ void vm_print(vm_t *vm) {
 		break;
 	case COO:
 		printf("kat\n");
+		break;
+	case VEC:
+		printf("vec\n");
 		break;
 	default:
 		printf("<unknown or not defined>\n");

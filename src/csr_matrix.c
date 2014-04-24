@@ -1,5 +1,5 @@
 /**
- * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013-2014
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013,2014
  * https://github.com/nesro/sparse-matrices
  */
 
@@ -21,24 +21,28 @@
 
 static vm_vmt_t csr_vmt = { /**/
 (reset_t) NULL, /**/
-(free_t) den_matrix_free, /**/
+(free_t) csr_free, /**/
 (mm_load_t) NULL,/**/
 (mm_save_t) NULL, /**/
-(print_t) den_matrix_print, /**/
+(print_t) NULL, /**/
 (compare_t) NULL, /**/
 (distance_t) NULL, /**/
 (convert_t) NULL, /**/
-(mul_t) mul, /**/
+(mul_t) csr_mul, /**/
 };
 
 /***************************************************************************/
 
-void csr_matrix_init(csr_t **csr, int width, int height, int nnz) {
+void csr_init(csr_t **csr, int width, int height, int nnz) {
+
+	*csr = calloc(1, sizeof(csr_t));
+	assert(*csr != NULL);
 
 	(*csr)->_.type = CSR;
 	(*csr)->_.f = csr_vmt;
 	(*csr)->_.w = width;
 	(*csr)->_.h = height;
+	(*csr)->_.nnz = nnz;
 
 	(*csr)->v = malloc(nnz * sizeof(datatype_t));
 	assert((*csr)->v != NULL);
@@ -54,6 +58,14 @@ void csr_matrix_init(csr_t **csr, int width, int height, int nnz) {
 	assert((*csr)->rp != NULL);
 }
 
+void csr_free(csr_t *csr) {
+
+	free(csr->ci);
+	free(csr->v);
+	free(csr->rp);
+	free(csr);
+}
+
 void csr_vm_init(csr_t **csr, va_list va) {
 
 	int va_flag = 0;
@@ -65,7 +77,7 @@ void csr_vm_init(csr_t **csr, va_list va) {
 	height = va_get_int(va, -1, &va_flag);
 	width = va_get_int(va, -1, &va_flag);
 
-	csr_matrix_init(csr, width, height, nnz);
+	csr_init(csr, width, height, nnz);
 }
 
 void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
@@ -76,7 +88,9 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 
 	mm_file = mm_load(mm_filename);
 
-	csr_matrix_init(csr, mm_file->width, mm_file->height, mm_file->nnz);
+	csr_init(csr, mm_file->width, mm_file->height, mm_file->nnz);
+
+	/* FIXME: in COO it's better. duh! */
 
 	for (i = mm_file->nnz - 1; i >= 0; i--)
 		(*csr)->rp[mm_file->data[i].row + 1]++;
@@ -100,28 +114,53 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 
 /******************************************************************************/
 
-double csr_mul(const csr_t *a, const csr_t *b, den_matrix_t **c,
-		char flag /* unused */) {
+static double mul_csr_vec(const csr_t *a, const vec_t *b, vec_t *c) {
 
 	double start_time;
-	double end_time;
+	int r;
+	int ac;
+
+	start_time = omp_get_wtime();
+
+	for (r = 0; r < a->_.w; r++)
+		for (ac = a->rp[r]; ac < a->rp[r + 1]; ac++)
+			c->v[r] += a->v[ac] * b->v[a->ci[ac]];
+
+	return omp_get_wtime() - start_time;
+}
+
+static double mul_csr_csr(const csr_t *a, const csr_t *b, den_matrix_t *c) {
+
+	double start_time;
 
 	int r; /* row */
 	int ac; /* col of A */
 	int bc; /* col of B */
-
-	if (*c == NULL)
-		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
 
 	start_time = omp_get_wtime();
 
 	for (r = 0; r < a->_.h; r++)
 		for (ac = a->rp[r]; ac < a->rp[r + 1]; ac++)
 			for (bc = b->rp[a->ci[ac]]; bc < b->rp[a->ci[ac] + 1]; bc++)
-				(*c)->v[r][b->ci[bc]] += a->v[ac] * b->v[bc];
+				c->v[r][b->ci[bc]] += a->v[ac] * b->v[bc];
 
-	end_time = omp_get_wtime();
-	return end_time - start_time;
+	return omp_get_wtime() - start_time;
+}
+
+double csr_mul(const csr_t *a, const vm_t *b, vm_t **c, char flag /* unused */) {
+
+	switch (b->type) {
+	case VEC:
+		vec_init((vec_t **) c, a->_.w);
+		return mul_csr_vec(a, (vec_t *) b, (vec_t *) *c);
+	case CSR:
+		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
+		return mul_csr_csr(a, (csr_t *) b, (den_matrix_t *) c);
+	default:
+		fprintf(stderr, "Unknown matrix type: %d\n", b->type);
+		exit(1);
+		return 0.;
+	}
 }
 
 ///**

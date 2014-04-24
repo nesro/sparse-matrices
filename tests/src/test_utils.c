@@ -94,6 +94,17 @@ test_matrix_t kat_tm[] = {
 		{ { 0 } }, /**/
 };
 
+test_matrices_pair_t mat_vec_pairs[] = { /**/
+
+{ /**/
+{ MTX_DIR "64x64_4nz_01.mtx", 1024, 1024, 53309 }, /**/
+{ MTX_DIR "vector_64.mtx", 1024, 1024, 53285 }, /**/
+}, /**/
+
+{ { { 0 } } }, /**/
+
+};
+
 test_matrices_pair_t kat_tm_pairs[] = {
 //
 

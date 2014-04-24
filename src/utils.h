@@ -22,6 +22,14 @@
 #define _PRINT_DEBUG 0
 #endif
 
+/* not implemented handler *************************************************/
+
+#define not_implemented(msg) do { \
+		fprintf(stdout, "d:%s:%s:%d(): NOT_IMPLEMENTED: " msg "\n", __FILE__ , \
+			__func__ , __LINE__ ); \
+		fflush(stdout); \
+	} while(0)
+
 /* variable argument list handling *****************************************/
 
 #define VA_END -9999

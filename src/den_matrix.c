@@ -591,10 +591,38 @@ double den_mul_strassen(const den_matrix_t *a, const den_matrix_t *b,
 
 /******************************************************************************/
 
-double mul(const den_matrix_t *a, const den_matrix_t *b, den_matrix_t **c,
-		char flag) {
+/*
+ * [BI-BAP: Dense matrix x vector]
+ */
+static double mul_den_vec(const den_matrix_t *a, vec_t *b, vec_t *c) {
+
+	int row;
+	int col;
+	datatype_t sum;
+	double start_time;
+
+	start_time = omp_get_wtime();
+
+	for (row = 0; row < a->_.h; row++) {
+		sum = 0;
+		for (col = 0; col < b->_.h; col++) {
+			sum += a->v[row][col] * b->v[col];
+		}
+		c->v[row] = sum;
+	}
+
+	return (omp_get_wtime() - start_time);
+}
+
+double mul(const den_matrix_t *a, const vm_t *b, vm_t **c, char flag) {
 
 	int init_zeros = 1;
+
+	if (b->type == VEC) {
+		assert(a->_.w == b->h);
+		vec_init((vec_t **) c, b->h);
+		return mul_den_vec(a, (vec_t *) b, (vec_t *) *c);
+	}
 
 	/*
 	 * We have to initialize C matrix. For naive method we can compute every
@@ -609,19 +637,22 @@ double mul(const den_matrix_t *a, const den_matrix_t *b, den_matrix_t **c,
 		init_zeros = 1;
 
 	if (*c == NULL) {
-		den_matrix_init(c, b->_.w, a->_.h, init_zeros);
-	} else if ((*c)->_.w != b->_.w || (*c)->_.h != a->_.h) {
+		den_matrix_init((den_matrix_t **) c, b->w, a->_.h, init_zeros);
+	} else if ((*c)->w != b->w || (*c)->h != a->_.h) {
 		free(*c);
 		c = NULL;
-		den_matrix_init(c, b->_.w, a->_.h, init_zeros);
+		den_matrix_init((den_matrix_t **) c, b->w, a->_.h, init_zeros);
 	}
 
 	if (flag & NAIVE)
-		return den_mul_naive(a, b, *c);
+		return den_mul_naive((den_matrix_t *) a, (den_matrix_t *) b,
+				(den_matrix_t *) *c);
 	else if (flag & STRASSEN)
-		return den_mul_strassen(a, b, *c);
+		return den_mul_strassen((den_matrix_t *) a, (den_matrix_t *) b,
+				(den_matrix_t *) *c);
 	else if (flag & RECURSIVE)
-		return den_mul_recursion(a, b, *c);
+		return den_mul_recursion((den_matrix_t *) a, (den_matrix_t *) b,
+				(den_matrix_t *) *c);
 
 	fdie("The flag \"%x\" is not valid.\n", flag);
 

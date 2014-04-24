@@ -23,8 +23,8 @@ void coo_vm_init(coo_matrix_t **, va_list);
 void coo_init(coo_matrix_t **, int, int, int);
 void coo_free(coo_matrix_t *);
 vm_t *coo_convert(coo_matrix_t *, vm_type_t);
-double coo_mul(const coo_matrix_t *, const coo_matrix_t *, den_matrix_t **,
-		char);
+double coo_mul(const coo_matrix_t *a, const vm_t *b, vm_t **c,
+		char flag /* unused */);
 double coo_from_mm(coo_matrix_t **, const char *, va_list);
 
 //int coo_matrix_init(coo_matrix_t *coo_matrix, int nnz, int width, int height);

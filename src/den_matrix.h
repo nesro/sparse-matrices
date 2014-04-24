@@ -64,14 +64,14 @@ double den_mul_strassen(const den_matrix_t *, const den_matrix_t *,
 /*
  * This is called from virtual matrix.
  */
-double mul(const den_matrix_t *, const den_matrix_t *, den_matrix_t **, char);
+double mul(const den_matrix_t *, const vm_t *, vm_t **, char);
 
 int den_count_nnz(const den_matrix_t *);
 
 /***************************************************************************/
 
 void dense_matrix_matrix_mul(den_matrix_t *a, den_matrix_t *b, den_matrix_t *c);
-void dense_matrix_vector_mul(den_matrix_t *a, vector_t *b, vector_t *c);
+void dense_matrix_vector_mul(den_matrix_t *a, vec_t *b, vec_t *c);
 void dense_to_html(den_matrix_t *a, char *filename);
 
 int dense_matrix_load_mm(den_matrix_t *dense_matrix, const char *filename);
