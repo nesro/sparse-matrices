@@ -247,12 +247,42 @@ vm_t *bsr_convert(bsr_t *bsr, vm_type_t type) {
 
 /******************************************************************************/
 
-double bsr_mul(const bsr_t *a, const bsr_t *b, den_matrix_t **c,
-		char flag /* unused */) {
+static inline double mul_bsr_vec(const bsr_t *a, const vec_t *b, vec_t *c) {
 
 	double start_time;
-	double end_time;
+	int i;
+	int j;
+	int l;
+	int m;
 
+	assert(a->_.w == b->_.h);
+
+	start_time = omp_get_wtime();
+
+	_s_debug(BSR_DEBUG, ".\n");
+
+	for (i = 0; i < (a->_.h / a->bs); i++) {
+		for (j = a->rp[i]; j < a->rp[i + 1]; j++) {
+			for (l = 0; l < a->bs; l++) {
+				for (m = 0; m < a->bs; m++) {
+
+					c->v /**/
+					[(i * a->bs) + l] /**/
+					+= /**/
+					a->v[j * (a->bs * a->bs) + (l * a->bs) + m] * /**/
+					b->v[(a->ci[j] * a->bs) + m];
+				}
+			}
+		}
+	}
+
+	return omp_get_wtime() - start_time;
+}
+
+static inline double mul_bsr_bsr(const bsr_t *a, const bsr_t *b,
+		den_matrix_t *c) {
+
+	double start_time;
 	int i;
 	int j;
 	int k;
@@ -263,9 +293,6 @@ double bsr_mul(const bsr_t *a, const bsr_t *b, den_matrix_t **c,
 	assert(a->_.w == b->_.w);
 	assert(a->_.h == b->_.h);
 	assert(a->bs == b->bs);
-
-	if (*c == NULL)
-		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
 
 	start_time = omp_get_wtime();
 
@@ -297,16 +324,7 @@ double bsr_mul(const bsr_t *a, const bsr_t *b, den_matrix_t **c,
 				for (l = 0; l < a->bs; l++) {
 					for (m = 0; m < a->bs; m++) {
 						for (n = 0; n < a->bs; n++) {
-
-//							_s_debugf(BSR_DEBUG, "k=%d\n", k);
-//
-//							_s_debugf(BSR_DEBUG, "c[%d][%d]=%lf*%lf\n",
-//									(j * a->bs) + l,/**/
-//									(b->ci[k] * a->bs) + m,/**/
-//									a->v[j * (a->bs * a->bs) + (k * a->bs) + l],/**/
-//									b->v[k * (a->bs * a->bs) + (k * a->bs) + m]);
-
-							((den_matrix_t *) *c)->v /**/
+							c->v /**/
 							[(i * a->bs) + l] /**/
 							[(b->ci[k] * a->bs) + m] += /**/
 							a->v[j * (a->bs * a->bs) + (l * a->bs) + n] * /**/
@@ -318,8 +336,21 @@ double bsr_mul(const bsr_t *a, const bsr_t *b, den_matrix_t **c,
 		}
 	}
 
-	end_time = omp_get_wtime();
-
-	return end_time - start_time;
+	return omp_get_wtime() - start_time;
 }
 
+double bsr_mul(const bsr_t *a, const vm_t *b, vm_t **c, char flag /* unused */) {
+
+	switch (b->type) {
+	case VEC:
+		vec_init((vec_t **) c, a->_.w);
+		return mul_bsr_vec(a, (vec_t *) b, (vec_t *) *c);
+	case BSR:
+		den_matrix_init((den_matrix_t **) c, a->_.w, b->h, 1);
+		return mul_bsr_bsr(a, (bsr_t *) b, (den_matrix_t *) c);
+	default:
+		fprintf(stderr, "Unknown matrix type: %d\n", b->type);
+		exit(1);
+		return 0.;
+	}
+}

@@ -28,6 +28,6 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 		int b_cnt);
 void bsr_free(bsr_t *bsr);
 vm_t *bsr_convert(bsr_t *bsr, vm_type_t type);
-double bsr_mul(const bsr_t *a, const bsr_t *b, den_matrix_t **c,
+double bsr_mul(const bsr_t *a, const vm_t *b, vm_t **c,
 		char flag /* unused */);
 #endif /* BSR_MATRIX_H_ */
