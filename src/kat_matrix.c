@@ -25,31 +25,6 @@ static vm_vmt_t kat_vmt = { /**/
 (mul_t) kat_mul, /**/
 };
 
-void kat_print_node(kat_node_t *kat_node, int depth) {
-
-	int i;
-	int j;
-
-	if (kat_node->node_type != INNER) {
-		printf("%*s END type=%d \n", depth, "", kat_node->node_type);
-		return;
-	}
-
-	for (i = 0; i < KAT_N; i++) {
-		for (j = 0; j < KAT_N; j++) {
-			printf("%*s[%d][%d] = ", depth, "", i, j);
-
-			if (kat_node->node.knp[i][j] != NULL) {
-				printf(" !\n");
-				kat_print_node(kat_node->node.knp[i][j], depth + 1);
-			} else {
-				printf("NULL\n");
-			}
-		}
-	}
-
-}
-
 /**
  * kat_vm_init(vm_t **,
  */
@@ -91,6 +66,8 @@ void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 
 	(*kat)->root = calloc(1, sizeof(kat_node_t));
 	assert((*kat)->root != NULL);
+
+	/* XXX: am I checking this anywhere? */
 	(*kat)->root->node_type = INNER;
 
 	(*kat)->height =
@@ -294,6 +271,32 @@ static void kat_csr_rp(kat_matrix_t *kat, kat_node_t *kat_node) {
 			for (j = 0; j < KAT_N; j++)
 				if (kat_node->node.knp[i][j])
 					kat_csr_rp(kat, kat_node->node.knp[i][j]);
+}
+
+/******************************************************************************/
+
+void kat_print_node(kat_node_t *kat_node, int depth) {
+
+	int i;
+	int j;
+
+	if (kat_node->node_type != INNER) {
+		printf("%*s END type=%d \n", depth, "", kat_node->node_type);
+		return;
+	}
+
+	for (i = 0; i < KAT_N; i++) {
+		for (j = 0; j < KAT_N; j++) {
+			printf("%*s[%d][%d] = ", depth, "", i, j);
+
+			if (kat_node->node.knp[i][j] != NULL) {
+				printf(" !\n");
+				kat_print_node(kat_node->node.knp[i][j], depth + 1);
+			} else {
+				printf("NULL\n");
+			}
+		}
+	}
 }
 
 /******************************************************************************/
@@ -569,12 +572,8 @@ static void kat_mul_den_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 //							b->node.sm.v[k * sms + j], k, j, i + a->node.sm.y,
 //							j + b->node.sm.x);
 
-
 				_s_debugf(KAT_DEBUG, "j=%d", j);
-				c->v[i + a->node.sm.y]
-				     [
-				      b->node.sm.s.csr.ci[k]
-				                          + b->node.sm.x] +=
+				c->v[i + a->node.sm.y][b->node.sm.s.csr.ci[k] + b->node.sm.x] +=
 						a->node.sm.v[i * sms + j] * b->node.sm.v[k];
 			}
 		}
@@ -582,8 +581,9 @@ static void kat_mul_den_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 
 }
 
-static void kat_mul_csr_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
-		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
+static inline void kat_mul_csr_den(const kat_matrix_t *ma,
+		const kat_matrix_t *mb, const kat_node_t *a, const kat_node_t *b,
+		den_matrix_t *c) {
 
 	printf("csr x den\n");
 	int r;
@@ -602,18 +602,19 @@ static void kat_mul_csr_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 				_s_debugf(KAT_DEBUG,
 						">> mul %lf at y=%d x=%d with %lf at y=%d x=%d to y=%d x=%d\n",
 						a->node.sm.v[ac], 0, 0,
-						b->node.sm.v[r * a->node.sm.s.csr.ci[ac] + i], 0, 0,
-						a->node.sm.y + r, b->node.sm.x + i);
+						b->node.sm.v[ma->sm_size * a->node.sm.s.csr.ci[ac] + i],
+						0, 0, a->node.sm.y + r, b->node.sm.x + i);
 
-//				c->v[a->node.sm.y + r][b->node.sm.x + i] += a->node.sm.v[ac]
-//						* b->node.sm.v[r * ma->sm_size + i];
-				c->v[a->node.sm.y + r][b->node.sm.x + i] += a->node.sm.v[ac]
-						* b->node.sm.v[ ma->sm_size *a->node.sm.s.csr.ci[ac]  + i];
+				c->v[a->node.sm.y + r][b->node.sm.x + i] +=
+						a->node.sm.v[ac]
+								* b->node.sm.v[ma->sm_size
+										* a->node.sm.s.csr.ci[ac] + i];
 			}
 }
 
-static void kat_mul_csr_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
-		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
+static inline void kat_mul_csr_csr(const kat_matrix_t *ma,
+		const kat_matrix_t *mb, const kat_node_t *a, const kat_node_t *b,
+		den_matrix_t *c) {
 
 	int r;
 	int ac;
@@ -628,6 +629,10 @@ static void kat_mul_csr_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 
 }
 
+/*
+ * Because of having multiple types of leaves, we need to determine which
+ * function we'll call.
+ */
 __attribute__((optimize("unroll-loops")))
 static void kat_node_mul(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c, int depth) {
@@ -671,22 +676,110 @@ static void kat_node_mul(const kat_matrix_t *ma, const kat_matrix_t *mb,
 	}
 }
 
-double kat_mul(const kat_matrix_t *a, const kat_matrix_t *b, den_matrix_t **c,
+/******************************************************************************/
+/*
+ * K-ary tree matrix multiplied by a vector.
+ */
+
+__attribute__((optimize("unroll-loops")))
+static inline void kat_mul_den_vec(const kat_matrix_t *ma, const vec_t *b,
+		const kat_node_t *a, vec_t *c) {
+
+	int i;
+	int j;
+
+	for (i = 0; i < ma->sm_size; i++)
+		for (j = 0; j < ma->sm_size; j++)
+			c->v[i + a->node.sm.y] += a->node.sm.v[i * ma->sm_size + j]
+					* b->v[a->node.sm.x + j];
+}
+
+__attribute__((optimize("unroll-loops")))
+static inline void kat_mul_csr_vec(const kat_matrix_t *ma, const vec_t *b,
+		const kat_node_t *a, vec_t *c) {
+
+	int r;
+	int ac;
+
+	_s_debugf(KAT_DEBUG, "c->v = %p\n", (void * )c->v);
+
+	for (r = 0; r < ma->sm_size; r++)
+		for (ac = a->node.sm.s.csr.rp[r]; ac < a->node.sm.s.csr.rp[r + 1]; ac++)
+			c->v[a->node.sm.y + r] += /**/
+			a->node.sm.v[ac] * b->v[/**/
+			a->node.sm.x + /**/
+			a->node.sm.s.csr.ci[ac]];
+}
+
+/*
+ * Multiply k-ary tree matrix nodes with a vector.
+ */
+__attribute__((optimize("unroll-loops")))
+static void mul_katnode_vec(const kat_matrix_t *ma, const vec_t *mb,
+		const kat_node_t *a, vec_t *c) {
+
+	int i;
+	int j;
+	int k;
+
+	for (i = 0; i < KAT_N; i++) {
+		for (j = 0; j < KAT_N; j++) {
+			for (k = 0; k < KAT_N; k++) {
+				if (a->node.knp[i][k]) {
+					if (a->node.knp[i][k]->node_type == KAT_N_DEN) {
+						kat_mul_den_vec(ma, mb, a->node.knp[i][k], c);
+						continue;
+					}
+
+					if (a->node.knp[i][k]->node_type == KAT_N_CSR) {
+						kat_mul_csr_vec(ma, mb, a->node.knp[i][k], c);
+						continue;
+					}
+
+					if (a->node.knp[i][k]->node_type == INNER) {
+						mul_katnode_vec(ma, mb, a->node.knp[i][k], c);
+						continue;
+					}
+				}
+			}
+		}
+	}
+}
+
+/******************************************************************************/
+
+double kat_mul(const kat_matrix_t *a, const vm_t *b, vm_t **c,
 		char flag /* unused */) {
 
 	double start_time;
 	double end_time;
 
-	assert(a->_.w == b->_.w);
-	assert(a->_.h == b->_.h);
-
-	if (*c == NULL)
-		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
-
-	start_time = omp_get_wtime();
-	kat_node_mul(a, b, a->root, b->root, *c, 0);
-	end_time = omp_get_wtime();
+	switch (b->type) {
+	case VEC:
+		assert(a->_.w == b->h);
+		printf("YES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		vec_init((vec_t **) c, a->_.w);
+		start_time = omp_get_wtime();
+		mul_katnode_vec(a, (vec_t *) b, a->root, (vec_t *) *c);
+		end_time = omp_get_wtime();
+		break;
+	case KAT:
+		assert(a->_.w == b->w);
+		assert(a->_.h == b->h);
+		den_matrix_init((den_matrix_t **) c, a->_.w, b->w, 1);
+		start_time = omp_get_wtime();
+		kat_node_mul(a, (kat_matrix_t *) b, a->root, ((kat_matrix_t*) b)->root,
+				(den_matrix_t *) *c, 0);
+		end_time = omp_get_wtime();
+		break;
+	default:
+		fprintf(stderr, "Unknown matrix type: %d\n", b->type);
+		exit(1);
+		return 0.;
+	}
 
 	return end_time - start_time;
 }
+
+/******************************************************************************/
 

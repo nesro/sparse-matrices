@@ -136,8 +136,8 @@ void kat_free(kat_matrix_t *kat);
 void kat_determine_node(kat_matrix_t *kat, kat_node_t *kat_node);
 void kat_from_mm(kat_matrix_t **kat, const char *file, va_list va);
 double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size);
-double kat_mul(const kat_matrix_t *a, const kat_matrix_t *b, den_matrix_t **c,
-		char flag);
+double kat_mul(const kat_matrix_t *a, const vm_t *b, vm_t **c,
+		char flag /* unused */);
 vm_t *kat_convert(kat_matrix_t *kat, vm_type_t type);
 
 #endif /* KAT_MATRIX_H_ */

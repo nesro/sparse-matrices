@@ -18,8 +18,7 @@ OBJECTS=utils.o \
 	kat_matrix.o \
 	bsr_matrix.o \
 	coo_matrix.o \
-	vector.o \
-	generator.o
+	vector.o
 
 TESTS=test_utils.o \
 	mulres_distance \
@@ -186,9 +185,6 @@ den_matrix.o: $(SOURCE_DIR)/den_matrix.c $(SOURCE_DIR)/den_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 vector.o: $(SOURCE_DIR)/vector.c $(SOURCE_DIR)/vector.h
-	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
-
-generator.o: $(SOURCE_DIR)/generator.c $(SOURCE_DIR)/generator.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------

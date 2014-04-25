@@ -101,6 +101,11 @@ test_matrices_pair_t mat_vec_pairs[] = { /**/
 { MTX_DIR "vector_64.mtx", 1024, 1024, 53285 }, /**/
 }, /**/
 
+{ /**/
+{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
+{ MTX_DIR "vector_64.mtx", 64, 1, 64 }, /**/
+}, /**/
+
 { { { 0 } } }, /**/
 
 };

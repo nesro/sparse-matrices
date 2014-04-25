@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #include "vector.h"
-#include "matrix.h"
 #include "virtual_matrix.h"
 
 #ifndef DENSE_MATRIX_H_

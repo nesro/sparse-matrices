@@ -4,7 +4,6 @@
  */
 
 #include "utils.h"
-#include "matrix.h"
 #include "virtual_matrix.h"
 #include "csr_matrix.h"
 #include "den_matrix.h"

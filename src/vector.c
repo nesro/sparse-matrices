@@ -48,6 +48,7 @@ void vec_init(vec_t **vec, int size) {
 	 * uninitialized elements.
 	 */
 	(*vec)->v = calloc(size, sizeof(datatype_t));
+	assert((*vec)->v != NULL);
 }
 
 void vec_free(vec_t *vec) {
