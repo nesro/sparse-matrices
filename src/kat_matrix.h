@@ -21,7 +21,12 @@
  * will be a constant
  */
 #define KAT_N_IS_CONSTANT 1
+
+#ifdef _KAT_N
+#define KAT_N_DEFAULT _KAT_N
+#else
 #define KAT_N_DEFAULT 2
+#endif
 
 #if KAT_N_IS_CONSTANT
 #define KAT_N KAT_N_DEFAULT

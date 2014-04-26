@@ -54,6 +54,10 @@ CASSERTION=./cassertion
 
 #-------------------------------------------------------------------------------
 
+ifdef KAT_N
+	CFLAGS += -D_KAT_N=$(KAT_N)
+endif
+
 ifdef DEBUG
 	CFLAGS += -O0 -ggdb #-Wextra
 else
@@ -171,7 +175,7 @@ bsr_matrix.o: $(SOURCE_DIR)/bsr_matrix.c $(SOURCE_DIR)/bsr_matrix.h
 
 qdt_matrix.o: $(SOURCE_DIR)/qdt_matrix.c $(SOURCE_DIR)/qdt_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
-	
+
 kat_matrix.o: $(SOURCE_DIR)/kat_matrix.c $(SOURCE_DIR)/kat_matrix.h
 	$(CC) $(CFLAGS) -c -o $(BUILD)/$@ $< $(CLIBS)
 

@@ -46,12 +46,14 @@ void kat_vm_init(kat_matrix_t **kat, va_list va) {
 
 void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 
-	/* TODO: add zeros to the matrix achieve this */
+	/*
+	 * XXX: be strict here. It's for testing purposes and we want to avoid
+	 * edge cases.
+	 */
 	assert(width == height);
 	assert(is_power_of_two(width));
-
 	assert(is_power_of_two(sm_size));
-	assert(width*height % sm_size*KAT_K == 0);
+	assert(is_power_of_two(KAT_N));
 
 	*kat = calloc(1, sizeof(kat_matrix_t));
 	assert(*kat != NULL);
@@ -64,16 +66,18 @@ void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 	(*kat)->sm_size = sm_size;
 	(*kat)->_.nnz = nnz;
 
-	(*kat)->root = calloc(1, sizeof(kat_node_t));
-	assert((*kat)->root != NULL);
+	(*kat)->root = NULL;
 
-	/* XXX: am I checking this anywhere? */
-	(*kat)->root->node_type = INNER;
-
+	/*
+	 * This is not needed.
+	 */
 	(*kat)->height =
 			ceil(
 					(log((width * height) / (sm_size * sm_size))
 							/ (double) log(KAT_K)));
+
+	// not really
+//	assert(width < sm_size * KAT_N);
 
 	_s_debugf(KAT_DEBUG,
 			"initializing kat_matrix_t with: n=%d, nnz=%d, sm_size=%d, height=%d\n",
@@ -122,54 +126,109 @@ void kat_free(kat_matrix_t *kat) {
  */
 static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 
-	int i;
+	/*
+	 * Pointer to a node. We'll use it to traverse through the tree.
+	 */
 	kat_node_t **tmp_node = &kat->root;
-	int block_size = kat->_.w / KAT_N;
-	int by = 0; /* block */
-	int bx = 0;
-	int oy; /* offset */
-	int ox;
 
-	_s_debugf(KAT_DEBUG, "Searching for a node for y=%d,x=%d\n", y, x);
+	/*
+	 * This is a temporary block to determine in which part we have to traverse.
+	 * We're starting at the full width of the matrix and dividing it by the
+	 * KAT_N number. When submatrix_size * KAT_N exceeds this block_size, we
+	 * know that we're in the last node and may create a submatrix.
+	 */
+	int block_start_y = 0;
+	int block_start_x = 0;
+	int block_size = kat->_.w;
 
-	for (i = 0; i < kat->height; i++) {
+	/*
+	 * We can compute the sumbatrix's y and x coords even before traversing
+	 * the tree.
+	 */
+	int sm_y = ((int) (y / kat->sm_size)) * kat->sm_size;
+	int sm_x = ((int) (x / kat->sm_size)) * kat->sm_size;
 
-		_s_debugf(KAT_DEBUG, "block_size=%d\n", block_size);
+	/*
+	 * Position of the next node when traversing the tree.
+	 */
+	int node_y;
+	int node_x;
 
-		if (block_size < 1)
-			block_size = 1;
+	_s_debugf(KAT_DEBUG, "item: y=%d, x=%d in block y=%d, x=%d\n", y, x, sm_y,
+			sm_x);
 
-		oy = (y / block_size);
-		_s_debugf(KAT_DEBUG, "--- computing oy=(y/block_size) as %d=(%d/%d)\n",
-				oy, y, block_size);
+	/*
+	 * Now traverse to the last inner block.
+	 */
+	while (kat->sm_size * KAT_N < block_size) {
 
-		ox = (x / block_size);
-		y -= oy * block_size;
-		x -= ox * block_size;
-		by += oy * block_size;
-		bx += ox * block_size;
+		assert(y >= block_start_y);
+		assert(block_start_y + block_size >= y);
+		assert(x >= block_start_x);
+		assert(block_start_x + block_size >= x);
+
+		node_y = (y - block_start_y) / (block_size / KAT_N);
+		node_x = (x - block_start_x) / (block_size / KAT_N);
+
+		assert(0 <= node_y);
+		assert(node_y <= KAT_N);
+		assert(0 <= node_x);
+		assert(node_x <= KAT_N);
 
 		if (*tmp_node == NULL) {
-			_s_debug(KAT_DEBUG, "creating a new inner node!\n");
+			_s_debugf(KAT_DEBUG,
+					"creating an inner node knp[%d][%d] when block_start_y=%d, block_start_x=%d, block_size=%d\n",
+					node_y, node_x, block_start_y, block_start_x, block_size);
 
 			*tmp_node = calloc(1, sizeof(kat_node_t));
-			assert(tmp_node != NULL);
+			assert(*tmp_node != NULL);
 
 			(*tmp_node)->node_type = INNER;
 		}
 
-		tmp_node = &((*tmp_node)->node.knp[oy][ox]);
-		block_size /= KAT_N;
+		tmp_node = &((*tmp_node)->node.knp[node_y][node_x]);
 
-		_s_debugf(KAT_DEBUG,
-				"next node is at oy=%d ox=%d bs=%d y=%d x=%d by=%d bx=%d\n", oy,
-				ox, block_size, y, x, by, bx);
+		block_start_y += node_y * (block_size / KAT_N);
+		block_start_x += node_x * (block_size / KAT_N);
+		block_size /= KAT_N;
 	}
+
+	/*
+	 * Now we have to compute real offset with submatrix size.
+	 * The last node before submatrix may be not full.
+	 */
+	assert(y >= block_start_y);
+	assert(block_start_y + block_size >= y);
+	assert(x >= block_start_x);
+	assert(block_start_x + block_size >= x);
+
+	node_y = (y - block_start_y) / kat->sm_size;
+	node_x = (x - block_start_x) / kat->sm_size;
+	block_start_y += node_y * kat->sm_size;
+	block_start_x += node_x * kat->sm_size;
+
+	if (*tmp_node == NULL) {
+		_s_debugf(KAT_DEBUG,
+				"creating a LAST inner node knp[%d][%d] when block_start_y=%d, block_start_x=%d, block_size=%d\n",
+				node_y, node_x, block_start_y, block_start_x, block_size);
+
+		*tmp_node = calloc(1, sizeof(kat_node_t));
+		assert(*tmp_node != NULL);
+
+		(*tmp_node)->node_type = INNER;
+	}
+	tmp_node = &((*tmp_node)->node.knp[node_y][node_x]);
+
+	/*
+	 * We should traverse to the same location as we computed before.
+	 */
+	assert(block_start_y == sm_y);
+	assert(block_start_x == sm_x);
 
 	if (*tmp_node == NULL) {
 
 		*tmp_node = calloc(1, sizeof(kat_node_t));
-		assert(tmp_node != NULL);
+		assert(*tmp_node != NULL);
 
 		/*
 		 * The submatrix will be sparse when created. Because elements are
@@ -177,17 +236,15 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 		 * is high, we switch it to dense format.
 		 */
 		(*tmp_node)->node_type = KAT_N_CSR;
-		(*tmp_node)->node.sm.y = ((int) (by / kat->sm_size)) * kat->sm_size;
-		(*tmp_node)->node.sm.x = ((int) (bx / kat->sm_size)) * kat->sm_size;
+		(*tmp_node)->node.sm.y = sm_y;
+		(*tmp_node)->node.sm.x = sm_x;
 		kat->blocks++;
 
 		_s_debugf(KAT_DEBUG, "Creating a leaf node at y=%d x=%d\n",
 				(*tmp_node)->node.sm.y, (*tmp_node)->node.sm.x);
 	}
 
-	_s_debugf(KAT_DEBUG, "Node found. by=%d bx=%d y=%d x=%d\n",
-			(*tmp_node)->node.sm.y, (*tmp_node)->node.sm.x,
-			(*tmp_node)->node.sm.y, (*tmp_node)->node.sm.x);
+	_s_debug(KAT_DEBUG, "returning the node\n");
 
 	return *tmp_node;
 }
@@ -549,7 +606,6 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 
 static void kat_mul_den_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
-	printf("den x csr\n");
 
 	int i;
 	int j;
@@ -585,7 +641,6 @@ static inline void kat_mul_csr_den(const kat_matrix_t *ma,
 		const kat_matrix_t *mb, const kat_node_t *a, const kat_node_t *b,
 		den_matrix_t *c) {
 
-	printf("csr x den\n");
 	int r;
 	int ac;
 	int i;

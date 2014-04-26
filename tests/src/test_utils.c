@@ -86,12 +86,14 @@ test_matrices_pair_t tm_pairs[] = {
 
 test_matrix_t kat_tm[] = {
 //
-		{ MTX_DIR "4x4_8nz_01.mtx", 2, 2, 4 }, /**/
+		{  MTX_GEN_DIR "1024.mtx", 1024, 1024, 1048576}, /**/
+		{ { 0 } }, /**/
+
+		{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
 		{ MTX_DIR "64x64_2nz_01.mtx", 64, 64, 2 }, /**/
 		{ MTX_DIR "64x64_2nz_02.mtx", 64, 64, 2 }, /**/
 		{ MTX_DIR "64x64_4nz_01.mtx", 64, 64, 4 }, /**/
-		{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
-		{ { 0 } }, /**/
+		{ MTX_DIR "4x4_8nz_01.mtx", 2, 2, 4 }, /**/
 };
 
 test_matrices_pair_t mat_vec_pairs[] = { /**/
@@ -112,11 +114,22 @@ test_matrices_pair_t mat_vec_pairs[] = { /**/
 
 test_matrices_pair_t kat_tm_pairs[] = {
 //
+		{ /**/
+		{ MTX_GEN_DIR "1024.mtx", 1024, 1024, 1048576 }, /**/
+		{ MTX_GEN_DIR "1024.mtx", 1024, 1024, 1048576 }, /**/
+		}, /**/
+
+		{ /**/
+		{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
+		{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
+		}, /**/
 
 		{ /**/
 		{ MTX_DIR "generated_1024_5p_01.mtx", 1024, 1024, 53309 }, /**/
 		{ MTX_DIR "generated_1024_5p_02.mtx", 1024, 1024, 53285 }, /**/
 		}, /**/
+
+		{ { { 0 } } }, /**/
 
 		{ { MTX_DIR "4x4_4nz_01.mtx", 1024, 1024, 53285 }, /**/
 		{ MTX_DIR "4x4_1nz_01.mtx", 1024, 1024, 53285 }, /**/

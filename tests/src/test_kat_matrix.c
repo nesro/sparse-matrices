@@ -15,29 +15,29 @@
 void load() {
 
 	vm_t *kat = NULL;
-	vm_t *den = NULL;
 	const test_matrix_t *tm;
 
 	while ((tm = foreach_matrix(kat_tm)) != NULL) {
 		printf("%s\n", tm->path);
-		vm_load_mm(&kat, KAT, tm->path, 2);
+		vm_load_mm(&kat, KAT, tm->path, 128);
 
-		den = kat->f.convert(kat, DEN);
 
 #if KAT_DEBUG == 1
-			printf("=============================================================\n");
-			den->f.print(den);
-			printf("=============================================================\n");
+		vm_t *den = NULL;
+		den = kat->f.convert(kat, DEN);
+		printf(
+				"=============================================================\n");
+		den->f.print(den);
+		printf(
+				"=============================================================\n");
+		den->f.free(den);
+		den = NULL;
 #endif
 
 		kat->f.free(kat);
-		den->f.free(den);
 		kat = NULL;
-		den = NULL;
 
 		CASSERTION(1, "I survived: %s", tm->path);
-
-		break;
 	}
 }
 
@@ -51,6 +51,7 @@ void run() {
 	vm_t *kc = NULL;
 
 	const test_matrices_pair_t *tp;
+	double time;
 
 	int sms; /* submatrix size */
 
@@ -58,33 +59,29 @@ void run() {
 	//		printf("%s\n", tm->path);
 	//	}
 
-//	for (sms = 2; sms < 256; sms *= 2) {
-	for (sms = 2; sms <=2; sms *= 2) {
-		while ((tp = foreach_pair(kat_tm_pairs)) != NULL) {
+	while ((tp = foreach_pair(kat_tm_pairs)) != NULL) {
 
-			CASSERTION_DONTRUN(sms >= tp->a.height,
+		vm_load_mm(&da, DEN, tp->a.path);
+		vm_load_mm(&db, DEN, tp->b.path);
+		da->f.mul(da, db, &dc, NAIVE);
+
+		for (sms = 64; sms <= 1024; sms *= 2) {
+
+			CASSERTION_DONTRUN(sms > tp->a.height,
 					"sms=%d > tp->a.height=%d\n", sms, tp->a.height);
 			if (cassertion.dontrun)
 				continue;
 
-			if (KAT_K * sms >= tp->a.height * tp->a.width) {
-				continue;
-			}
+			CASSERTION_MSG("begin a=%s,b=%s,sms=%d,kat_n=%d\n", tp->a.path,
+					tp->b.path, sms, KAT_N);
 
-			CASSERTION_MSG("begin a=%s,b=%s,sms=%d\n", tp->a.path, tp->b.path,
-					sms);
-
-			vm_load_mm(&da, DEN, tp->a.path);
-			vm_load_mm(&db, DEN, tp->b.path);
 			vm_load_mm(&ka, KAT, tp->a.path, sms);
 			vm_load_mm(&kb, KAT, tp->b.path, sms);
 
-			da->f.mul(da, db, &dc, NAIVE);
-
 			CASSERTION_TIME();
-			ka->f.mul(ka, kb, &kc, NAIVE);
-			CASSERTION(dc->f.compare(dc, kc) == 0, "a=%s,b=%s,sms=%d",
-					tp->a.path, tp->b.path, sms);
+			time = ka->f.mul(ka, kb, &kc, NAIVE);
+			CASSERTION(dc->f.compare(dc, kc) == 0, "a=%s,b=%s,sms=%d,time=%lf",
+					tp->a.path, tp->b.path, sms, time);
 
 #ifdef KAT_DEBUG
 #if KAT_DEBUG
@@ -95,19 +92,20 @@ void run() {
 #endif /* if KAT_DEBUG */
 #endif /* ifdef KAT_DEBUG */
 
-			da->f.free(da);
-			db->f.free(db);
-			dc->f.free(dc);
 			ka->f.free(ka);
 			kb->f.free(kb);
 			kc->f.free(kc);
-			da = NULL;
-			db = NULL;
-			dc = NULL;
 			ka = NULL;
 			kb = NULL;
 			kc = NULL;
 		}
+
+		da->f.free(da);
+		db->f.free(db);
+		dc->f.free(dc);
+		da = NULL;
+		db = NULL;
+		dc = NULL;
 	}
 }
 
@@ -115,7 +113,7 @@ int main(int argc, char *argv[]) {
 
 	CASSERTION_INIT(argc, argv);
 
-	load();
+//	load();
 
 	run();
 
