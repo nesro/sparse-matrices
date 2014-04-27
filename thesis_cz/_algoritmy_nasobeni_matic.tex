@@ -84,6 +84,7 @@ Pro matice A i B o stejé velikosti $ {2^\mathbf{N}} $ můžeme použít rekurzi
 
 Každou z matic rozdělíme na čtvrtiny a jednotlivé podmatice násobíme algoritmem podle definice, tedy jako matice o velikosti dva.
 
+\label{RecMul}
 \label{2x2MMM}
 \begin{align}
 \begin{pmatrix}
@@ -384,6 +385,7 @@ Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se 
 
 Kdyby nastal nejhorší možný případ, počet operací násobení při použití algoritmu podle definice pro řídké matice by byl $1030 \times 6858 = 7.063740\e{6}$. Pro tento případ ovšem stačí $4.6976\e{4}$ operací násobení. Oproti nejhoršímu možnému případu nastalo $7.063740\e{6} - 4.6976\e{4} = 7.016764\e{6}$ situací, kdy jeden ze dvou prkvů byl nulový a operace násobení nemusela být provedena. Při násobení algoritmem podle definice pro husté matice by v $1.092680024\e{9}$ případech operace násobení nemusela být provedena, protože alespoň jeden ze dvou prvků by byl nula. Po vynásobení matice orsirr\_1 sama se sebou, stoupl její počet nnz z $6858$ na $23532$. V tomto případě to bylo především z důvodu, že všechny prvky z diagonály matice jsou nenulové, každý prvek se tedy započítá.
 
+\label{fast-sparse}
 \section{Rychlé násobení řídkých matic}
 
 Strassenův algoritmus $\omega=2.8$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega=2.3$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $O(mn)$. Například pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
