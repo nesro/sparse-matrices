@@ -218,7 +218,7 @@ Pokud vezmeme algoritmus násobení dvou CSR matic respektive CSR matice s vekto
 
 \section{Quadtree}
 
-Předchozí popsáné formáty uložení řídkých matic jsou velmi přímočaré. Neumožnují rekurzivní přístup, který je pro velké matice vhodnější. Tento problém řeší formát Quadtree \cite{JA_SNA_08_QUAD}. Jedná se o matici uloženou v 4-árním stromě.
+Předchozí popsáné formáty uložení řídkých matic jsou velmi přímočaré. Neumožnují rekurzivní přístup, který je pro velké matice vhodnější. Tento problém řeší formát Quadtree \cite{JA_SNA_08_QUAD}\cite{qdtsf}. Jedná se o matici uloženou v 4-árním stromě.
 
 Tento formát dělí matici na čtvrtiny do té doby, než se dosáhne velikosti podmatice $sm\_size$. Pokud je celá čtvrtina prázdná, je uzel označen jako prázdný, označen $E$. Pokud obsahuje nějaké prvky, je list označen jako hustý, $D$. Vnitřní uzly jsou označeny jako smíšené, tedy $M$.
 
@@ -233,8 +233,6 @@ Tento formát dělí matici na čtvrtiny do té doby, než se dosáhne velikosti
 	\caption{Strom matice uložené ve formátu Quadtree}
 	\label{fig:BSR}
 \end{figure}
-
-\url{http://quardtree.sourceforge.net/}
 
 Algoritmy pro práci s formátem Quadtree budou ukázány v kapitole o obecnějším formátě \ref{katchapter}.
 
@@ -262,6 +260,15 @@ Například pro matici o velikosti $n=16384$ s velikostí bloku $sm\_size=128$ j
 \section{KAT - k-ary tree matrix}
 
 V této práci navrhneme místo 4-árního stromu obecný $k$-ární strom. Výška stromu se tím sníží. Pro předchozí příklad by tedy pro 32-ární strom byla výška pouze $3$. Tento formát nazveme \texttt{k-ary tree matrix} se zkratkou KAT. Pro přehlednost nebudeme uvádět $k$, ale $KAT.n = sqrt(k)$. Formát Quadtree můžeme prohlásit za matici KAT s $KAT.n = 2$.
+
+Výška stromu pro KAT matici označíme jako \texttt{KAT.height} a vypočítáme ji jako výsku quadtree, jen s paremetrem $k$:
+
+\label{katheight}
+\begin{align}
+KAT.height = \Bigg\lceil\log_{k}\frac{n^2}{sm\_size^2}\Bigg\rceil
+\end{align}
+
+Pokud to bude z kontextu jasné, budeme výšku KAT stromu značit pouze $height$.
 
 \section{Typy listů}
 
@@ -353,8 +360,6 @@ Pro násobení budeme používat algoritmus rekurzivního násobení popsaného 
 	\end{algorithmic}
 \end{algorithm}
 
-je to samostatnej bod v zadani tak by to mohla byt cela chapter
+Přesnější asymptotická složitost násobení matic v KAT formátu je vyšší než u předchozích formátů, protože je potřeba připočítat průchod stromem. Pokud převedeme hustou matici do formátu KAT se složitostí násobení dvou listů \bigO($sm\_size^3$), bude asyptotická složistost násobení dvou KAT matic \bigO$((\frac{n^2}{sm\_size}*(height+sm\_size^3))$.
 
-TODO: popsat nevyhody quadtree a obrazkama ukazat jak to udelat lip
-
-neco jako quadtree loop unrolling
+Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu. Velikost uzlu je pole $k$ odkazů na syny. Počet vniřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} * k)$

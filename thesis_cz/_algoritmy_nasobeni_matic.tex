@@ -1,10 +1,16 @@
 \chapter{Algoritmy násobení matic}
 
+V této kapitole představíme některé základní a pokročilejší algoritmy pro násobení matic. Základní algoritmy mají stejnou asymptotickou složitost $O(n^3)$ a liší se pouze přístupům k prvkům, což je důležité pro řídké formáty. Pokročilejší algoritmy jsou sice asymptoticky rychlejší, ale přinášejí nevýhodu ve formě numerické stability a velké skryté konstantě.
+
+\subsection{Pseudokódy}
+
+Pseudokódy v této práci jsou ve stylu syntaxe jazyka Fortran, ale budou představovat zápis jazyka C99. Pro pole platí, že jsou indexovaná od nuly a for cyklus \texttt{for i $\gets$ 0 to 10} bude iterovat od nultého do devátého prvku včetně.
+
 \section{Podle definice}
 
 Základním algoritmem násobení dvou matic je podle definice. Ve třech for cyklech postupně  vybíráme řádky matice A, sloupce matice B a v N krocích násobíme. N je jak šírka matice A, tak i výška matice B.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Násobení matic podle definice}\label{mmm-by-definiton}
 	\begin{algorithmic}[1]
 		\Procedure{MMM-definition}{$A,B,C$}\Comment{A,B,C jsou matice}
@@ -29,7 +35,7 @@ Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N
 
 Pokud nám formát uložení matice nedovolí procházet prvky po sloupcích, je řešením druhou matici transponovat. Poté můžeme násobit řádky matice A s řádky transponované matice B.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Násobení transponovanou maticí}\label{mmm-transpose}
 	\begin{algorithmic}[1]
 		\Procedure{MMM-transpose}{$A,B,C$}\Comment{A,B,C jsou matice}
@@ -61,14 +67,14 @@ Nevýhodou tohoto řešení je velký počet přístupů do pole C. Protože k~p
 
 %tohle neplati: Matice musí být stejně široké i vysoké.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Násobení po řádcích}\label{mmm-by-rows}
 	\begin{algorithmic}[1]
-		\Procedure{MMM-by-rows}{$A,B,C$}\Comment{A,B,C jsou matice}
-\For{\texttt{$r\gets0$\TO$A.height$}}\Comment{řádky matice A i B}
-	\For{\texttt{$cA\gets0$\TO$A.width$}}\Comment{sloupce matice A}
-		\For{\texttt{$cB\gets0$\TO$B.width$}}\Comment{sloupce matice B}
-			\State \texttt{$C[r][cA] \gets C[r][cA] + A[r][cA] * B[r][cB];$}
+		\Procedure{\texttt{MMM-by-rows}}{\texttt{A, B, C}}\Comment{A,B,C jsou matice}
+\For{\texttt{r $\gets$ 0\TO A.height}}\Comment{řádky matice A i B}
+	\For{\texttt{cA $\gets$ 0\TO A.width}}\Comment{sloupce matice A}
+		\For{\texttt{c $\gets$ 0\TO B.width}}\Comment{sloupce matice B}
+			\State \texttt{C[r][cA] += A[r][cA] * B[r][cB];}
 		\EndFor
 	\EndFor
 \EndFor
@@ -80,7 +86,7 @@ Nevýhodou tohoto řešení je velký počet přístupů do pole C. Protože k~p
 
 \section{Rekurzivní násobení}
 
-Pro matice A i B o stejé velikosti $ {2^\mathbf{N}} $ můžeme použít rekurzivní přístup. Tedy programovací techniku rozděl a panuj, kdy rozdělíme větší problémy na menší podproblémy.
+Pro matice A i B o stejné velikosti $ {2^\mathbf{N}} $ můžeme použít rekurzivní přístup. Tedy programovací techniku rozděl a panuj, kdy rozdělíme větší problémy na menší podproblémy.
 
 Každou z matic rozdělíme na čtvrtiny a jednotlivé podmatice násobíme algoritmem podle definice, tedy jako matice o velikosti dva.
 
@@ -177,9 +183,6 @@ b_{4,1} & b_{4,2} & b_{4,3} & b_{4,4}
 \end{pmatrix}
 \end{align}
 
-
-Kvůli režii rekurzivního dělení v praxi nezmenšujeme podmatice až na velikost jedna. Vhodný práh velikosti podmatice je například takový, co se vejde do L1 cache.
-
 Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice. Asymptotickou složitost rekurzivního algoritmu můžeme spočítat pomocí mistrovské metody.
 
 \[ T(n) = \left\{ 
@@ -189,6 +192,8 @@ Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice
   \end{array} \right.\]
 
 Protože platí, že $a=8, b=2, r=\log_{2} 8, n^r=n^{\log_{2} 8}=n^3=\Omega(1)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-recursive}(n) = $O(n^3)$.
+
+Kvůli režii rekurzivního dělení v praxi nezmenšujeme podmatice až na velikost jedna. Vhodný práh velikosti podmatice je například takový, co se vejde do L1 cache.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Strassenův algoritmus} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

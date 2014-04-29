@@ -1,0 +1,140 @@
+\chapter{Realizace}
+
+\section{MatrixMarket}
+
+MatrixMarket \cite{Boisvert:1997:MMW:265834.265854} je internetová sada matic s vlastním formátem pro uložení řídkých matic \texttt{.mtx}. Tato sada obsahuje skoro pětset matic z různých oblastí. Obsahuje i generátory řídkých matic, jejichž výstupy jsou matice různých vlastností.
+
+\subsection{Generátor řídkých matic}
+
+Protože generátory z MatrixMarketu 
+
+\begin{algorithm}[H]
+	\caption{Generování řídkých matic}\label{mmm-recursive}
+	\begin{algorithmic}[1]
+		\Procedure{SparseMatrixGenerator}{$file,width,height,ItemList$}
+		\State \texttt{$MtxWrapper \gets InitMtxWrapper();$}
+		\State \texttt{$MtxWrapper.PositionVector \gets InitVector();$}	
+		\ForAll{\texttt{$Item \in ItemList$}}
+			\State \texttt{$MtxWrapper.addItem(Item.y, Item.x, Item.properties);$}
+			\If{$Item.type == Mirrored$}
+				\State \texttt{$MtxWrapper.addItem(Item.x, Item.y, Item.properties);$}
+			\EndIf
+		\EndFor
+		\State \texttt{$MtxWrapper.PositionVector.sort();$}
+		\State \texttt{$MtxWrapper.PositionVector.removeDuplicates();$}
+		\State \texttt{$MtxWrapper.write(file);$}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět s následujícími parametry:
+
+\begin{itemize}
+	\item \texttt{-c} matice bude obsahovat hlavní diagonálu
+	\item \texttt{-H <celé číslo>} výška matice
+	\item \texttt{-i <typ,a,b,c,d,...>} seznam objektů, které se do matice přidají
+	\begin{itemize}
+	\item \texttt{diagonal,ay,ax,by,bx,sparsity} prvky v přímce od bodu \texttt{[ax,ay]} do bodu \texttt{[bx,by]} s řídkostí \texttt{sparsity}
+	\item \texttt{block,ay,ax,by,bx,sparsity} blok prvků v obdelníku ohraničiného body \texttt{[ax,ay]} a \texttt{[bx,by]} s řídkostí \texttt{sparsity}
+	\end{itemize}
+	\item \texttt{-n <celé číslo>} velikost matice
+	\item \texttt{-o <soubor>} cílový soubor (lze použít i stdout)
+	\item \texttt{-s <desetinné číslo>} řídkost matice (\texttt{sparsity})
+	\item \texttt{-S <desetine číslo>} startovací číslo
+	\item \texttt{-W <celé číslo>} šířka matice
+\end{itemize}
+
+\begin{itemize}
+	\item \texttt{-h} zobraz nápovědu
+	\item \texttt{-o <soubor>} cílový soubor (lze použít i \texttt{stdout}) 
+	\item \texttt{-v} vypisuj průběh generování (\texttt{verbose})
+\end{itemize}
+
+\texttt{$ ./tests/bin/matrix_generator -n 8192 -s 0.00001 -i mdiagonal,150,0,8192,8042,0.95,mdiagonal,200,10,4000,3000,0.75,mblockwh,300,1500,256,256,0.95,mblockwh,700,2000,128,128,0.95,mrblocks,10,128,64,64,0.75 -o /tmp/matrix2.mtx$}
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/generated_matrix}
+	\caption{Matice vygenerovaná generátorem}
+	\label{fig:aftOrsirr1}
+\end{figure}
+
+\section{Optimalizace}
+
+TODO: popsat moznosti optimalizace
+
+\section{Design implementace}
+
+Popsané algoritmy byly implementovány v progrovacím jazyce C99.
+
+Protože matice mají některé vlastnosti stejné a lze s podobně pracovat, byl zvolen jednoduchý objektově orientovaný model \cite{schreiner1994objektorientierte}. Nadřazeným objektem je virtuální matice $vm_t$, obsahující virtualní tabulku funkcí.
+	
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/uml/uml}
+	\caption{UML diagram tříd programu}
+	\label{fig:uml}
+\end{figure}
+
+\section{Testování}
+
+Pro ověření správnosti algoritmů je potřeba testovací software. Strategie testování spočívá ve výběru testovacích matic, vynásobení v hustém formátu uložení, vynásobení v některém z řídkých formátů uložení a porovnaní výsledků.
+
+\begin{algorithm}[H]
+	\caption{Testování}\label{testing}
+	\begin{algorithmic}[1]
+		\Procedure{\texttt{TestFormats}}{\texttt{PairList, FormatList}}
+		\ForAll{\texttt{pair $\in$ PairList}}
+				\State \texttt{denseA $\gets$ vm\_load(pair.a, DENSE);}
+				\State \texttt{denseB $\gets$ vm\_load(pair.b, DENSE);}
+				\State \texttt{denseC $\gets$ vm\_mul(denseA, denseB, denseC);}
+			\ForAll{\texttt{format $\in$ FormatList}}		
+				\State \texttt{sparseA $\gets$ vm\_load(pair.a, format);}
+				\State \texttt{sparseB $\gets$ vm\_load(pair.b, format);}
+				\State \texttt{sparseC $\gets$ vm\_mul(sparseA, sparseB, sparseC);}
+				\If{ \texttt{vm\_compare(denseC, sparseC) = NOT\_SAME}}
+					\State \texttt{print("Error:", pair.a, pair.b, format);}
+				\EndIf
+			\EndFor
+		\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\section{Implementace KAT}
+
+U formátů COO, CSR, BSR je implementace přímočará podle pseudokódů. U implementace KAT máme více možností, proto zde popíšeme naší implementaci.
+
+Jeden z důležitých parametrů je $k$, tedy maximální počet synů vnitřích uzlů. V naší implementaci je tento parametr uložen v konstantě \texttt{KAT.n}, pro připomenutí $KAT.n = sqrt(k)$. Překladač poté cykly, kde iterujeme do této konstanty, rozbalí. Překladači i explicintě zdělujeme, ať cykly rozbalí přes atribut \texttt{\_\_attribute\_\_((optimize("unroll-loops")))}.
+
+V bakalářské práci Rozšíření implementace formátu kvadrantového stromu od Tomáše Karabely [CITACE] je Quadtree implementován jako strom, jehož listy tvoří virtuální matice podobným těm v naší práci. Protože jeho formát byl určený pro algoritmus LU rozklad, jeho virtuální matice musely umět přijímat i další prvky. Protože v naší práci se s formáty uložení řídké matice zachází jako s konstantami, rozhodli jsme se hodnoty prvků a informace v polích \texttt{row\_pointers} a \texttt{col\_indices} uložit mimo listy stromu. V listech se nachází ukazatel do velkého pole na příslušné místo pro daný list. Ušetříme tak práci knihovně libc s mnohonásobným volání funkce \texttt{malloc}.
+
+Protože dovolujeme dva druhy listů, tedy hustý a řídký ve formátu CSR, bylo potřeba implementovat následující algoritmy:
+
+\begin{enumerate}
+  \item hustý list * hustý list
+  \item hustý list * CSR list
+  \item hustý list * vektor
+  \item CSR list * hustý list
+  \item CSR list * CSR list
+  \item CSR list * vektor
+\end{enumerate}
+
+Protože tyto algoritmy jsou velice podobné, ukážeme zde pro představu násobení CSR listu s hustým listem.
+
+\begin{algorithm}[H]
+	\caption{Násobení hustého KAT listu s CSR listem}\label{kat-mmm-den-csr}
+	\begin{algorithmic}[1]
+		\Procedure{KAT-MMM-DEN-CSR}{ka,kb,na,nb,c}\Comment{ka,kb=KAT matice; na,nb=listy, c = hustá matice}
+		\For{\texttt{i $\gets$ 0 \TO ka.sm\_size}}
+			\For{\texttt{j $\gets$ na.rp[i]\TO na.rp[i]}}
+				\For{\texttt{k $\gets$ 0 \TO ka.sm\_size}}
+					\State \texttt{C.v[na.y + i][nb.x + k] += na.v[j] * nb.v[ka.sm\_size * na.ci[j] + j];}
+				\EndFor
+			\EndFor
+		\EndFor
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\section{Měření}
+
+TODO: popsat jak to budu měřit, tedy cas z omp a cachegrind/callgrind
