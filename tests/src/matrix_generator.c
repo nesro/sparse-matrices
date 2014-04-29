@@ -27,9 +27,17 @@ char *strdup(const char *s) {
 	return d;
 }
 
+static inline int max(int a, int b) {
+	if (a > b)
+		return a;
+	else
+		return b;
+}
+
 /*
  * Because this is a stand-alone file, we can use a lot of global variables.
  */
+int is_symmetric = 0; /* symmetric or general */
 double sparsity = 1.;
 int has_diagonal = 1;
 int diagonals = 0;
@@ -90,8 +98,19 @@ static void mtx_add(mtx_t *mtx, int y, int x, int is_big) {
 	if (0 && MATRIX_GENERATOR_DEBUG)
 		printf("mtx_add y=%d, x=%d\n", y, x);
 
+	/*
+	 * Is item out of bounds?
+	 */
 	if (y < 0 || y > mtx->height - 1 || x < 0 || x > mtx->width - 1)
 		return;
+
+	/*
+	 * If the matrix is symmetric, check out, if the item is under the diagonal.
+	 */
+	if (is_symmetric && !(y <= max(y, x) && x <= max(y, x))) {
+		fprintf(stderr, "item at y=%d, x=%d is above main diagonal"
+				" although the matrix is symmetric\n", y, x);
+	}
 
 	if (mtx->items >= mtx->len - 1) {
 
@@ -159,7 +178,8 @@ static void mtx_write(mtx_t *mtx, FILE *f) {
 
 	mtx_uniqsort(mtx);
 
-	fprintf(f, "%%%%MatrixMarket matrix coordinate real general\n");
+	fprintf(f, "%%%%MatrixMarket matrix coordinate real %s\n",
+			(is_symmetric) ? "symmetric" : "general");
 	fprintf(f, "%d %d %d\n", mtx->width, mtx->height, mtx->items);
 
 	if (f != stdout)
@@ -385,8 +405,22 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 		case RANDOM_BLOCKS:
 		case MIRRORED_RANDOM_BLOCKS:
 			for (i = 0; i < ay; i++) {
-				tmp_y = rand() % (mtx->height - by - 1);
-				tmp_x = rand() % (mtx->width - bx - 1);
+
+				/*
+				 * If we're constructing a symmetric matrix, we want the
+				 * block under the main diagonal.
+				 */
+				if (is_symmetric) {
+					do {
+						tmp_y = rand() % (mtx->height - by - 1);
+						tmp_x = rand() % (mtx->width - bx - 1);
+					} while (!(tmp_y <= max(tmp_y, tmp_x)
+							&& tmp_x <= max(tmp_y, tmp_x)));
+				} else { /* !is_symmetric */
+					tmp_y = rand() % (mtx->height - by - 1);
+					tmp_x = rand() % (mtx->width - bx - 1);
+				}
+
 				tmp_size = rand() % ax;
 
 				mtx_fill(mtx, tmp_y, tmp_x, tmp_y + bx + tmp_size,
@@ -406,7 +440,8 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 	return;
 
 	bad_format: /**/
-	fprintf(stderr, "matrix_sparse_items: Bad block format. Use -h for help.\n");
+	fprintf(stderr,
+			"matrix_sparse_items: Bad block format. Use -h for help.\n");
 	exit(1);
 }
 
@@ -421,6 +456,7 @@ static void usage(const char *argv0) {
 			" -h              print this help\n"
 			" -H height       height of a matrix\n"
 			" -n size         width = height\n"
+			" -m              matrix is symmetric (mirrored)\n"
 			" -o file         output file, default is stdout\n"
 			" -r              values will be random\n"
 			" -s sparsity     how many %% of matrix will be filled\n"
@@ -460,7 +496,7 @@ int main(int argc, char *argv[]) {
 	srand((unsigned) time(NULL));
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "cf:hH:i:n:o:s:S:vW:")) != -1) {
+	while ((c = getopt(argc, argv, "cf:hH:i:n:mo:s:S:vW:")) != -1) {
 		switch (c) {
 		case 'c':
 			center_diagonal = 1;
@@ -481,6 +517,9 @@ int main(int argc, char *argv[]) {
 			n = atoi(optarg);
 			w = n;
 			h = n;
+			break;
+		case 'm':
+			is_symmetric = 1;
 			break;
 		case 'o':
 			output = optarg;
@@ -555,7 +594,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* general sparsity */
-	mtx_fill(mtx, 0, 0, h, w, sparsity);
+	if (sparsity > 0)
+		mtx_fill(mtx, 0, 0, h, w, sparsity);
 
 	if (items != NULL)
 		mtx_sparse_items(mtx, items);
