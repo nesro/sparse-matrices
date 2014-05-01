@@ -8,6 +8,8 @@
 
 #include "virtual_matrix.h"
 
+#define CSR_DEBUG 1
+
 typedef struct csr_matrix {
 	vm_t _;
 	datatype_t *v;

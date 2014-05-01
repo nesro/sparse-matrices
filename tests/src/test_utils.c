@@ -5,6 +5,29 @@
 #include <stdio.h>
 #include "test_utils.h"
 
+test_matrices_pair_t mat_mat_pairs[] = { /**/
+
+{ /**/
+{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
+{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
+}, /**/
+
+{ /**/
+{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/
+{ MTX_GEN_DIR "64x64_02.mtx", 64, 64, 4096 }, /**/
+}, /**/
+
+{ /**/
+{ MTX_DIR "generated_1024_5p_01.mtx", 1024, 1024, 53309 }, /**/
+{ MTX_DIR "generated_1024_5p_02.mtx", 1024, 1024, 53285 }, /**/
+}, /**/
+
+{ { { 0 } } }, /**/
+
+};
+
+/******************************************************************************/
+
 test_matrix_t tm_small[] = {
 //
 		{ MTX_DIR "2x2_4nz_01.mtx", 2, 2, 4 }, /**/
@@ -86,7 +109,7 @@ test_matrices_pair_t tm_pairs[] = {
 
 test_matrix_t kat_tm[] = {
 //
-		{  MTX_GEN_DIR "1024.mtx", 1024, 1024, 1048576}, /**/
+		{ MTX_GEN_DIR "1024.mtx", 1024, 1024, 1048576 }, /**/
 		{ { 0 } }, /**/
 
 		{ MTX_GEN_DIR "64x64_01.mtx", 64, 64, 4096 }, /**/

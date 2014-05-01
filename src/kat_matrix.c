@@ -106,6 +106,7 @@ void kat_free(kat_matrix_t *kat) {
 
 	printf("dense blocks=%d csr=%d\n", kat->den_blocks,
 			kat->blocks - kat->den_blocks);
+	fflush(stdout);
 
 	kat_node_free(kat->root);
 	free(kat->v);
@@ -812,7 +813,6 @@ double kat_mul(const kat_matrix_t *a, const vm_t *b, vm_t **c,
 	switch (b->type) {
 	case VEC:
 		assert(a->_.w == b->h);
-		printf("YES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		vec_init((vec_t **) c, a->_.w);
 		start_time = omp_get_wtime();
 		mul_katnode_vec(a, (vec_t *) b, a->root, (vec_t *) *c);

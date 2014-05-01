@@ -84,30 +84,20 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 
 	mm_file_t *mm_file;
 	int i;
-	int j;
+//	int j;
 
 	mm_file = mm_load(mm_filename);
 
 	csr_init(csr, mm_file->width, mm_file->height, mm_file->nnz);
 
-	/* FIXME: in COO it's better. duh! */
-
-	for (i = mm_file->nnz - 1; i >= 0; i--)
+	for (i = 0; i < mm_file->nnz; i++) {
 		(*csr)->rp[mm_file->data[i].row + 1]++;
+		(*csr)->v[i] = mm_file->data[i].value;
+		(*csr)->ci[i] = mm_file->data[i].col;
+	}
 
 	for (i = 0; i < (*csr)->_.h; i++)
 		(*csr)->rp[i + 1] += (*csr)->rp[i];
-
-	for (i = 0; i < mm_file->nnz; i++) {
-		j = (*csr)->rp[mm_file->data[i].row];
-
-		(*csr)->v[j] = mm_file->data[i].value;
-		(*csr)->ci[j] = mm_file->data[i].col;
-		(*csr)->rp[mm_file->data[i].row]++;
-	}
-
-	for (i = (*csr)->_.h; i > 0; i--)
-		(*csr)->rp[i] = (*csr)->rp[i - 1];
 
 	mm_free(mm_file);
 }
@@ -141,8 +131,25 @@ static double mul_csr_csr(const csr_t *a, const csr_t *b, den_matrix_t *c) {
 
 	for (r = 0; r < a->_.h; r++)
 		for (ac = a->rp[r]; ac < a->rp[r + 1]; ac++)
-			for (bc = b->rp[a->ci[ac]]; bc < b->rp[a->ci[ac] + 1]; bc++)
-				c->v[r][b->ci[bc]] += a->v[ac] * b->v[bc];
+			for (bc = b->rp[a->ci[ac]]; bc < b->rp[a->ci[ac] + 1]; bc++) {
+
+//				_s_debugf(CSR_DEBUG, "r=%d ac=%d bc=%d bcFrom=%d\n", r, ac,
+//						bc, b->rp[a->ci[ac]]);
+
+				c->v[r]/**/
+
+				[/**/
+
+				b->ci[bc]/**/
+
+				]/**/
+
+				+= /**/
+
+				a->v[ac] * /**/
+
+				b->v[bc];
+			}
 
 	return omp_get_wtime() - start_time;
 }
@@ -154,8 +161,8 @@ double csr_mul(const csr_t *a, const vm_t *b, vm_t **c, char flag /* unused */) 
 		vec_init((vec_t **) c, a->_.w);
 		return mul_csr_vec(a, (vec_t *) b, (vec_t *) *c);
 	case CSR:
-		vm_create((vm_t **) c, DEN, 1, a->_.w, a->_.w);
-		return mul_csr_csr(a, (csr_t *) b, (den_matrix_t *) c);
+		den_matrix_init((den_matrix_t **) c, a->_.w, b->h, 1);
+		return mul_csr_csr(a, (csr_t *) b, (den_matrix_t *) *c);
 	default:
 		fprintf(stderr, "Unknown matrix type: %d\n", b->type);
 		exit(1);

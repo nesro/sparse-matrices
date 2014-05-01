@@ -59,9 +59,9 @@ ifdef KAT_N
 endif
 
 ifdef DEBUG
-	CFLAGS += -O0 -ggdb #-Wextra
+	CFLAGS += -Og -ggdb #-Wextra
 else
-	CFLAGS += -O3
+	CFLAGS += -Ofast
 endif
 
 ifdef OMP_THREADS
@@ -278,6 +278,32 @@ matunel:
 # STAR.fit.cvut.cz helpers
 
 USERNAME=nesrotom
+
+# Deploy files from local to STAR
+star-deploy: clean
+	rsync -ave ssh --delete ./*  $(USERNAME)@star.fit.cvut.cz:/mnt/data/$(USERNAME)/
+
+# Run the job
+star-run:
+	./tests/scripts/star.sh
+
+# Watch the job list
+star-watch:
+	watch -n 1 qstat
+
+# Remove all your jobs
+star-remove:
+	qstat | grep $(USERNAME) | cut -d ' ' -f2 | xargs qdel
+
+# Show results
+star-results:
+	cat /mnt/data/$(USERNAME)/*.sh.*
+
+# Clean results
+star-clean:
+	rm /mnt/data/$(USERNAME)/*.sh.*
+
+#-------------------------------------------------------------------------------
 
 deploy: fullclean
 	rsync -ave ssh --delete ../eiaapp $(USERNAME)@star.fit.cvut.cz:/home/$(USERNAME)/

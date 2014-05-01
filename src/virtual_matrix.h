@@ -3,6 +3,7 @@
  * https://github.com/nesro/sparse-matrices
  */
 
+#include "stdlib.h"
 #include "vector.h"
 #include "utils.h"
 
@@ -75,6 +76,7 @@ struct vm {
 	int h;
 	int nnz;
 	char filename[30];
+	size_t object_size;
 };
 
 typedef enum action {
@@ -99,6 +101,8 @@ typedef union setting_values {
 void vm_create(vm_t **, vm_type_t, ...);
 void vm_load_mm(vm_t **, vm_type_t, const char *, ...);
 void vm_print(vm_t *);
+
+int vm_has_blocks(vm_type_t type);
 
 void vm_exec(action_t action, vm_type_t type_a, vm_type_t type_b,
 	const char *file_a, const char *file_b, vm_t **c, char flag, ...);

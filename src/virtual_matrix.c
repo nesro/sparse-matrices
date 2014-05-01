@@ -116,6 +116,22 @@ void vm_print(vm_t *vm) {
 	}
 }
 
+int vm_has_blocks(vm_type_t type) {
+	switch (type) {
+	case BSR:
+	case KAT:
+		return 1;
+	case COO:
+	case CSR:
+	case DEN:
+		return 0;
+	default:
+		fdie("Unknown format: %d\n", type);
+		/*NOTREACHED*/
+		return -1;
+	}
+}
+
 void vm_exec(action_t action, vm_type_t type_a, vm_type_t type_b,
 		const char *file_a, const char *file_b, vm_t **c, char flag, ...) {
 

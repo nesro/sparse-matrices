@@ -16,7 +16,7 @@
 #include "../../cassertion/cassertion.h"
 #include "test_utils.h"
 
-static void run() {
+void mat_vec() {
 
 	vm_t *a_den = NULL;
 	vm_t *a_bsr = NULL;
@@ -93,11 +93,84 @@ static void run() {
 	}
 }
 
+/******************************************************************************/
+
+vm_type_t types[] = { KAT, DEN, CSR, BSR, COO,  };
+int types_size = 1;
+
+void mat_mat() {
+
+	int i;
+	vm_t *den_a = NULL;
+	vm_t *den_b = NULL;
+	vm_t *den_c = NULL;
+	vm_t *spa_a = NULL;
+	vm_t *spa_b = NULL;
+	vm_t *spa_c = NULL;
+	const test_matrices_pair_t *tp;
+	double time;
+	int sms = 1;
+
+	while ((tp = foreach_pair(mat_mat_pairs)) != NULL) {
+
+		CASSERTION_MSG("begin dense a=%s,b=%s\n", tp->a.path, tp->b.path);
+
+		vm_load_mm(&den_a, DEN, tp->a.path);
+		vm_load_mm(&den_b, DEN, tp->b.path);
+		den_a->f.mul(den_a, den_b, &den_c, NAIVE);
+
+		for (i = 0; i < types_size; i++) {
+
+			if (vm_has_blocks(types[i])) {
+				block_loop: /**/
+				CASSERTION_MSG("begin format %d witch sms=%d\n", types[i], sms);
+				vm_load_mm(&spa_a, types[i], tp->a.path, sms);
+				vm_load_mm(&spa_b, types[i], tp->b.path, sms);
+			} else {
+				CASSERTION_MSG("begin format %d\n", types[i]);
+				vm_load_mm(&spa_a, types[i], tp->a.path);
+				vm_load_mm(&spa_b, types[i], tp->b.path);
+			}
+
+			CASSERTION_TIME();
+
+			time = spa_a->f.mul(spa_a, spa_b, &spa_c, NAIVE);
+
+			CASSERTION(den_c->f.compare(den_c, spa_c) == 0,
+					"a=%s,b=%s,sms=%d,time=%lf", tp->a.path, tp->b.path, sms,
+					time);
+
+			spa_a->f.free(spa_a);
+			spa_b->f.free(spa_b);
+			spa_c->f.free(spa_c);
+			spa_a = NULL;
+			spa_b = NULL;
+			spa_c = NULL;
+
+			if (vm_has_blocks(types[i])) {
+				sms *= 2;
+				if (sms <= tp->a.height)
+					goto block_loop;
+				else
+					sms = 1;
+			}
+		}
+
+		den_a->f.free(den_a);
+		den_b->f.free(den_b);
+		den_c->f.free(den_c);
+		den_a = NULL;
+		den_b = NULL;
+		den_c = NULL;
+	}
+}
+
 int main(int argc, char *argv[]) {
 
 	CASSERTION_INIT(argc, argv);
 
-	run();
+//	mat_vec();
+	mat_mat();
 
 	CASSERTION_RESULTS();
 

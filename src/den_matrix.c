@@ -137,6 +137,7 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 		den_matrix_free(*den);
 
 	*den = calloc(1, sizeof(den_matrix_t));
+	(*den)->_.object_size += sizeof(den_matrix_t);
 
 	//_debug("w=%d h=%d z=%d\n", width, height, zero);
 
@@ -146,6 +147,7 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 	(*den)->_.h = height;
 
 	(*den)->v = malloc(height * sizeof(datatype_t *));
+	(*den)->_.object_size += height * sizeof(datatype_t *);
 	if ((*den)->v == NULL)
 		die("dense matrix memory error");
 
@@ -153,6 +155,11 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 		(*den)->rows_block = calloc(width * height, sizeof(datatype_t));
 	else
 		(*den)->rows_block = malloc(width * height * sizeof(datatype_t));
+
+	(*den)->_.object_size += width * height * sizeof(datatype_t);
+
+	if ((*den)->rows_block == NULL)
+		die("dense matrix rows_block memory error");
 
 	for (row = 0; row < height; row++)
 		(*den)->v[row] = (*den)->rows_block + row * height;
