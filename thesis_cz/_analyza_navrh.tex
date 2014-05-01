@@ -1,26 +1,37 @@
 \chapter{Analýza a návrh}
 
-\section{Práce s řídkými maticemi v moderním software}
+V této kapitole představíme některé známé systémy, které umí pracovat s řídkými maticemi. Popíšeme možnosti implemetntace a zvolené řešení.
+
+Pokud potřebujeme rychle vynásobit dvě malé matice, můžeme použít obecný nástroj se kterým se snadno pracuje. Čím je ale nástroj obecnější, tím spíš bude pomalejší. Maximální výkonnosti tedy doáshneme, pokud co nejvíce využijeme hardware a náš program bude řešit konkrétní úkol. 
+
+\section{ATLAS}
+
+ATLAS \cite{atlas} je v překladu zkratkou pro automatické generování vylazeného kódu pro sofware řešící úlohy z lienální algebry. Je tak dosaženo pomocí jak obecných optimalizací kódu, tak optimalizací pro konkrétní architektury.
+
+Podobných projektů je více, konkrétně pro násobení matice s vektorem je to například Sparsity \cite{sparsity}, nebo pro násobení matice s maticí je to například PHiPAC \cite{PHiPAC}\cite{bilmes96a}.
 
 \subsection{SciPy.sparse}
 
-SciPy je knihovna skriptovacího jazyka Python.
-
-ZDROJ: \url{http://docs.scipy.org/doc/scipy/reference/sparse.html}
-
+SciPy je knihovna skriptovacího jazyka Python \cite{Python}. Obsahuje modul pro základní práci s řídkými maticemi, nazvaný sparse \cite{scipy}. Samotné výpočty nad řídkými maticemi jsou v této knihovně z důvodu rychlosti napsány v jazyce C++.
 
 \subsection{Wolfram Mathematica}
 
-Wolfram Mathematica je TODO
+Wolfram Mathematica \cite{mathematica} je mocný výpočetní software. Práce v tomto software je snadná, interaktivní a přitom dokáže efektivně rozdělovat práci nejen na více procesorových jader, ale taky využít i grafické karty. Nechybí tedy ani implementace operací pro řídké matice.
 
-Pomocí Wolfram Mathematicy vizualizujeme řídké matice z formátu \texttt{.mtx}. MatrixMarket nabízí matice v souborech \texttt{.mtx.gz} Wolfram Mathematica umí pracovat i s těmito komprimovanými soubory. Příkaz pro importování řídké matice a její vizualizaci je \texttt{Import["/tmp/matrix2.mtx", "Graphics"]}
-
-\url{http://reference.wolfram.com/mathematica/ref/format/MTX.html}
-
+V této práci pomocí Wolfram Mathematicy vizualizujeme řídké matice z formátu \texttt{.mtx}, který bude popsán v \ref{MM}. Mathematica umí pracovat i s maticemi v souborech \texttt{.mtx.gz}, tedy komprimovanými soubory. Příkaz pro importování řídké matice a její vizualizaci je \texttt{Import["/var/tmp/matrix.mtx", "Graphics"]}, následné uložení matice lze provést například příkazem \\ \texttt{Export["/var/tmp/matrix.pdf", \%]} \cite{mathematicaMTX}.
 
 \subsection{Boost}
 
-\url{http://www.boost.org/doc/libs/1_55_0/libs/numeric/ublas/doc/matrix_sparse.htm}
+Pro práci s řídkými maticemi v jazyce C++ je možné použít knihovnu uBLAS\cite{ublas} ze sady knihoven Boost\cite{boost}. Knihovna uBLAS obsahuje algoritmy pro řešení základních ukolů z lineálrní algebry. Protože je kód napsaný pomocí C++ šablon, je vygenerovaný kód výkonný.
 
+\section{Možnosti řešení}
 
-TODO: moznosti implementace, zvolene reseni, ostatni reseni
+Jedna z možných variant pro porovnání všech zvolených formátů byla doimplementovat formát Quadtree, respektive KAT do knihovny SciPy.sparse. Takový program by byl ale příliš komplexní a nepřímočarý.
+
+Další možnost byla pokračovat s semestrální práci z předmětu Efektivní implementace algoritmů s tématem násobení matic ve formátu CSR.
+
+\section{Zvolené řešení}
+
+Protože se v této práci zabýváme pouze vlivem uložení řídké matice pro operaci násobení, rozhodli jsme se vytvořit program jen pro tuto operaci. Obecná knihovna pro práci s řídkými maticemi, jakým například SciPy.sparse je, nemůže využít některých vlastností matic při jejich násobení. Hlavně zacházení s násobenými maticemi jako s konstantami.
+
+Navážeme tedy na semestrální práci. Vytvoříme více druhů matic a pro každou implementujeme operaci násobení s maticí a násobení s vektorem.

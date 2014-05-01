@@ -18,7 +18,7 @@ Základním algoritmem násobení dvou matic je podle definice. Ve třech for cy
 	\For{\texttt{$col\gets0$\TO$B.width$}}\Comment{sloupce}
 		\State \texttt{$sum \gets 0;$}
 		\For{\texttt{$i\gets0$\TO$A.height$}}
-			\State \texttt{$sum \gets sum + A[row][i] * B[i][col];$}
+			\State \texttt{$sum $ += $ A[row][i] * B[i][col];$}
 		\EndFor
 		\State \texttt{$C[row][col] \gets sum;$}
 	\EndFor
@@ -44,7 +44,7 @@ Pokud nám formát uložení matice nedovolí procházet prvky po sloupcích, je
 	\For{\texttt{$rowB\gets0$\TO$B.height$}}\Comment{sloupce}
 		\State \texttt{$sum \gets 0;$}
 		\For{\texttt{$i\gets0$\TO$A.height$}}
-			\State \texttt{$sum \gets sum + A[rowA][i] * B[i][rowB];$}
+			\State \texttt{$sum $ += $ A[rowA][i] * B[i][rowB];$}
 		\EndFor
 		\State \texttt{$C[rowA][rowB] \gets sum;$}
 	\EndFor
@@ -367,11 +367,9 @@ Hranicí nejlepší možné složitosti může být $\omega=2$, protože každý
 \section{Algoritmus podle definice upravený pro řídké matice}
 
 Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat násobení takových dvou prvků, z nichž je alespoň jeden nulový. Označme $nnzr_{M,i}$ jako počet nenulových prvků v i-tém řádku matice M a $nnzc_{M,i}$ jako počet nenulových prvků v i-tém sloupci matice M. Protože násobíme každý řádek s každým sloupcem, bude celkový počet operací násobení dán vzorcem:
-
-\begin{align*}
+\begin{align}
 \sum_{i=1}^{N} nnzr_{A,i} nnzc_{B,i}
-\end{align*}
-
+\end{align}
 Složitost tohoto algoritmu pro násobení dvou matic $A$ a $B$ o velikosti $n$ tedy můžeme vyjádřit jako $O(mn)$, kde $m = max(nnz(A),nnz(B)$. Pro husté matice bez jediného nulového prvku samozřejmě platí, že $m=n^2$. Nutno podotknout, že $O(mn)$ je nejhorší případ, kdy se všechny nenulové prvky matice $A$ budou násobit se všemy nenulovými prvky matice $B$.
 
 Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se jedná o dvě matice orsirr\_1. Matice orsirr\_1 má velikost $n=1030$ a~$m=6858$ nnz. Rozmístění nnz před respektive po vynásobení ukazují obrázky \ref{fig:befOrsirr1} respektive \ref{fig:aftOrsirr1}.
