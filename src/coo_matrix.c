@@ -45,6 +45,7 @@ void coo_init(coo_matrix_t **coo, int width, int height, int nnz) {
 	assert(width == height);
 
 	*coo = calloc(1, sizeof(coo_matrix_t));
+	(*coo)->_.object_size += sizeof(coo_matrix_t);
 	assert(*coo != NULL);
 
 	(*coo)->_.type = COO;
@@ -54,12 +55,14 @@ void coo_init(coo_matrix_t **coo, int width, int height, int nnz) {
 	(*coo)->_.nnz = nnz;
 
 	(*coo)->v = malloc(nnz * sizeof(datatype_t));
+	(*coo)->_.object_size += nnz * sizeof(datatype_t);
 	assert((*coo)->v != NULL);
 
 	/*
 	 * Because col and row are the same type, we'll call only one malloc.
 	 */
 	(*coo)->c = malloc(2 * nnz * sizeof(int));
+	(*coo)->_.object_size += 2 * nnz * sizeof(int);
 	assert((*coo)->c != NULL);
 	(*coo)->r = &((*coo)->c[nnz]);
 

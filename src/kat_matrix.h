@@ -109,6 +109,12 @@ typedef struct kat_matrix {
 	datatype_t *last_v;
 	int v_length;
 
+
+	/* info */
+	int nodes_inner;
+	int nodes_csr;
+	int nodes_den;
+
 	int sm_size;
 	int height;
 	int blocks;

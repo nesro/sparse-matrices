@@ -36,6 +36,7 @@ static vm_vmt_t csr_vmt = { /**/
 void csr_init(csr_t **csr, int width, int height, int nnz) {
 
 	*csr = calloc(1, sizeof(csr_t));
+	(*csr)->_.object_size += sizeof(csr_t);
 	assert(*csr != NULL);
 
 	(*csr)->_.type = CSR;
@@ -45,9 +46,11 @@ void csr_init(csr_t **csr, int width, int height, int nnz) {
 	(*csr)->_.nnz = nnz;
 
 	(*csr)->v = malloc(nnz * sizeof(datatype_t));
+	(*csr)->_.object_size += sizeof(csr_t);
 	assert((*csr)->v != NULL);
 
 	(*csr)->ci = malloc(nnz * sizeof(int));
+	(*csr)->_.object_size += nnz * sizeof(int);
 	assert((*csr)->ci != NULL);
 
 	/*
@@ -55,6 +58,7 @@ void csr_init(csr_t **csr, int width, int height, int nnz) {
 	 * calloc it.
 	 */
 	(*csr)->rp = calloc(((*csr)->_.h + 1), sizeof(int));
+	(*csr)->_.object_size += ((*csr)->_.h + 1) * sizeof(int);
 	assert((*csr)->rp != NULL);
 }
 

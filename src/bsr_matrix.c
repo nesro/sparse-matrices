@@ -165,6 +165,7 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 		bsr_free(*bsr);
 
 	*bsr = calloc(1, sizeof(bsr_t));
+	(*bsr)->_.object_size += sizeof(bsr_t);
 
 	(*bsr)->_.type = BSR;
 	(*bsr)->_.f = bsr_vmt;
@@ -176,13 +177,17 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 	(*bsr)->bc = b_cnt;
 
 	(*bsr)->v = calloc(((*bsr)->bc * b_size * b_size), sizeof(datatype_t));
+	(*bsr)->_.object_size += ((*bsr)->bc * b_size * b_size)
+			* sizeof(datatype_t);
 	assert((*bsr)->v != NULL);
 
 	/* XXX: this should be malloc'd */
 	(*bsr)->rp = calloc(((height / b_size) + 1), sizeof(int));
+	(*bsr)->_.object_size += ((height / b_size) + 1) * sizeof(int);
 	assert((*bsr)->rp != NULL);
 
 	(*bsr)->ci = calloc((*bsr)->bc, sizeof(int));
+	(*bsr)->_.object_size += (*bsr)->bc * sizeof(int);
 	assert((*bsr)->ci != NULL);
 }
 

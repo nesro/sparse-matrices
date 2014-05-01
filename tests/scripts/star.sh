@@ -43,5 +43,5 @@ time ./tests/scripts/star_job.sh
 
 __EOF__
 
-chmod +x $c$$.star.sh
+chmod +x _$$.star.sh
 /opt/bin/qrun.sh 12c 1 1slots_per_host _$$.sh

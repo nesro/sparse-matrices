@@ -57,6 +57,7 @@ void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 
 	*kat = calloc(1, sizeof(kat_matrix_t));
 	assert(*kat != NULL);
+	(*kat)->_.object_size += sizeof(kat_matrix_t);
 
 	(*kat)->_.type = KAT;
 	(*kat)->_.f = kat_vmt;
@@ -182,9 +183,11 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 					node_y, node_x, block_start_y, block_start_x, block_size);
 
 			*tmp_node = calloc(1, sizeof(kat_node_t));
+			kat->_.object_size += sizeof(kat_node_t);
 			assert(*tmp_node != NULL);
 
 			(*tmp_node)->node_type = INNER;
+			kat->nodes_inner++;
 		}
 
 		tmp_node = &((*tmp_node)->node.knp[node_y][node_x]);
@@ -214,9 +217,11 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 				node_y, node_x, block_start_y, block_start_x, block_size);
 
 		*tmp_node = calloc(1, sizeof(kat_node_t));
+		kat->_.object_size += sizeof(kat_node_t);
 		assert(*tmp_node != NULL);
 
 		(*tmp_node)->node_type = INNER;
+		kat->nodes_inner++;
 	}
 	tmp_node = &((*tmp_node)->node.knp[node_y][node_x]);
 
@@ -229,6 +234,7 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 	if (*tmp_node == NULL) {
 
 		*tmp_node = calloc(1, sizeof(kat_node_t));
+		kat->_.object_size += sizeof(kat_node_t);
 		assert(*tmp_node != NULL);
 
 		/*
@@ -422,6 +428,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 	 * Allocating memory for the matrix data.
 	 */
 	(*kat)->v = calloc((*kat)->v_length, sizeof(datatype_t));
+	(*kat)->_.object_size += (*kat)->v_length * sizeof(datatype_t);
 	(*kat)->last_v = (*kat)->v;
 
 	/*
@@ -429,10 +436,15 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 	 * another format, this part must be redesigned
 	 */
 	(*kat)->ci = calloc((*kat)->_.nnz, sizeof(int));
+	assert((*kat)->ci!=NULL);
+	(*kat)->_.object_size += (*kat)->_.nnz, sizeof(int);
 	(*kat)->last_ci = (*kat)->ci;
 	(*kat)->rp = calloc(
 			((*kat)->blocks - (*kat)->den_blocks) * ((*kat)->sm_size + 1),
 			sizeof(int));
+	assert((*kat)->rp!=NULL);
+	(*kat)->_.object_size += ((*kat)->blocks - (*kat)->den_blocks)
+			* ((*kat)->sm_size + 1) * sizeof(int);
 	(*kat)->last_rp = (*kat)->rp;
 
 	kat_prepare(*kat, (*kat)->root);
