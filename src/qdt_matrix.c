@@ -494,7 +494,7 @@ double qdt_load_mm(qdt_matrix_t **qdt_matrix, const char *filename, int sm_size)
 
 	for (i = 0; i < nnz; i++) {
 
-		if (fscanf(f, "%d %d %lg\n", &coo_y[i], &coo_x[i], &coo_v[i]) != 3) {
+		if (fscanf(f, "%d %d "DPF"\n", &coo_y[i], &coo_x[i], &coo_v[i]) != 3) {
 			perror("fscanf");
 			exit(1);
 		}

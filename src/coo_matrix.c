@@ -279,7 +279,7 @@ double coo_from_mm(coo_matrix_t **coo, const char *filename,
 
 	for (i = 0; i < nz; i++) {
 		/* TODO: make better error */
-		if ((success = fscanf(f, "%d %d %lg\n", &(*coo)->r[i], &(*coo)->c[i],
+		if ((success = fscanf(f, "%d %d "DPF"\n", &(*coo)->r[i], &(*coo)->c[i],
 				&(*coo)->v[i])) != 2) {
 			/*printf("ounou: %d\n", success);*/
 

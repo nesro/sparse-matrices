@@ -55,7 +55,7 @@ mm_file_t *mm_load(const char *filename) {
 
 	for (i = 0; i < mm_file->nnz; i++) {
 
-		if (fscanf(f, "%d %d %lg\n", &mm_file->data[i].row,
+		if (fscanf(f, "%d %d "DPF"\n", &mm_file->data[i].row,
 				&mm_file->data[i].col, &mm_file->data[i].value) != 3) {
 			fdie("fscanf failed for file %s and item no. %i\n", filename, i);
 		}

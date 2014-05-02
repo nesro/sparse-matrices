@@ -286,7 +286,8 @@ USERNAME=nesrotom
 
 # Deploy files from local to STAR
 star-deploy: clean
-	rsync -ave ssh --delete ./*  $(USERNAME)@star.fit.cvut.cz:/mnt/data/$(USERNAME)/
+	rsync -ave ssh ./*  $(USERNAME)@star.fit.cvut.cz:/mnt/data/$(USERNAME)/
+#	rsync -ave ssh --delete ./*  $(USERNAME)@star.fit.cvut.cz:/mnt/data/$(USERNAME)/
 
 # Run the job
 star-run:
