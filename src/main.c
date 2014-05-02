@@ -1,5 +1,5 @@
 /**
- * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013-2014
+ * Tomas Nesrovnal, nesro@nesro.cz, Copyright 2013,2014
  * https://github.com/nesro/sparse-matrices
  */
 
@@ -11,33 +11,36 @@
 #include <getopt.h>
 
 #include "utils.h"
+#include "virtual_matrix.h"
 #include "csr_matrix.h"
 #include "coo_matrix.h"
 #include "bsr_matrix.h"
 #include "den_matrix.h"
-#include "den_matrix.h"
+#include "kat_matrix.h"
 #include "qdt_matrix.h"
 
 static void usage() {
-
-	printf("Usage: ./main "
-			"-f <format> "
-			"-a <matrix_a> "
-			"-b <matrix_b> "
-			"-o [none|file] "
-			"-l leaf_size\n"
-			"Formats: quadtree|csr|dense\n"
-			"Matrices a and b has to be in the MatrixMarket file format. "
-			"See: math.nist.gov/MatrixMarket/‎\n");
+	printf("Usage: ./main\n"
+			"-f [coo|csr|bsr|den|kat]\n"
+			"-a <matrix_a>\n"
+			"-b <matrix_b>\n"
+			"-o [none|file]\n"
+			"-s block_size\n"
+			"-v print informations\n"
+			"-V second matrix is a vector\n"
+			"Formats:\n"
+			"Matrices a and b has to be in the .mtx MatrixMarket file format.\n"
+			".mtx format: math.nist.gov/MatrixMarket/‎\n"
+			"See: github.com/nesro/sparse-matrices\n");
 }
 
 static vm_type_t parse_format(const char *format_string) {
 
 	if (0) {
 		(void) 0;
-	} else if (strcmp(format_string, "quadtree") == 0) {
+	} else if (strcmp(format_string, "qdt") == 0) {
 		return QDT;
-	} else if (strcmp(format_string, "dense") == 0) {
+	} else if (strcmp(format_string, "den") == 0) {
 		return DEN;
 	} else if (strcmp(format_string, "csr") == 0) {
 		return CSR;
@@ -56,7 +59,7 @@ static vm_type_t parse_format(const char *format_string) {
 	return UNKNOWN;
 }
 
-int load_leaf_size(const char *string) {
+int load_block_size(const char *string) {
 
 	char *tmp = NULL;
 	int leaf_size;
@@ -81,29 +84,6 @@ int load_leaf_size(const char *string) {
 	return leaf_size;
 }
 
-void quick_test() {
-
-	vm_t *a = NULL;
-	vm_t *b = NULL;
-	vm_t *c = NULL;
-	double time;
-
-//	vm_create(&vm, DEN, 10, 5, 3, VA_END);
-	vm_load_mm(&a, DEN, "4x4_4nz_01.mtx");
-	vm_load_mm(&b, DEN, "4x4_4nz_01.mtx");
-
-	time = a->f.mul(a, b, &c, NAIVE | UNROLLED);
-	printf("time=%lf\n", time);
-
-	a->f.print(a);
-	b->f.print(b);
-	b->f.print(c);
-
-	a->f.free(a);
-	b->f.free(b);
-	c->f.free(c);
-}
-
 int main(int argc, char *argv[]) {
 
 	int c;
@@ -111,16 +91,14 @@ int main(int argc, char *argv[]) {
 	vm_type_t format = UNKNOWN;
 	char *matrix_a = NULL;
 	char *matrix_b = NULL;
-	int leaf_size = -1;
-	time_record_t tr;
-
+	int block_size = -1;
 	char *output = NULL; /* -o flag */
-
 	vm_t *vm_a = NULL;
 	vm_t *vm_b = NULL;
 	vm_t *vm_c = NULL;
-	int print_time = 0;
-	double time;
+	double time_mul;
+	int verbose = 0;
+	int mul_vector = 0;
 
 	if (argc < 2) {
 		fprintf(stderr,
@@ -130,7 +108,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "a:b:f:hl:o:t")) != -1) {
+	while ((c = getopt(argc, argv, "a:b:f:hs:o:tvV")) != -1) {
 		switch (c) {
 		case 'a':
 			matrix_a = optarg;
@@ -144,17 +122,17 @@ int main(int argc, char *argv[]) {
 		case 'h':
 			usage();
 			return EXIT_SUCCESS;
-		case 'l':
-			leaf_size = load_leaf_size(optarg);
+		case 's':
+			block_size = load_block_size(optarg);
 			break;
 		case 'o':
 			output = optarg;
 			break;
-		case 'q':
-			quick_test();
-			return EXIT_SUCCESS;
-		case 't':
-			print_time = 1;
+		case 'v':
+			verbose = 1;
+			break;
+		case 'V':
+			mul_vector = 1;
 			break;
 		case '?':
 			if (optopt == 'a')
@@ -176,60 +154,68 @@ int main(int argc, char *argv[]) {
 			abort();
 		}
 	}
-
 	for (index = optind; index < argc; index++)
 		printf("WARNING: Needless argument: \"%s\"\n", argv[index]);
 
 	if (matrix_a == NULL && matrix_b == NULL) {
-		fprintf(stderr, "ERROR: Matrix a nor b are not set.\n");
+		fprintf(stderr, "ERROR: Either matrix a and b are not set.\n");
 		usage();
 		return EXIT_FAILURE;
 	}
 
-	if (matrix_a == NULL && matrix_b != NULL)
+	if (matrix_a == NULL && matrix_b != NULL) {
 		matrix_a = matrix_b;
-
+		matrix_b = NULL;
+	}
 	if (matrix_b == NULL && matrix_a != NULL)
 		matrix_b = matrix_a;
 
-	if (format == QDT) {
-		if (leaf_size == -1) {
-			fprintf(stderr,
-					"ERROR: Leaf size is not set or has an invalid value."
-							"Set it with an -l option to a power of two.\n");
-			return EXIT_FAILURE;
+	if (vm_has_blocks(format) && block_size == -1) {
+		fprintf(stderr, "ERROR: Block size is not set or has an invalid value."
+				"Set it with an -l option to a power of two.\n");
+		return EXIT_FAILURE;
+	}
+
+	if (vm_has_blocks(format))
+		vm_load_mm(&vm_a, format, matrix_a, block_size);
+	else
+		vm_load_mm(&vm_a, format, matrix_a);
+
+	if (matrix_b != NULL) {
+		if (mul_vector) {
+			vm_load_mm(&vm_b, VEC, matrix_b);
+		} else {
+			if (vm_has_blocks(format))
+				vm_load_mm(&vm_b, format, matrix_b, block_size);
+			else
+				vm_load_mm(&vm_b, format, matrix_b);
 		}
 	}
 
-	switch (format) {
-	case DEN:
-		break;
-	case QDT:
-		break;
-	case CSR:
-		break;
-	case CSR:
-		break;
-	case UNKNOWN:
-		fprintf(stderr, "Format MUST be set.\n");
-		return EXIT_FAILURE;
-	default:
-		abort();
-	}
-
-	vm_load_mm(&vm_a, format, matrix_a);
-	vm_load_mm(&vm_b, format, matrix_b);
-
-	time = vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE);
-
-	if (print_time)
-		printf("%lf\n", time);
+	if (matrix_b != NULL)
+		time_mul = vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE);
+	else
+		time_mul = vm_a->f.mul(vm_a, vm_a, &vm_c, NAIVE);
 
 	if (output != NULL)
-		vm_c->f.print(vm_c);
+		vm_c->f.mm_save(vm_c, output);
 
-	printf("load_a %lf\nload_b %lf\nmultiplication %lf\n", tr.load_a, tr.load_b,
-			tr.multiplication);
+	if (verbose) {
+		printf("time_mul %lf\n", time_mul);
+		printf("mul_vector %d\n", mul_vector);
+
+		if (format == KAT) {
+			printf("kat_a_inner %d", ((kat_matrix_t*) vm_a)->nodes_inner);
+			printf("kat_a_dense %d", ((kat_matrix_t*) vm_a)->nodes_den);
+			printf("kat_a_csr %d", ((kat_matrix_t*) vm_a)->nodes_csr);
+
+			if (matrix_b != NULL) {
+				printf("kat_b_inner %d", ((kat_matrix_t*) vm_b)->nodes_inner);
+				printf("kat_b_dense %d", ((kat_matrix_t*) vm_b)->nodes_den);
+				printf("kat_b_csr %d", ((kat_matrix_t*) vm_b)->nodes_csr);
+			}
+		}
+	}
 
 #if 0
 	printf("den nnz: a=%d b=%d c=%d\n", den_count_nnz((den_matrix_t *) vm_a),
@@ -237,10 +223,11 @@ int main(int argc, char *argv[]) {
 			den_count_nnz((den_matrix_t *) vm_c));
 #endif
 
-//	vm_c->f.tofile(vm_c, output);
-
 	vm_a->f.free(vm_a);
-	vm_b->f.free(vm_b);
+
+	if (matrix_b != NULL)
+		vm_b->f.free(vm_b);
+
 	vm_c->f.free(vm_c);
 
 	return EXIT_SUCCESS;

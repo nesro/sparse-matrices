@@ -20,13 +20,17 @@ static vm_vmt_t den_vmt = { /**/
 (reset_t) NULL, /**/
 (free_t) den_matrix_free, /**/
 (mm_load_t) NULL,/**/
-(mm_save_t) NULL, /**/
+(mm_save_t) den_mm_save, /**/
 (print_t) den_matrix_print, /**/
 (compare_t) den_compare, /**/
 (distance_t) den_distance, /**/
 (convert_t) NULL, /**/
 (mul_t) mul, /**/
 };
+
+void den_mm_save(den_matrix_t *den, const char *output) {
+	printf("TODO! den_mm_save\n");
+}
 
 int den_compare(den_matrix_t *a, vm_t *b) {
 

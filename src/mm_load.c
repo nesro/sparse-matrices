@@ -19,8 +19,6 @@ mm_file_t *mm_load(const char *filename) {
 	FILE *f;
 	int i;
 	int is_symmetric;
-	mm_item_t tmp_item;
-	int items;
 
 	if ((f = fopen(filename, "r")) == NULL) {
 		fdie("File %s doesn't exists. Exiting.\n", filename);
