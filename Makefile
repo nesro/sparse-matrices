@@ -308,6 +308,7 @@ star-results:
 # Clean results
 star-clean:
 	rm /mnt/data/$(USERNAME)/*.sh.*
+	rm /mnt/data/$(USERNAME)/_*.sh
 
 #-------------------------------------------------------------------------------
 
