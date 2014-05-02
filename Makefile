@@ -58,6 +58,11 @@ ifdef KAT_N
 	CFLAGS += -D_KAT_N=$(KAT_N)
 endif
 
+# when FAKE, dense matix will be just one variable
+ifdef FAKE
+	CFLAGS += -D_FAKE=1
+endif
+
 ifdef DEBUG
 	CFLAGS += -Og -ggdb #-Wextra
 else

@@ -175,6 +175,8 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 	(*den)->_.w = width;
 	(*den)->_.h = height;
 
+#if DENSE_FAKE_RESULT == 0
+
 	(*den)->v = malloc(height * sizeof(datatype_t *));
 	(*den)->_.object_size += height * sizeof(datatype_t *);
 	if ((*den)->v == NULL)
@@ -194,11 +196,21 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 		(*den)->v[row] = (*den)->rows_block + row * height;
 
 	(*den)->strassen_block_treshold = 2;
+
+#else /* DENSE_FAKE_RESULT == 0 */
+
+	(*den)->v = calloc(1,sizeof(datatype_t));
+
+#endif /* DENSE_FAKE_RESULT == 0 */
 }
 
 void den_matrix_free(den_matrix_t *den_matrix) {
-	free(den_matrix->v);
+
+#if DENSE_FAKE_RESULT == 0
 	free(den_matrix->rows_block);
+#endif /* DENSE_FAKE_RESULT == 0 */
+
+	free(den_matrix->v);
 	free(den_matrix);
 }
 

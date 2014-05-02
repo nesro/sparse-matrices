@@ -12,6 +12,22 @@
 #ifndef DENSE_MATRIX_H_
 #define DENSE_MATRIX_H_
 
+/*
+ * Let's cheat! Be honest, some matrices we want to test need up to 3TB RAM.
+ * If the _FAKE is defined, instead of 2D array, dense matrix will have just
+ * one variable.
+ *
+ * Ok, I take it back. We'll just multiply matrix with vector. So dense matrix
+ * is not needed.
+ */
+#ifdef _FAKE
+#	define	DENSE_FAKE_RESULT 1
+#	define	df(var)	(var)
+#else
+#	define	DENSE_FAKE_RESULT 0
+#	define	df(var)	(((den_matrix_t *) (var))->v)
+#endif
+
 typedef struct den_matrix_init {
 	int width;
 	int height;
