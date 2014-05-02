@@ -16,13 +16,38 @@ static vm_vmt_t vec_vmt = { /**/
 (reset_t) NULL, /**/
 (free_t) vec_free, /**/
 (mm_load_t) NULL,/**/
-(mm_save_t) NULL, /**/
+(mm_save_t) vec_mm_save, /**/
 (print_t) NULL, /**/
 (compare_t) vec_compare, /**/
 (distance_t) vec_distance, /**/
 (convert_t) NULL, /**/
 (mul_t) NULL, /**/
 };
+
+void vec_mm_save(vec_t *vec, const char *output) {
+
+	FILE *f = NULL;
+	int f_stdout = 0;
+	int i;
+	int j;
+
+	if (strcmp(output, "stdout") == 0) {
+		f = stdout;
+		f_stdout = 1;
+	} else {
+		f = fopen(output, "w");
+	}
+
+	/* FIXME: w h ? */
+	fprintf(f, "%%MatrixMarket matrix coordinate real general\n"
+			"%d %d %d\n", 1, vec->_.h, vec->size);
+
+	for (i = 0; i < vec->size; i++)
+		fprintf(f, "%d %d %lf\n", i + 1, 1, vec->v[i]);
+
+	if (!f_stdout)
+		fclose(f);
+}
 
 void vec_vm_init(vec_t **vec, va_list va) {
 
@@ -38,6 +63,7 @@ void vec_init(vec_t **vec, int size) {
 
 	*vec = malloc(sizeof(vec_t));
 	assert(*vec != NULL);
+	(*vec)->_.object_size += sizeof(vec_t);
 
 	(*vec)->_.type = VEC;
 	(*vec)->_.f = vec_vmt;
@@ -49,6 +75,7 @@ void vec_init(vec_t **vec, int size) {
 	 */
 	(*vec)->v = calloc(size, sizeof(datatype_t));
 	assert((*vec)->v != NULL);
+	(*vec)->_.object_size += size * sizeof(datatype_t);
 }
 
 void vec_free(vec_t *vec) {

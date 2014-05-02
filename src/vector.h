@@ -22,6 +22,7 @@ void vec_from_mm(vec_t **vec, const char *file, va_list va /* unused */);
 double vec_load_mm(vec_t **vec, const char *filename);
 int vec_distance(vec_t *a, vec_t *b);
 int vec_compare(vec_t *a, vec_t *b);
+void vec_mm_save(vec_t *vec, const char *output);
 
 //error_t vector_init(vec_t *vector, int size);
 //void vector_free(vec_t *vector);
