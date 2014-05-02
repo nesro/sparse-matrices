@@ -24,7 +24,7 @@ static void usage() {
 			"-f [coo|csr|bsr|den|kat]\n"
 			"-a <matrix_a>\n"
 			"-b <matrix_b>\n"
-			"-o [none|file]\n"
+			"-o [stdout|file]\n"
 			"-s block_size\n"
 			"-v print informations\n"
 			"-V second matrix is a vector\n"
@@ -159,6 +159,12 @@ int main(int argc, char *argv[]) {
 
 	if (matrix_a == NULL && matrix_b == NULL) {
 		fprintf(stderr, "ERROR: Either matrix a and b are not set.\n");
+		usage();
+		return EXIT_FAILURE;
+	}
+
+	if (format == UNKNOWN) {
+		fprintf(stderr, "ERROR: Format is not set.\n");
 		usage();
 		return EXIT_FAILURE;
 	}

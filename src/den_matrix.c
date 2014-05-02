@@ -29,7 +29,32 @@ static vm_vmt_t den_vmt = { /**/
 };
 
 void den_mm_save(den_matrix_t *den, const char *output) {
-	printf("TODO! den_mm_save\n");
+
+	FILE *f = NULL;
+	int f_stdout = 0;
+	int i;
+	int j;
+
+	if (strcmp(output, "stdout") == 0) {
+		f = stdout;
+		f_stdout = 1;
+	} else {
+		f = fopen(output, "w");
+	}
+
+	den->_.nnz = den_count_nnz(den);
+
+	/* FIXME: w h ? */
+	fprintf(f, "%%MatrixMarket matrix coordinate real general\n"
+			"%d %d %d\n", den->_.w, den->_.h, den->_.nnz);
+
+	for (i = 0; i < den->_.h; i++)
+		for (j = 0; j < den->_.w; j++)
+			if (den->v[i][j] != ((datatype_t) 0))
+				fprintf(f, "%d %d %lf\n", i + 1, j + 1, den->v[i][j]);
+
+	if (!f_stdout)
+		fclose(f);
 }
 
 int den_compare(den_matrix_t *a, vm_t *b) {
@@ -143,7 +168,7 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 	*den = calloc(1, sizeof(den_matrix_t));
 	(*den)->_.object_size += sizeof(den_matrix_t);
 
-	//_debug("w=%d h=%d z=%d\n", width, height, zero);
+//_debug("w=%d h=%d z=%d\n", width, height, zero);
 
 	(*den)->_.type = DEN;
 	(*den)->_.f = den_vmt;
