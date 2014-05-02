@@ -6,6 +6,8 @@ set -x
 
 source ./tests/scripts/utils.sh
 
+make DOUBLE_PRECISION=1
+
 for matrix in $big_list; do
 
 	for format in \

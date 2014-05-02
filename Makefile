@@ -58,6 +58,10 @@ ifdef KAT_N
 	CFLAGS += -D_KAT_N=$(KAT_N)
 endif
 
+ifdef DOUBLE_PRECISION
+	CFLAGS += -D_DOUBLE_PRECISION=1
+endif
+
 # when FAKE, dense matix will be just one variable
 ifdef FAKE
 	CFLAGS += -D_FAKE=1
@@ -309,6 +313,7 @@ star-clean:
 	rm /mnt/data/$(USERNAME)/sparse-matrices/*.sh.*
 	rm /mnt/data/$(USERNAME)/sparse-matrices/_*.sh
 	rm /mnt/data/$(USERNAME)/sparse-matrices/log_*.txt
+	rm /mnt/data/$(USERNAME)/sparse-matrices/resvec_*.mtx
 
 #-------------------------------------------------------------------------------
 

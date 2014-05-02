@@ -84,11 +84,17 @@ void vec_free(vec_t *vec) {
 	free(vec);
 }
 
-void vec_from_mm(vec_t **vec, const char *file, va_list va /* unused */) {
-	vec_load_mm(vec, file);
+void vec_from_mm(vec_t **vec, const char *file, va_list va) {
+
+	int va_flag = 0;
+	int min_size;
+
+	min_size = va_get_int(va, -1, &va_flag);
+
+	vec_load_mm(vec, file, min_size);
 }
 
-double vec_load_mm(vec_t **vec, const char *filename) {
+double vec_load_mm(vec_t **vec, const char *filename, int min_size) {
 
 	double start_time;
 	double end_time;
@@ -105,7 +111,7 @@ double vec_load_mm(vec_t **vec, const char *filename) {
 
 	assert(mm_file->width == 1);
 
-	vec_init(vec, mm_file->height);
+	vec_init(vec, maxi(mm_file->height, min_size));
 
 	for (i = 0; i < mm_file->nnz; i++)
 		(*vec)->v[mm_file->data[i].row] = mm_file->data[i].value;

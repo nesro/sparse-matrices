@@ -10,8 +10,17 @@
 #ifndef VIRTUAL_MATRIX_H_
 #define VIRTUAL_MATRIX_H_
 
+#ifdef _DOUBLE_PRECISION
+
+#define DPF "%lf" /* datatype_t printf format */
+typedef double datatype_t;
+
+#else /* DOUBLE_PRECISION */
+
 #define DPF "%f" /* datatype_t printf format */
 typedef float datatype_t;
+
+#endif /* DOUBLE_PRECISION */
 
 #define UNROLL 8
 

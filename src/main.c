@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
 
 	if (matrix_b != NULL) {
 		if (mul_vector) {
-			vm_load_mm(&vm_b, VEC, matrix_b);
+			vm_load_mm(&vm_b, VEC, matrix_b, vm_a->w);
 		} else {
 			if (vm_has_blocks(format))
 				vm_load_mm(&vm_b, format, matrix_b, block_size);

@@ -76,9 +76,12 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 		for (j = 0; j < a->_.w; j++)
 			if (a->v[i][j] != ((den_matrix_t *) tmp)->v[i][j]) {
 				diff++;
-				fprintf(stdout, ">>> diff y=%d x=%d v1=%lf v2=%lf\n", i, j,
-						a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
-				fflush(stdout);
+
+				if (0) {
+					fprintf(stdout, ">>> diff y=%d x=%d v1=%lf v2=%lf\n", i, j,
+							a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
+					fflush(stdout);
+				}
 			}
 
 	if (b != tmp && tmp != NULL)

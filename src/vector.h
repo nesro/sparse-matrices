@@ -18,8 +18,8 @@ typedef struct vector {
 void vec_vm_init(vec_t **vec, va_list va);
 void vec_init(vec_t **vec, int size);
 void vec_free(vec_t *vec);
-void vec_from_mm(vec_t **vec, const char *file, va_list va /* unused */);
-double vec_load_mm(vec_t **vec, const char *filename);
+void vec_from_mm(vec_t **vec, const char *file, va_list va);
+double vec_load_mm(vec_t **vec, const char *filename, int min_size);
 int vec_distance(vec_t *a, vec_t *b);
 int vec_compare(vec_t *a, vec_t *b);
 void vec_mm_save(vec_t *vec, const char *output);

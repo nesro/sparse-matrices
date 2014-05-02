@@ -40,7 +40,7 @@ void mat_vec() {
 		vm_load_mm(&a_csr, CSR, tp->a.path);
 		vm_load_mm(&a_kat, KAT, tp->a.path, 2);
 
-		vm_load_mm(&b_vec, VEC, tp->b.path);
+		vm_load_mm(&b_vec, VEC, tp->b.path, VA_END);
 		a_den->f.mul(a_den, b_vec, &c_vec_den, NAIVE);
 
 		CASSERTION_TIME();
@@ -137,8 +137,8 @@ void mat_mat() {
 			time = spa_a->f.mul(spa_a, spa_b, &spa_c, NAIVE);
 
 			CASSERTION(den_c->f.compare(den_c, spa_c) == 0,
-					"a=%s,b=%s,sms=%d,time=%lf", tp->a.path, tp->b.path, sms,
-					time);
+					"a=%s,b=%s,sms=%d,time=%lf,format=%d", tp->a.path, tp->b.path, sms,
+					time, types[i]);
 
 			spa_a->f.free(spa_a);
 			spa_b->f.free(spa_b);
@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
 
 	CASSERTION_INIT(argc, argv);
 
-//	mat_vec();
+	mat_vec();
 	mat_mat();
 
 	CASSERTION_RESULTS();

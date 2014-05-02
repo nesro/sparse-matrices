@@ -65,7 +65,7 @@ void run() {
 		vm_load_mm(&db, DEN, tp->b.path);
 		da->f.mul(da, db, &dc, NAIVE);
 
-		for (sms = 64; sms <= 1024; sms *= 2) {
+		for (sms = 2; sms <= 32; sms *= 2) {
 
 			CASSERTION_DONTRUN(sms > tp->a.height,
 					"sms=%d > tp->a.height=%d\n", sms, tp->a.height);
