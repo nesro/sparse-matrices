@@ -90,7 +90,7 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 	int i;
 //	int j;
 
-	mm_file = mm_load(mm_filename);
+	mm_file = mm_load(mm_filename, 0);
 
 	csr_init(csr, mm_file->width, mm_file->height, mm_file->nnz);
 

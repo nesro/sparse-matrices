@@ -22,7 +22,7 @@ typedef struct mm_file {
 	int data_size;
 } mm_file_t;
 
-mm_file_t *mm_load(const char *);
+mm_file_t *mm_load(const char *, int);
 void mm_free(mm_file_t *);
 
 #endif /* MM_LOAD_H_ */

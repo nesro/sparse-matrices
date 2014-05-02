@@ -11,6 +11,13 @@
 
 #include "utils.h"
 
+int maxi(int a, int b) {
+	if (a > b)
+		return a;
+	else
+		return b;
+}
+
 /* variable argument list handling *****************************************/
 
 int va_get_int(va_list va, int default_value, int *va_flag) {

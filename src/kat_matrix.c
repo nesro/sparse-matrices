@@ -385,7 +385,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 	kat_node_t *tn; /* temporary node */
 	int i;
 
-	mm_file = mm_load(filename);
+	mm_file = mm_load(filename, 1);
 
 	/*
 	 * Start timer after mm_file is loaded. We don't want to IO operations

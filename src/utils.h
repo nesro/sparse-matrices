@@ -163,6 +163,7 @@ double random_double(void);
 int possibility(double n);
 int rand_is_nonzero(int space, int items);
 int is_power_of_two(unsigned int x);
+int maxi(int a, int b);
 
 /* http://c.learncodethehardway.org/ */
 

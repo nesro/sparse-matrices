@@ -11,7 +11,7 @@
 #include "mmio.h"
 #include "mm_load.h"
 
-mm_file_t *mm_load(const char *filename) {
+mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 
 	mm_file_t *mm_file;
 
@@ -19,6 +19,7 @@ mm_file_t *mm_load(const char *filename) {
 	FILE *f;
 	int i;
 	int is_symmetric;
+	int rounded_size;
 
 	if ((f = fopen(filename, "r")) == NULL) {
 		fdie("File %s doesn't exists. Exiting.\n", filename);
@@ -44,6 +45,19 @@ mm_file_t *mm_load(const char *filename) {
 	if (mm_read_mtx_crd_size(f, &mm_file->height, &mm_file->width,
 			&mm_file->nnz) != 0) {
 		die("wrong mm_read_mtx_crd_size");
+	}
+
+	if (round_to_power_2) {
+		rounded_size = maxi(mm_file->height, mm_file->width);
+		rounded_size--;
+		rounded_size |= rounded_size >> 1;
+		rounded_size |= rounded_size >> 2;
+		rounded_size |= rounded_size >> 4;
+		rounded_size |= rounded_size >> 8;
+		rounded_size |= rounded_size >> 16;
+		rounded_size++;
+		mm_file->height = rounded_size;
+		mm_file->width = rounded_size;
 	}
 
 	if (is_symmetric)

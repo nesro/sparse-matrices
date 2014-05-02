@@ -146,7 +146,7 @@ void den_from_mm(den_matrix_t **den, const char *mm_filename,
 	mm_file_t *mm_file;
 	int i;
 
-	mm_file = mm_load(mm_filename);
+	mm_file = mm_load(mm_filename, 0);
 
 	den_matrix_init(den, mm_file->width, mm_file->height, 1);
 

@@ -59,7 +59,7 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 	datatype_t **tmp_block_beginnigs;
 	int last_row;
 
-	mm_file = mm_load(filename);
+	mm_file = mm_load(filename, 0);
 
 	assert(mm_file->width % b_size == 0);
 	assert(mm_file->height % b_size == 0);

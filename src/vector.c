@@ -4,6 +4,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <omp.h>
 
@@ -29,7 +30,6 @@ void vec_mm_save(vec_t *vec, const char *output) {
 	FILE *f = NULL;
 	int f_stdout = 0;
 	int i;
-	int j;
 
 	if (strcmp(output, "stdout") == 0) {
 		f = stdout;
@@ -95,7 +95,7 @@ double vec_load_mm(vec_t **vec, const char *filename) {
 	mm_file_t *mm_file;
 	int i;
 
-	mm_file = mm_load(filename);
+	mm_file = mm_load(filename, 0);
 
 	/*
 	 * Start timer after mm_file is loaded. We don't want to IO operations

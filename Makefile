@@ -286,8 +286,7 @@ USERNAME=nesrotom
 
 # Deploy files from local to STAR
 star-deploy: clean
-	rsync -ave ssh ./*  $(USERNAME)@star.fit.cvut.cz:/mnt/data/$(USERNAME)/
-#	rsync -ave ssh --delete ./*  $(USERNAME)@star.fit.cvut.cz:/mnt/data/$(USERNAME)/
+	rsync -ave ssh ./* --delete $(USERNAME)@star.fit.cvut.cz:/mnt/data/$(USERNAME)/sparse-matrices
 
 # Run the job
 star-run:
@@ -303,12 +302,13 @@ star-remove:
 
 # Show results
 star-results:
-	cat /mnt/data/$(USERNAME)/*.sh.*
+	cat /mnt/data/$(USERNAME)/sparse-matrices/*.sh.*
 
 # Clean results
 star-clean:
-	rm /mnt/data/$(USERNAME)/*.sh.*
-	rm /mnt/data/$(USERNAME)/_*.sh
+	rm /mnt/data/$(USERNAME)/sparse-matrices/*.sh.*
+	rm /mnt/data/$(USERNAME)/sparse-matrices/_*.sh
+	rm /mnt/data/$(USERNAME)/sparse-matrices/log_*.txt
 
 #-------------------------------------------------------------------------------
 

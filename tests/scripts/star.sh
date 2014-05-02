@@ -28,10 +28,10 @@ cat >> _$$.sh << __EOF__
 #$ -cwd
 
 # Defines  or  redefines  the  path used for the standard error stream of the job.
-#$ -e /mnt/data/nesrotom/ 
+#$ -e /mnt/data/nesrotom/sparse-matrices
 
 # The path used for the standard output stream of the job.
-#$ -o /mnt/data/nesrotom/ 
+#$ -o /mnt/data/nesrotom/sparse-matrices
 
 # Do not change.
 #$ -pe ompi 1
