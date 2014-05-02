@@ -19,6 +19,7 @@ typedef struct mm_file {
 	int height; /* rows */
 	int nnz;
 	mm_item_t *data;
+	int data_size;
 } mm_file_t;
 
 mm_file_t *mm_load(const char *);

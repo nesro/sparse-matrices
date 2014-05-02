@@ -13,6 +13,8 @@
 #include "utils.h"
 #include "csr_matrix.h"
 #include "coo_matrix.h"
+#include "bsr_matrix.h"
+#include "den_matrix.h"
 #include "den_matrix.h"
 #include "qdt_matrix.h"
 
@@ -31,16 +33,27 @@ static void usage() {
 
 static vm_type_t parse_format(const char *format_string) {
 
-	if (strcmp(format_string, "quadtree") == 0) {
+	if (0) {
+		(void) 0;
+	} else if (strcmp(format_string, "quadtree") == 0) {
 		return QDT;
 	} else if (strcmp(format_string, "dense") == 0) {
 		return DEN;
 	} else if (strcmp(format_string, "csr") == 0) {
 		return CSR;
+	} else if (strcmp(format_string, "kat") == 0) {
+		return KAT;
+	} else if (strcmp(format_string, "bsr") == 0) {
+		return BSR;
+	} else if (strcmp(format_string, "coo") == 0) {
+		return COO;
 	} else {
 		fprintf(stderr, "Unknown matrix format.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	/*NOTREACHABLE*/
+	return UNKNOWN;
 }
 
 int load_leaf_size(const char *string) {
@@ -75,7 +88,7 @@ void quick_test() {
 	vm_t *c = NULL;
 	double time;
 
-	//	vm_create(&vm, DEN, 10, 5, 3, VA_END);
+//	vm_create(&vm, DEN, 10, 5, 3, VA_END);
 	vm_load_mm(&a, DEN, "4x4_4nz_01.mtx");
 	vm_load_mm(&b, DEN, "4x4_4nz_01.mtx");
 
@@ -192,10 +205,10 @@ int main(int argc, char *argv[]) {
 	case DEN:
 		break;
 	case QDT:
-		//tr = qt_matrix_mm_mul(matrix_a, matrix_b, leaf_size);
 		break;
 	case CSR:
-		//tr = csr_matrix_mm_mul(matrix_a, matrix_b);
+		break;
+	case CSR:
 		break;
 	case UNKNOWN:
 		fprintf(stderr, "Format MUST be set.\n");
