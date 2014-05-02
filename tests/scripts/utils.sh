@@ -36,5 +36,13 @@ function gnuplot_wrapper {
 __EOF__
 }
 
+function check_code {
+	code=$1
+	if [[ $code -ne 0 ]]; then
+		echo "Previous command has failed. Exiting."
+		exit 1
+	fi
+}
+
 
 #gnuplot_wrapper test.txt test.png "xlabel" "ylabel" 3

@@ -233,7 +233,7 @@ double coo_mul(const coo_matrix_t *a, const vm_t *b, vm_t **c,
 		return mul_coo_vec(a, (vec_t *) b, (vec_t *) *c);
 	case COO:
 		den_matrix_init((den_matrix_t **) c, a->_.w, b->h, 1);
-		return mul_coo_coo(a, (coo_matrix_t *) b, (den_matrix_t *) c);
+		return mul_coo_coo(a, (coo_matrix_t *) b, (den_matrix_t *) *c);
 	default:
 		fprintf(stderr, "Unknown matrix type: %d\n", b->type);
 		exit(1);

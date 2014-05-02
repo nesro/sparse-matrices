@@ -421,7 +421,10 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 					tmp_x = rand() % (mtx->width - bx - 1);
 				}
 
-				tmp_size = rand() % ax;
+				if (ax != 0)
+					tmp_size = rand() % ax;
+				else
+					tmp_size = 0;
 
 				mtx_fill(mtx, tmp_y, tmp_x, tmp_y + bx + tmp_size,
 						tmp_x + by + tmp_size, sparsity);
