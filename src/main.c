@@ -62,26 +62,26 @@ static vm_type_t parse_format(const char *format_string) {
 int load_block_size(const char *string) {
 
 	char *tmp = NULL;
-	int leaf_size;
+	int block_size;
 
-	leaf_size = strtol(string, &tmp, 10);
+	block_size = strtol(string, &tmp, 10);
 
 	if (tmp == NULL) {
-		fprintf(stderr, "ERROR: Cannot load leaf size. Invalid input.\n");
+		fprintf(stderr, "ERROR: Cannot load block size. Invalid input.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (leaf_size < 2) {
-		fprintf(stderr, "ERROR: Minimum of leaf size is 2.\n");
+	if (block_size < 1) {
+		fprintf(stderr, "ERROR: Minimum of block size is 1.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (!is_power_of_two(leaf_size)) {
+	if (!is_power_of_two(block_size)) {
 		fprintf(stderr, "ERROR: Leaf size is not power of two.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	return leaf_size;
+	return block_size;
 }
 
 int main(int argc, char *argv[]) {
@@ -169,16 +169,16 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	if (matrix_a == NULL && matrix_b != NULL) {
+	if (matrix_b != NULL && matrix_a == NULL) {
 		matrix_a = matrix_b;
 		matrix_b = NULL;
 	}
-	if (matrix_b == NULL && matrix_a != NULL)
+	if (matrix_b != NULL && matrix_a == NULL)
 		matrix_b = matrix_a;
 
 	if (vm_has_blocks(format) && block_size == -1) {
 		fprintf(stderr, "ERROR: Block size is not set or has an invalid value."
-				"Set it with an -l option to a power of two.\n");
+				"Set it with an -s option to a power of two.\n");
 		return EXIT_FAILURE;
 	}
 
@@ -209,16 +209,20 @@ int main(int argc, char *argv[]) {
 	if (verbose) {
 		printf("time_mul %lf\n", time_mul);
 		printf("mul_vector %d\n", mul_vector);
+		printf("a_size %zu\n", vm_a->object_size);
+
+		if (matrix_b != NULL)
+			printf("b_size %zu\n", vm_b->object_size);
 
 		if (format == KAT) {
-			printf("kat_a_inner %d", ((kat_matrix_t*) vm_a)->nodes_inner);
-			printf("kat_a_dense %d", ((kat_matrix_t*) vm_a)->nodes_den);
-			printf("kat_a_csr %d", ((kat_matrix_t*) vm_a)->nodes_csr);
+			printf("kat_a_inner %d\n", ((kat_matrix_t*) vm_a)->nodes_inner);
+			printf("kat_a_dense %d\n", ((kat_matrix_t*) vm_a)->nodes_den);
+			printf("kat_a_csr %d\n", ((kat_matrix_t*) vm_a)->nodes_csr);
 
 			if (matrix_b != NULL) {
-				printf("kat_b_inner %d", ((kat_matrix_t*) vm_b)->nodes_inner);
-				printf("kat_b_dense %d", ((kat_matrix_t*) vm_b)->nodes_den);
-				printf("kat_b_csr %d", ((kat_matrix_t*) vm_b)->nodes_csr);
+				printf("kat_b_inner %d\n", ((kat_matrix_t*) vm_b)->nodes_inner);
+				printf("kat_b_dense %d\n", ((kat_matrix_t*) vm_b)->nodes_den);
+				printf("kat_b_csr %d\n", ((kat_matrix_t*) vm_b)->nodes_csr);
 			}
 		}
 	}
