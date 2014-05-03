@@ -16,7 +16,7 @@
 typedef struct bsr_matrix {
 	vm_t _;
 	int bs; /* block size */
-	int bc; /* block count */
+	long int bc; /* block count */
 	datatype_t *v;
 	int *rp;
 	int *ci;

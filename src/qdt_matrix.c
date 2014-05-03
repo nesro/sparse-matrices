@@ -605,7 +605,7 @@ void qt_matrix_print(qdt_matrix_t *qdt_matrix) {
 
 	printf("v:  ");
 	for (i = 0; i < qdt_matrix->_.nnz; i++) {
-		printf("%02.lf,", qdt_matrix->v[i]);
+		printf(DPF, qdt_matrix->v[i]);
 		if ((i + 1) % qdt_matrix->sm_size == 0)
 			printf(" _ ");
 	}

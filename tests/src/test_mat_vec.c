@@ -38,7 +38,7 @@ void mat_vec() {
 		vm_load_mm(&a_bsr, BSR, tp->a.path, 8);
 		vm_load_mm(&a_coo, COO, tp->a.path);
 		vm_load_mm(&a_csr, CSR, tp->a.path);
-		vm_load_mm(&a_kat, KAT, tp->a.path, 2);
+		vm_load_mm(&a_kat, KAT, tp->a.path, 8);
 
 		vm_load_mm(&b_vec, VEC, tp->b.path, VA_END);
 		a_den->f.mul(a_den, b_vec, &c_vec_den, NAIVE);

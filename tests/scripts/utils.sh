@@ -2,9 +2,15 @@
 # Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
 # https://github.com/nesro/sparse-matrices
 
-export big_list="ldoor Freescale1 atmosmodj cage12 thermal2 nlpkkt120"
-export big_dir_mat=../big_matrices
-export big_dir_vec=../big_vectors
+if false; then
+	export big_list="cage12 ldoor Freescale1 thermal2 atmosmodj nlpkkt120"
+	export big_dir_mat=../big_matrices
+	export big_dir_vec=../big_vectors
+else
+	export big_list="c-23 eurqsa GT01R"
+	export big_dir_mat=../test_matrices
+	export big_dir_vec=../test_matrices
+fi
 
 function gnuplot_wrapper {
 	input_filename=$1

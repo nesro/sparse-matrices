@@ -77,6 +77,8 @@ ifdef OMP_THREADS
 	CFLAGS += -DOMP_THREADS=$(OMP_THREADS)
 endif
 
+#-------------------------------------------------------------------------------
+
 # set up GCC Optimalizations
 #ifndef GCCOP
 #	CFLAGS += -O0
@@ -310,10 +312,11 @@ star-results:
 
 # Clean results
 star-clean:
-	rm /mnt/data/$(USERNAME)/sparse-matrices/*.sh.*
-	rm /mnt/data/$(USERNAME)/sparse-matrices/_*.sh
-	rm /mnt/data/$(USERNAME)/sparse-matrices/log_*.txt
-	rm /mnt/data/$(USERNAME)/sparse-matrices/resvec_*.mtx
+	rm /mnt/data/$(USERNAME)/sparse-matrices/*.sh.* \
+		/mnt/data/$(USERNAME)/sparse-matrices/_*.sh \
+		/mnt/data/$(USERNAME)/sparse-matrices/log_*.txt \
+		/mnt/data/$(USERNAME)/sparse-matrices/resvec_*.mtx \
+		/mnt/data/$(USERNAME)/sparse-matrices/core
 
 #-------------------------------------------------------------------------------
 

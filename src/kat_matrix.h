@@ -107,7 +107,7 @@ typedef struct kat_matrix {
 	kat_node_t *root;
 	datatype_t *v; /* values */
 	datatype_t *last_v;
-	int v_length;
+	long int v_length;
 
 
 	/* info */
@@ -150,5 +150,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size);
 double kat_mul(const kat_matrix_t *a, const vm_t *b, vm_t **c,
 		char flag /* unused */);
 vm_t *kat_convert(kat_matrix_t *kat, vm_type_t type);
+
+void kat_print_node(kat_node_t *kat_node, int depth);
 
 #endif /* KAT_MATRIX_H_ */

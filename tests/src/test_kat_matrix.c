@@ -21,7 +21,6 @@ void load() {
 		printf("%s\n", tm->path);
 		vm_load_mm(&kat, KAT, tm->path, 128);
 
-
 #if KAT_DEBUG == 1
 		vm_t *den = NULL;
 		den = kat->f.convert(kat, DEN);
@@ -67,8 +66,8 @@ void run() {
 
 		for (sms = 2; sms <= 32; sms *= 2) {
 
-			CASSERTION_DONTRUN(sms > tp->a.height,
-					"sms=%d > tp->a.height=%d\n", sms, tp->a.height);
+			CASSERTION_DONTRUN(sms > tp->a.height, "sms=%d > tp->a.height=%d\n",
+					sms, tp->a.height);
 			if (cassertion.dontrun)
 				continue;
 
@@ -109,13 +108,51 @@ void run() {
 	}
 }
 
+void mat_vec() {
+
+	vm_t *ka = NULL;
+	vm_t *kb = NULL;
+	vm_t *kc = NULL;
+
+	vm_load_mm(&ka, KAT, "tests/matrices/generated/64x64.mtx", 8);
+
+	printf("------------------ vec----- %d ----\n", ka->w);
+
+	vm_load_mm(&kb, VEC, "tests/matrices/vector_64.mtx", ka->w);
+
+	printf("------------------ asdfassadf\n");
+
+	printf("kat_a_inner %d\n", ((kat_matrix_t*) ka)->nodes_inner);
+	printf("kat_a_dense %d\n", ((kat_matrix_t*) ka)->nodes_den);
+	printf("kat_a_csr %d\n", ((kat_matrix_t*) ka)->nodes_csr);
+
+	ka->f.mul(ka, kb, &kc, NAIVE);
+
+	ka->f.free(ka);
+	kb->f.free(kb);
+	kc->f.free(kc);
+
+}
+
+void another() {
+	vm_t *ka = NULL;
+	vm_load_mm(&ka, KAT, "/var/tmp/1024.mtx", 64);
+//	vm_load_mm(&ka, KAT, "tests/matrices/8x8_6nnz_01.mtx", 2);
+
+	kat_print_node(((kat_matrix_t*)ka)->root,0);
+
+	ka->f.free(ka);
+}
+
 int main(int argc, char *argv[]) {
 
 	CASSERTION_INIT(argc, argv);
 
-//	load();
+	load();
 
 	run();
+	mat_vec();
+	another();
 
 	CASSERTION_RESULTS();
 

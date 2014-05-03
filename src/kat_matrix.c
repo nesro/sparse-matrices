@@ -77,6 +77,8 @@ void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 					(log((width * height) / (sm_size * sm_size))
 							/ (double) log(KAT_K)));
 
+	printf("_kat init h=%d w=%d height=%d\n", width, height, (*kat)->height);
+
 	// not really
 //	assert(width < sm_size * KAT_N);
 
@@ -104,11 +106,6 @@ static void kat_node_free(kat_node_t *kat_node) {
 }
 
 void kat_free(kat_matrix_t *kat) {
-
-	printf("dense blocks=%d csr=%d\n", kat->den_blocks,
-			kat->blocks - kat->den_blocks);
-	fflush(stdout);
-
 	kat_node_free(kat->root);
 	free(kat->v);
 
@@ -122,11 +119,43 @@ void kat_free(kat_matrix_t *kat) {
 
 /******************************************************************************/
 
+#if KAT_DEBUG
+
+static int is_uniq_pos(kat_matrix_t *kat, kat_node_t *kat_node, int y, int x) {
+
+	int i;
+	int j;
+	int result = 0;
+
+	if (kat_node->node_type == KAT_N_CSR || kat_node->node_type == KAT_N_DEN) {
+		if (kat_node->node.sm.y == y && kat_node->node.sm.x == x)
+		return 1;
+		else
+		return 0;
+	}
+
+	if (kat_node->node_type == INNER) {
+		for (i = 0; i < KAT_N; i++)
+		for (j = 0; j < KAT_N; j++)
+		if (kat_node->node.knp[i][j])
+		result += is_uniq_pos(kat, kat_node->node.knp[i][j], y, x);
+
+		return result;
+	}
+
+	assert(0);
+	return 1;
+}
+#endif
 /*
  * This function return a pointer to the right block. Automatically build
  * the path to the block.
  */
 static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
+
+#if KAT_DEBUG
+	int tmp_height = 0;
+#endif
 
 	/*
 	 * Pointer to a node. We'll use it to traverse through the tree.
@@ -195,6 +224,15 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 		block_start_y += node_y * (block_size / KAT_N);
 		block_start_x += node_x * (block_size / KAT_N);
 		block_size /= KAT_N;
+
+#if KAT_DEBUG
+		tmp_height++;
+
+		if (tmp_height >= kat->height) {
+			printf("tree to hight=%d max=%d", tmp_height, kat->height);
+			exit(1);
+		}
+#endif
 	}
 
 	/*
@@ -233,6 +271,13 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 
 	if (*tmp_node == NULL) {
 
+#if KAT_DEBUG
+		if (is_uniq_pos(kat, kat->root, sm_y, sm_x) == 1) {
+			printf("there is block y=%d, x=%d", sm_y, sm_x);
+			exit(1);
+		}
+#endif
+
 		*tmp_node = calloc(1, sizeof(kat_node_t));
 		kat->_.object_size += sizeof(kat_node_t);
 		assert(*tmp_node != NULL);
@@ -246,6 +291,7 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 		(*tmp_node)->node.sm.y = sm_y;
 		(*tmp_node)->node.sm.x = sm_x;
 		kat->blocks++;
+		kat->nodes_csr++;
 
 		_s_debugf(KAT_DEBUG, "Creating a leaf node at y=%d x=%d\n",
 				(*tmp_node)->node.sm.y, (*tmp_node)->node.sm.x);
@@ -351,11 +397,27 @@ void kat_print_node(kat_node_t *kat_node, int depth) {
 
 	for (i = 0; i < KAT_N; i++) {
 		for (j = 0; j < KAT_N; j++) {
-			printf("%*s[%d][%d] = ", depth, "", i, j);
-
+			printf("%*s[%d][%d] = \n", depth, "", i, j);
 			if (kat_node->node.knp[i][j] != NULL) {
-				printf(" !\n");
-				kat_print_node(kat_node->node.knp[i][j], depth + 1);
+				switch (kat_node->node.knp[i][j]->node_type) {
+				case KAT_N_DEN:
+					printf("  den mul y=%d, x=%d\n",
+							kat_node->node.knp[i][j]->node.sm.y,
+							kat_node->node.knp[i][j]->node.sm.x);
+					break;
+				case KAT_N_CSR:
+					printf("  csr mul y=%d, x=%d\n",
+							kat_node->node.knp[i][j]->node.sm.y,
+							kat_node->node.knp[i][j]->node.sm.x);
+					break;
+				case INNER:
+					printf("  inner\n");
+					kat_print_node(kat_node->node.knp[i][j], depth + 1);
+					break;
+				default:
+					assert(0);
+					break;
+				}
 			} else {
 				printf("NULL\n");
 			}
@@ -397,7 +459,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 
 	for (i = 0; i < mm_file->nnz; i++) {
 
-		_s_debugf(KAT_DEBUG, "i=%d v=%lf\n", i, mm_file->data[i].value);
+		_s_debugf(KAT_DEBUG, "i=%d v="DPF"\n", i, mm_file->data[i].value);
 
 		tn = kat_get_node(*kat, mm_file->data[i].row, mm_file->data[i].col);
 
@@ -419,7 +481,8 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 					tn->node.sm.y, tn->node.sm.x);
 
 			tn->node_type = KAT_N_DEN;
-			(*kat)->den_blocks++;
+			(*kat)->nodes_csr--;
+			(*kat)->nodes_den++;
 			(*kat)->v_length += sm_size * sm_size - tn->node.sm.nnz;
 		}
 	}
@@ -428,6 +491,9 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 	 * Allocating memory for the matrix data.
 	 */
 	(*kat)->v = calloc((*kat)->v_length, sizeof(datatype_t));
+	_s_debugf(1, "kat->v size = %ld\n", (*kat)->v_length);
+	assert((*kat)->v !=NULL);
+
 	(*kat)->_.object_size += (*kat)->v_length * sizeof(datatype_t);
 	(*kat)->last_v = (*kat)->v;
 
@@ -468,7 +534,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 			 * But we allow some zero elements in dense matrix.
 			 */
 			_s_debugf(KAT_DEBUG,
-					"Adding %lf at y=%d x=%d i.e. index=%d node.y=%d mode.x=%d to DEN <<<<<<<<\n",
+					"Adding "DPF" at y=%d x=%d i.e. index=%d node.y=%d mode.x=%d to DEN <<<<<<<<\n",
 					mm_file->data[i].value, mm_file->data[i].row,
 					mm_file->data[i].col,
 					((mm_file->data[i].row % (*kat)->sm_size) * (*kat)->sm_size)
@@ -482,8 +548,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 
 			break;
 		case KAT_N_CSR:
-
-			_s_debugf(KAT_DEBUG, "adding %lf at y=%d x=%d to CSR. n_nnz=%d\n",
+			_s_debugf(KAT_DEBUG, "adding "DPF" at y=%d x=%d to CSR. n_nnz=%d\n",
 					mm_file->data[i].value, mm_file->data[i].row,
 					mm_file->data[i].col, tn->node.sm.n_nnz);
 
@@ -532,7 +597,7 @@ static void kat_node_to_dense(kat_matrix_t *kat, kat_node_t *kat_node,
 					kat_node->node.sm.s.csr.rp[i]);
 		}
 		for (i = 0; i < kat_node->node.sm.n_nnz; i++) {
-			_s_debugf(KAT_DEBUG, "csr i=%d ci=%d v=%lf\n", i,
+			_s_debugf(KAT_DEBUG, "csr i=%d ci=%d v="DPF"\n", i,
 					kat_node->node.sm.s.csr.ci[i], kat_node->node.sm.v[i]);
 		}
 
@@ -605,7 +670,7 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 			for (k = 0; k < sms; k++) {
 
 				_s_debugf(KAT_DEBUG,
-						"mul %lf at y=%d x=%d with %lf at y=%d x=%d to y=%d x=%d\n",
+						"mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
 						a->node.sm.v[i * sms + k], i, k,
 						b->node.sm.v[k * sms + j], k, j, i + a->node.sm.y,
 						j + b->node.sm.x);
@@ -668,7 +733,7 @@ static inline void kat_mul_csr_den(const kat_matrix_t *ma,
 			for (i = 0; i < ma->sm_size; i++) {
 
 				_s_debugf(KAT_DEBUG,
-						">> mul %lf at y=%d x=%d with %lf at y=%d x=%d to y=%d x=%d\n",
+						">> mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
 						a->node.sm.v[ac], 0, 0,
 						b->node.sm.v[ma->sm_size * a->node.sm.s.csr.ci[ac] + i],
 						0, 0, a->node.sm.y + r, b->node.sm.x + i);
@@ -779,6 +844,13 @@ static inline void kat_mul_csr_vec(const kat_matrix_t *ma, const vec_t *b,
 			a->node.sm.s.csr.ci[ac]];
 }
 
+#if KAT_DEBUG
+long int tmp_knv = 0;
+long int tmp_knvden = 0;
+long int tmp_knvcsr = 0;
+long int tmp_knvinn = 0;
+#endif
+
 /*
  * Multiply k-ary tree matrix nodes with a vector.
  */
@@ -788,26 +860,47 @@ static void mul_katnode_vec(const kat_matrix_t *ma, const vec_t *mb,
 
 	int i;
 	int j;
-	int k;
+
+#if KAT_DEBUG
+	if (tmp_knv++ % 1 == 0) {
+		printf(
+				"deep=%d, dnv=%ld, tmp_knvden=%ld, tmp_knvcsr=%ld, tmp_knvinn=%ld\n",
+				deep, tmp_knv, tmp_knvden, tmp_knvcsr, tmp_knvinn);
+		fflush(stdout);
+	}
+#endif
 
 	for (i = 0; i < KAT_N; i++) {
 		for (j = 0; j < KAT_N; j++) {
-			for (k = 0; k < KAT_N; k++) {
-				if (a->node.knp[i][k]) {
-					if (a->node.knp[i][k]->node_type == KAT_N_DEN) {
-						kat_mul_den_vec(ma, mb, a->node.knp[i][k], c);
-						continue;
-					}
-
-					if (a->node.knp[i][k]->node_type == KAT_N_CSR) {
-						kat_mul_csr_vec(ma, mb, a->node.knp[i][k], c);
-						continue;
-					}
-
-					if (a->node.knp[i][k]->node_type == INNER) {
-						mul_katnode_vec(ma, mb, a->node.knp[i][k], c);
-						continue;
-					}
+			if (a->node.knp[i][j] != NULL) {
+				switch (a->node.knp[i][j]->node_type) {
+				case KAT_N_DEN:
+#if KAT_DEBUG
+					tmp_knvden++;
+					printf("  den mul y=%d, x=%d\n",
+							a->node.knp[i][j]->node.sm.y,
+							a->node.knp[i][j]->node.sm.x);
+#endif
+					kat_mul_den_vec(ma, mb, a->node.knp[i][j], c);
+					break;
+				case KAT_N_CSR:
+#if KAT_DEBUG
+					tmp_knvcsr++;
+					printf("  csr mul y=%d, x=%d\n",
+							a->node.knp[i][j]->node.sm.y,
+							a->node.knp[i][j]->node.sm.x);
+#endif
+					kat_mul_csr_vec(ma, mb, a->node.knp[i][j], c);
+					break;
+				case INNER:
+#if KAT_DEBUG
+					tmp_knvinn++;
+#endif
+					mul_katnode_vec(ma, mb, a->node.knp[i][j], c);
+					break;
+				default:
+					assert(0);
+					break;
 				}
 			}
 		}

@@ -208,30 +208,14 @@ int main(int argc, char *argv[]) {
 
 	if (verbose) {
 		printf("time_mul %lf\n", time_mul);
-		printf("mul_vector %d\n", mul_vector);
 		printf("a_size %zu\n", vm_a->object_size);
-
-		if (matrix_b != NULL)
-			printf("b_size %zu\n", vm_b->object_size);
 
 		if (format == KAT) {
 			printf("kat_a_inner %d\n", ((kat_matrix_t*) vm_a)->nodes_inner);
 			printf("kat_a_dense %d\n", ((kat_matrix_t*) vm_a)->nodes_den);
 			printf("kat_a_csr %d\n", ((kat_matrix_t*) vm_a)->nodes_csr);
-
-			if (matrix_b != NULL) {
-				printf("kat_b_inner %d\n", ((kat_matrix_t*) vm_b)->nodes_inner);
-				printf("kat_b_dense %d\n", ((kat_matrix_t*) vm_b)->nodes_den);
-				printf("kat_b_csr %d\n", ((kat_matrix_t*) vm_b)->nodes_csr);
-			}
 		}
 	}
-
-#if 0
-	printf("den nnz: a=%d b=%d c=%d\n", den_count_nnz((den_matrix_t *) vm_a),
-			den_count_nnz((den_matrix_t *) vm_b),
-			den_count_nnz((den_matrix_t *) vm_c));
-#endif
 
 	vm_a->f.free(vm_a);
 

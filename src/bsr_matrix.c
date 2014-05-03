@@ -61,7 +61,7 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 
 	mm_file = mm_load(filename, 1);
 
-	printf("%d %d\n", mm_file->width, b_size);
+	printf("bsr w=%d b_size=%d\n", mm_file->width, b_size);
 
 	assert(mm_file->width % b_size == 0);
 	assert(mm_file->height % b_size == 0);
@@ -80,7 +80,7 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 		block_row = mm_file->data[i].row / b_size;
 		block_col = mm_file->data[i].col / b_size;
 
-		_s_debugf(BSR_DEBUG, "i=%d v=%lf bc=%d ff=%d\n", i,
+		_s_debugf(BSR_DEBUG, "i=%d v="DPF" bc=%d ff=%d\n", i,
 				mm_file->data[i].value, block_col, blocks_in_row);
 
 		if (tmp_last_col[block_col] != block_row) {
@@ -120,7 +120,6 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 		if (tmp_block_beginnigs[block_col] == NULL) {
 			tmp_block_beginnigs[block_col] = &((*bsr)->v[b_size * b_size
 					* blocks]);
-
 			_s_debug(BSR_DEBUG, "found a block!\n");
 			_s_debugf(BSR_DEBUG, "blocks=%d\n", blocks);
 			(*bsr)->ci[blocks] = block_col;
@@ -130,7 +129,7 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 		/*
 		 * Place the item in the right place in a block.
 		 */
-		_s_debugf(BSR_DEBUG, "it=%lf v=%p tbb=%p r=%d c=%d br=%d bc=%d\n",
+		_s_debugf(BSR_DEBUG, "it="DPF" v=%p tbb=%p r=%d c=%d br=%d bc=%d\n",
 				mm_file->data[i].value, (void * ) (*bsr)->v,
 				(void * ) tmp_block_beginnigs[block_col], (block_row % b_size),
 				(block_col % b_size), block_row, block_col);
@@ -178,10 +177,29 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 	(*bsr)->bs = b_size;
 	(*bsr)->bc = b_cnt;
 
+	/**************************************************************************/
+
+
+//	printf("test a\n");
+//
+//	double *d;
+//	d = malloc(45988380672);
+//	assert(d != NULL);
+//
+//	printf("test b\n");
+
+
 	(*bsr)->v = calloc(((*bsr)->bc * b_size * b_size), sizeof(datatype_t));
+	assert((*bsr)->v != NULL);
+
+	_s_debugf(0, "calloc = %ld maxsizet=%zu iwant=%zu\n",
+			((*bsr)->bc * b_size * b_size), ((size_t )-1),
+			(size_t)(((*bsr)->bc * b_size * b_size) * sizeof(datatype_t)));
+
+
 	(*bsr)->_.object_size += ((*bsr)->bc * b_size * b_size)
 			* sizeof(datatype_t);
-	assert((*bsr)->v != NULL);
+	/**************************************************************************/
 
 	/* XXX: this should be malloc'd */
 	(*bsr)->rp = calloc(((height / b_size) + 1), sizeof(int));
@@ -196,7 +214,9 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 void bsr_free(bsr_t *bsr) {
 	free(bsr->ci);
 	free(bsr->rp);
+
 	free(bsr->v);
+
 	free(bsr);
 }
 
@@ -214,7 +234,7 @@ vm_t *bsr_convert(bsr_t *bsr, vm_type_t type) {
 		vm_create(&vm, DEN, 1, bsr->_.w, bsr->_.h);
 
 		for (i = 0; i < bsr->bc * bsr->bs * bsr->bs; i++) {
-			_s_debugf(BSR_DEBUG, "i=%d v=%lf\n", i, bsr->v[i]);
+			_s_debugf(BSR_DEBUG, "i=%d v="DPF"\n", i, bsr->v[i]);
 		}
 
 		for (i = 0; i < ((bsr->_.h / bsr->bs) + 1); i++) {
@@ -231,7 +251,7 @@ vm_t *bsr_convert(bsr_t *bsr, vm_type_t type) {
 				_s_debugf(BSR_DEBUG, "cvt j=%d col=%d\n", j, bsr->ci[j]);
 				for (k = 0; k < bsr->bs; k++) {
 					for (l = 0; l < bsr->bs; l++) {
-						_s_debugf(BSR_DEBUG, "c[%d][%d]=%lf\n",
+						_s_debugf(BSR_DEBUG, "c[%d][%d]="DPF"\n",
 								(i * bsr->bs) + k, (j * bsr->bs) + l,
 								bsr->v[j * (bsr->bs * bsr->bs) + (k * bsr->bs)
 										+ l]);
@@ -262,6 +282,7 @@ static inline double mul_bsr_vec(const bsr_t *a, const vec_t *b, vec_t *c) {
 	int l;
 	int m;
 
+	_s_debugf(1, "w=%d h=%d\n", a->_.w, b->_.h);
 	assert(a->_.w == b->_.h);
 
 	start_time = omp_get_wtime();

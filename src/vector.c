@@ -43,7 +43,7 @@ void vec_mm_save(vec_t *vec, const char *output) {
 			"%d %d %d\n", 1, vec->_.h, vec->size);
 
 	for (i = 0; i < vec->size; i++)
-		fprintf(f, "%d %d %lf\n", i + 1, 1, vec->v[i]);
+		fprintf(f, "%d %d "DPF"\n", i + 1, 1, vec->v[i]);
 
 	if (!f_stdout)
 		fclose(f);
@@ -68,6 +68,7 @@ void vec_init(vec_t **vec, int size) {
 	(*vec)->_.type = VEC;
 	(*vec)->_.f = vec_vmt;
 	(*vec)->_.h = size;
+	(*vec)->_.w = 1;
 
 	/*
 	 * Because the .mtx file is sparse, it would be possible to have some
@@ -87,9 +88,15 @@ void vec_free(vec_t *vec) {
 void vec_from_mm(vec_t **vec, const char *file, va_list va) {
 
 	int va_flag = 0;
-	int min_size;
+	int min_size = -1;
 
 	min_size = va_get_int(va, -1, &va_flag);
+
+	printf("vec minsiz %d\n", min_size);
+	fflush(stdout);
+
+	printf("vec mifile %s\n", file);
+	fflush(stdout);
 
 	vec_load_mm(vec, file, min_size);
 }

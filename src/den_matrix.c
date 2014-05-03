@@ -51,7 +51,7 @@ void den_mm_save(den_matrix_t *den, const char *output) {
 	for (i = 0; i < den->_.h; i++)
 		for (j = 0; j < den->_.w; j++)
 			if (den->v[i][j] != ((datatype_t) 0))
-				fprintf(f, "%d %d %lf\n", i + 1, j + 1, den->v[i][j]);
+				fprintf(f, "%d %d "DPF"\n", i + 1, j + 1, den->v[i][j]);
 
 	if (!f_stdout)
 		fclose(f);
@@ -78,7 +78,7 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 				diff++;
 
 				if (0) {
-					fprintf(stdout, ">>> diff y=%d x=%d v1=%lf v2=%lf\n", i, j,
+					fprintf(stdout, ">>> diff y=%d x=%d v1="DPF" v2="DPF"\n", i, j,
 							a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
 					fflush(stdout);
 				}
