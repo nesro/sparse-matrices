@@ -11,7 +11,6 @@
 
 typedef struct vector {
 	vm_t _;
-	int size;
 	datatype_t *v;
 } vec_t;
 

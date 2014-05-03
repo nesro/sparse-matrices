@@ -38,12 +38,18 @@ void vec_mm_save(vec_t *vec, const char *output) {
 		f = fopen(output, "w");
 	}
 
+	vec->_.nnz = 0;
+	for (i = 0; i < vec->_.h; i++)
+		if (vec->v[i] != 0)
+			vec->_.nnz++;
+
 	/* FIXME: w h ? */
 	fprintf(f, "%%MatrixMarket matrix coordinate real general\n"
-			"%d %d %d\n", 1, vec->_.h, vec->size);
+			"%d %d %d\n", 1, vec->_.h, vec->_.nnz);
 
-	for (i = 0; i < vec->size; i++)
-		fprintf(f, "%d %d "DPF"\n", i + 1, 1, vec->v[i]);
+	for (i = 0; i < vec->_.h; i++)
+		if (vec->v[i] != 0)
+			fprintf(f, "%d %d "DPF"\n", i + 1, 1, vec->v[i]);
 
 	if (!f_stdout)
 		fclose(f);

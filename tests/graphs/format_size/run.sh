@@ -6,8 +6,7 @@ set -x
 
 source ./tests/scripts/utils.sh
 
-#make DOUBLE_PRECISION=1
-make
+make DOUBLE_PRECISION=1
 
 # time ./main -f kat -s 2 \
 # -a <(gzip -cd ../big_matrices/ldoor.mtx.gz) \
@@ -21,7 +20,7 @@ if false; then
 	-V -v -o ./resvec_ldoor.mtx
 fi
 
-for matrix in $big_list; do
+time for matrix in $big_list; do
 
 	for format in \
 		"coo" \
@@ -33,12 +32,17 @@ for matrix in $big_list; do
 		"kat -s 128" \
 		"kat -s 256"; do
 		
-		echo -n "\"$matrix\" \"$format\"" | tee gp_$$.txt
+		echo -n "\"$matrix\" \"$format\"" >> gp_$$.txt
 		
 		time ./main -f ${format} \
 			-a <(gzip -cd ${big_dir_mat}/${matrix}.mtx.gz) \
 			-b <(gzip -cd ${big_dir_vec}/vector_${matrix}_*.mtx.gz) \
 			-V -v -o ./resvec_${matrix}_$(echo ${format} | tr ' ' '_').mtx | grep "a_size" | cut -d' ' -f2 >> gp_$$.txt
+		
+		echo "CHECK"
+		for check in $(ls ./resvec_${matrix}_*); do
+			diff -q $check ./resvec_${matrix}_$(echo ${format} | tr ' ' '_').mtx
+		done
 		
 	done
 done
