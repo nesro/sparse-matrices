@@ -43,7 +43,7 @@
  * If a submatrix will have at least KAT_DENSE_TRESHOLD of nnz, it will be
  * treated like a dense matrix.
  */
-#define KAT_DENSE_TRESHOLD (2)
+#define KAT_DENSE_TRESHOLD (KAT_K*0.75)
 
 /*
  * If true, leaves of k-ary tree will be (also) in CSR format.
