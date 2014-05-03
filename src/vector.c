@@ -163,11 +163,11 @@ int vec_distance(vec_t *a, vec_t *b) {
 	int i;
 	int distance;
 
-	if (a->size != b->size)
+	if (a->_.h != b->_.h)
 		return -1;
 
 	distance = 0;
-	for (i = 0; i < a->size; i++)
+	for (i = 0; i < a->_.h; i++)
 		if (a->v[i] != a->v[i])
 			distance++;
 
