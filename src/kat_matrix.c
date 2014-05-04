@@ -667,6 +667,8 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 	int k;
 	int sms = ma->sm_size;
 
+	datatype_t sum;
+
 	_s_debugf(KAT_DEBUG,
 			"mul_den_den a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
 			(void* )a, a->node_type, (void* )a->node.sm.s.den.v,
@@ -674,17 +676,21 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 
 	for (l = 0; l < sms; l++) {
 		for (m = 0; m < sms; m++) {
+
+			sum = 0;
+
 			for (k = 0; k < sms; k++) {
 
-				_s_debugf(KAT_DEBUG,
-						"mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
-						a->node.sm.s.den.v[l][k], l, k,
-						b->node.sm.s.den.v[k][m], k, m, l + a->node.sm.y,
-						m + b->node.sm.x);
+//				_s_debugf(KAT_DEBUG,
+//						"mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
+//						a->node.sm.s.den.v[l][k], l, k,
+//						b->node.sm.s.den.v[k][m], k, m, l + a->node.sm.y,
+//						m + b->node.sm.x);
 
-				c->v[l + a->node.sm.y][m + b->node.sm.x] +=
-						a->node.sm.s.den.v[l][k] * b->node.sm.s.den.v[k][m];
+				sum += a->node.sm.s.den.v[l][k] * b->node.sm.s.den.v[k][m];
 			}
+
+			c->v[l + a->node.sm.y][m + b->node.sm.x] += sum;
 		}
 	}
 }
@@ -708,7 +714,6 @@ static void kat_mul_den_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 //							b->node.sm.v[k * sms + j], k, j, i + a->node.sm.y,
 //							j + b->node.sm.x);
 //				_s_debugf(KAT_DEBUG, "j=%d", j);
-
 
 				c->v[i + a->node.sm.y][b->node.sm.s.csr.ci[k] + b->node.sm.x] +=
 						a->node.sm.s.den.v[i][j] * b->node.sm.s.csr.v[k];
