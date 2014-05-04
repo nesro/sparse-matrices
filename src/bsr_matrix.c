@@ -10,6 +10,7 @@
 #include <omp.h>
 
 #include "utils.h"
+#include "csr_matrix.h"
 #include "bsr_matrix.h"
 #include "den_matrix.h"
 #include "virtual_matrix.h"
@@ -49,101 +50,71 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 
 	double start_time;
 	double end_time;
-	mm_file_t *mm_file;
 	int i;
-	int blocks;
-	int block_row;
-	int block_col;
-	int *tmp_last_col;
-	int blocks_in_row;
-	datatype_t **tmp_block_beginnigs;
-	int last_row;
-
-	mm_file = mm_load(filename, 1);
-
-	printf("bsr w=%d b_size=%d\n", mm_file->width, b_size);
-
-	assert(mm_file->width % b_size == 0);
-	assert(mm_file->height % b_size == 0);
-
+	int j;
+	int k;
+	int blk_i; /* block row */
+	int blk_j; /* block col */
+	int blk_c; /* block count */
+	csr_t *csr = NULL;
+	int *blk_start;
+	datatype_t **blk_vp;
 	start_time = omp_get_wtime();
 
-	blocks_in_row = ((mm_file->width / b_size) + 1);
+	/*
+	 * TODO: we are creating BSR from a CSR matrix. We should load COO from
+	 * MM and convert it to BSR.
+	 */
+	csr_from_mm(&csr, filename, 0);
 
-	/* compute how many blocks is in the mtx matrix */
-	blocks = 0;
-	tmp_last_col = malloc(blocks_in_row * sizeof(int));
-	assert(tmp_last_col);
-	memset(tmp_last_col, -1, blocks_in_row * sizeof(int));
-	for (i = 0; i < mm_file->nnz; i++) {
+	/* count blocks */
+	blk_start = malloc((csr->_.w / b_size + 1) * sizeof(int));
+	memset(blk_start, -1, (csr->_.w / b_size + 1) * sizeof(int));
+	blk_c = 0;
+	for (i = 0; i < csr->_.h; i++) {
+		blk_i = i / b_size;
+		for (j = csr->rp[i]; j < csr->rp[i + 1]; j++) {
+			blk_j = csr->ci[j] / b_size;
 
-		block_row = mm_file->data[i].row / b_size;
-		block_col = mm_file->data[i].col / b_size;
-
-		_s_debugf(BSR_DEBUG, "i=%d v="DPF" bc=%d ff=%d\n", i,
-				mm_file->data[i].value, block_col, blocks_in_row);
-
-		if (tmp_last_col[block_col] != block_row) {
-			blocks++;
-			_s_debug(BSR_DEBUG, "found a block!\n");
-			tmp_last_col[block_col] = block_row;
+			if (blk_start[blk_j] != blk_i) {
+				blk_start[blk_j] = blk_i;
+				blk_c++;
+			}
 		}
 	}
-	free(tmp_last_col);
+	free(blk_start);
 
-	_s_debug(BSR_DEBUG, "Let's construct a BSR matrix:\n");
-
-	/* construct a bsr matrix */
-	bsr_init(bsr, mm_file->width, mm_file->height, mm_file->nnz, b_size,
-			blocks);
-	blocks = 0;
-	tmp_block_beginnigs = calloc(blocks_in_row, sizeof(datatype_t *));
-	assert(tmp_block_beginnigs != NULL);
+	bsr_init(bsr, csr->_.w, csr->_.h, csr->_.nnz, b_size, blk_c);
+	blk_c = 0;
 	(*bsr)->rp[0] = 0;
-	last_row = -1;
-	for (i = 0; i < mm_file->nnz; i++) {
+	blk_vp = calloc((csr->_.w / b_size + 1), sizeof(datatype_t *));
+	for (i = 0; i < (csr->_.h / b_size); i++) {
+		for (j = 0; j < b_size; j++) {
+			blk_i = b_size * i + j;
+			for (k = csr->rp[blk_i]; k < csr->rp[blk_i + 1]; k++) {
+				blk_j = csr->ci[k] / b_size;
 
-		block_row = mm_file->data[i].row / b_size;
-		block_col = mm_file->data[i].col / b_size;
+				if (blk_vp[blk_j] == NULL) {
+					blk_vp[blk_j] = (*bsr)->v + blk_c * b_size * b_size;
+					(*bsr)->ci[blk_c] = blk_j;
+					blk_c++;
+				}
 
-		if (block_row > last_row) {
-			if (last_row == -1) {
-				last_row = block_row;
-			} else {
-				last_row = block_row;
-				_s_debugf(BSR_DEBUG, "deleting! block_row=%d\n", block_row);
-				memset(tmp_block_beginnigs, 0,
-						blocks_in_row * sizeof(datatype_t *));
+				*(blk_vp[blk_j] + (b_size * j) + (csr->ci[k] % b_size)) +=
+						csr->v[k];
 			}
 		}
 
-		if (tmp_block_beginnigs[block_col] == NULL) {
-			tmp_block_beginnigs[block_col] = &((*bsr)->v[b_size * b_size
-					* blocks]);
-			_s_debug(BSR_DEBUG, "found a block!\n");
-			_s_debugf(BSR_DEBUG, "blocks=%d\n", blocks);
-			(*bsr)->ci[blocks] = block_col;
-			blocks++;
+		for (j = csr->rp[i * b_size]; j < csr->rp[(i + 1) * b_size]; j++) {
+			blk_vp[csr->ci[j] / b_size] = NULL;
 		}
 
-		/*
-		 * Place the item in the right place in a block.
-		 */
-		_s_debugf(BSR_DEBUG, "it="DPF" v=%p tbb=%p r=%d c=%d br=%d bc=%d\n",
-				mm_file->data[i].value, (void * ) (*bsr)->v,
-				(void * ) tmp_block_beginnigs[block_col], (block_row % b_size),
-				(block_col % b_size), block_row, block_col);
-
-		*(tmp_block_beginnigs[block_col] + /**/
-		(mm_file->data[i].row % b_size) * b_size + /**/
-		(mm_file->data[i].col % b_size)) += mm_file->data[i].value;
-
-		(*bsr)->rp[block_row + 1] = blocks;
+		(*bsr)->rp[i + 1] = blk_c;
 	}
-	free(tmp_block_beginnigs);
 
+	free(blk_vp);
+	csr->_.f.free((vm_t*) csr);
 	end_time = omp_get_wtime();
-	mm_free(mm_file);
 	return end_time - start_time;
 }
 
@@ -179,7 +150,6 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 
 	/**************************************************************************/
 
-
 //	printf("test a\n");
 //
 //	double *d;
@@ -187,15 +157,12 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 //	assert(d != NULL);
 //
 //	printf("test b\n");
-
-
 	(*bsr)->v = calloc(((*bsr)->bc * b_size * b_size), sizeof(datatype_t));
 	assert((*bsr)->v != NULL);
 
 	_s_debugf(0, "calloc = %ld maxsizet=%zu iwant=%zu\n",
 			((*bsr)->bc * b_size * b_size), ((size_t )-1),
-			(size_t)(((*bsr)->bc * b_size * b_size) * sizeof(datatype_t)));
-
+			(size_t )(((*bsr)->bc * b_size * b_size) * sizeof(datatype_t)));
 
 	(*bsr)->_.object_size += ((*bsr)->bc * b_size * b_size)
 			* sizeof(datatype_t);

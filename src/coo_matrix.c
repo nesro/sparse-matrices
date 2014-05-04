@@ -196,10 +196,17 @@ static double mul_coo_coo(const coo_matrix_t *a, const coo_matrix_t *b,
 	for (i = 0; i < b->_.h; i++)
 		brp[i + 1] += brp[i];
 
+	long int qqq=0;
+
+
 	for (r = 0; r < a->_.h; r++)
 		for (ac = arp[r]; ac < arp[r + 1]; ac++)
-			for (bc = brp[a->c[ac]]; bc < brp[a->c[ac] + 1]; bc++)
+			for (bc = brp[a->c[ac]]; bc < brp[a->c[ac] + 1]; bc++) {
 				c->v[r][b->c[bc]] += a->v[ac] * b->v[bc];
+				qqq++;
+			}
+
+	printf("COOqqq=%ld\n",qqq);
 
 	free(arp);
 	return omp_get_wtime() - start_time;

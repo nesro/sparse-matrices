@@ -2,10 +2,10 @@
 # Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
 # https://github.com/nesro/sparse-matrices
 
-gp=./tests/graphs/format_size/gp
+gp=./tests/graphs/mul_speed/gp
 
 plot="plot '$gp.txt' using 2:xtic(1) ti col axes x1y2"
-for (( i=3; i<5; i++ )); do
+for (( i=3; i<6; i++ )); do
 		plot+=", \"\" u $i ti col axes x1y2"
 done  
 

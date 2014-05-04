@@ -95,7 +95,7 @@ void mat_vec() {
 
 /******************************************************************************/
 
-vm_type_t types[] = { KAT, DEN, CSR, BSR, COO,  };
+vm_type_t types[] = {  BSR, CSR, COO, KAT, DEN  };
 int types_size = 1;
 
 void mat_mat() {
@@ -109,7 +109,7 @@ void mat_mat() {
 	vm_t *spa_c = NULL;
 	const test_matrices_pair_t *tp;
 	double time;
-	int sms = 1;
+	int sms = 8;
 
 	while ((tp = foreach_pair(mat_mat_pairs)) != NULL) {
 
@@ -125,6 +125,7 @@ void mat_mat() {
 				block_loop: /**/
 				CASSERTION_MSG("begin format %d witch sms=%d\n", types[i], sms);
 				vm_load_mm(&spa_a, types[i], tp->a.path, sms);
+				printf("mat a loaded -------------\n");
 				vm_load_mm(&spa_b, types[i], tp->b.path, sms);
 			} else {
 				CASSERTION_MSG("begin format %d\n", types[i]);
@@ -140,6 +141,13 @@ void mat_mat() {
 					"a=%s,b=%s,sms=%d,time=%lf,format=%d", tp->a.path, tp->b.path, sms,
 					time, types[i]);
 
+#if 0
+		printf("---- dense:\n");
+		den_c->f.print(den_c);
+		printf("---- cspa:\n");
+		spa_c->f.print(spa_c);
+#endif
+
 			spa_a->f.free(spa_a);
 			spa_b->f.free(spa_b);
 			spa_c->f.free(spa_c);
@@ -149,10 +157,10 @@ void mat_mat() {
 
 			if (vm_has_blocks(types[i])) {
 				sms *= 2;
-				if (sms <= tp->a.height)
+				if (sms <= 64)
 					goto block_loop;
 				else
-					sms = 1;
+					sms = 8;
 			}
 		}
 
@@ -169,7 +177,7 @@ int main(int argc, char *argv[]) {
 
 	CASSERTION_INIT(argc, argv);
 
-	mat_vec();
+//	mat_vec();
 	mat_mat();
 
 	CASSERTION_RESULTS();

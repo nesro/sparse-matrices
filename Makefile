@@ -72,9 +72,9 @@ ifdef FAKE
 endif
 
 ifdef DEBUG
-	CFLAGS += -Og -ggdb #-Wextra
+	CFLAGS += -O0 -ggdb #-Wextra
 else
-	CFLAGS += -Ofast
+	CFLAGS += -O3
 endif
 
 ifdef OMP_THREADS

@@ -8,6 +8,12 @@
 
 set -x
 
+make
+time ./main -f csr -a <( gzip -cd ../test_matrices/generated/test1.mtx.gz) -v
+time ./main -f coo -a <( gzip -cd ../test_matrices/generated/test1.mtx.gz) -v
+
+exit 0
+
 ./tests/graphs/mul_speed/run.sh
 exit 0
 

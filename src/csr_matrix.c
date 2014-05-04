@@ -88,20 +88,44 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 
 	mm_file_t *mm_file;
 	int i;
-//	int j;
+	int tmp_sum;
+	int tmp_row;
+
+	int row;
+	int dest;
+	int last;
 
 	mm_file = mm_load(mm_filename, 0);
 
 	csr_init(csr, mm_file->width, mm_file->height, mm_file->nnz);
 
+	for (i = 0; i < mm_file->nnz; i++)
+		(*csr)->rp[mm_file->data[i].row]++;
+
+	tmp_sum = 0;
+	for (i = 0; i < (*csr)->_.h; i++) {
+		tmp_row = (*csr)->rp[i];
+		(*csr)->rp[i] = tmp_sum;
+		tmp_sum += tmp_row;
+	}
+	(*csr)->rp[(*csr)->_.h] = mm_file->nnz;
+
 	for (i = 0; i < mm_file->nnz; i++) {
-		(*csr)->rp[mm_file->data[i].row + 1]++;
-		(*csr)->v[i] = mm_file->data[i].value;
-		(*csr)->ci[i] = mm_file->data[i].col;
+		row = mm_file->data[i].row;
+		dest = (*csr)->rp[row];
+
+		(*csr)->ci[dest] = mm_file->data[i].col;
+		(*csr)->v[dest] = mm_file->data[i].value;
+
+		(*csr)->rp[row]++;
 	}
 
-	for (i = 0; i < (*csr)->_.h; i++)
-		(*csr)->rp[i + 1] += (*csr)->rp[i];
+	last = 0;
+	for (i = 0; i < (*csr)->_.h; i++) {
+		tmp_row = (*csr)->rp[i];
+		(*csr)->rp[i] = last;
+		last = tmp_row;
+	}
 
 	mm_free(mm_file);
 }
@@ -131,29 +155,33 @@ static double mul_csr_csr(const csr_t *a, const csr_t *b, den_matrix_t *c) {
 	int ac; /* col of A */
 	int bc; /* col of B */
 
-	start_time = omp_get_wtime();
+	datatype_t *cr;
 
-	for (r = 0; r < a->_.h; r++)
-		for (ac = a->rp[r]; ac < a->rp[r + 1]; ac++)
-			for (bc = b->rp[a->ci[ac]]; bc < b->rp[a->ci[ac] + 1]; bc++) {
+	int *arp = a->rp;
+	int *aci = a->ci;
+	datatype_t *av = a->v;
+	int *brp = b->rp;
+	int *bci = b->ci;
+	datatype_t *bv = b->v;
+
+	start_time = omp_get_wtime();
 
 //				_s_debugf(CSR_DEBUG, "r=%d ac=%d bc=%d bcFrom=%d\n", r, ac,
 //						bc, b->rp[a->ci[ac]]);
 
-				c->v[r]/**/
+	long int qqq = 0;
 
-				[/**/
-
-				b->ci[bc]/**/
-
-				]/**/
-
-				+= /**/
-
-				a->v[ac] * /**/
-
-				b->v[bc];
+	for (r = 0; r < a->_.h; r++) {
+		cr = c->v[r];
+		for (ac = arp[r]; ac < arp[r + 1]; ac++) {
+			for (bc = brp[aci[ac]]; bc < brp[aci[ac] + 1]; bc++) {
+				cr[bci[bc]] += av[ac] * bv[bc];
+				qqq++;
 			}
+		}
+	}
+
+	printf("CSRqqq=%ld\n", qqq);
 
 	return omp_get_wtime() - start_time;
 }

@@ -6,9 +6,7 @@ set -x
 
 source ./tests/scripts/utils.sh
 
-make DOUBLE_PRECISION=1
-
-
+make
 
 echo -n "format "> gp_$$_res.txt
 for matrix in $big_list; do echo "$matrix " | tr -d '\n' >>gp_$$_res.txt; done
@@ -54,10 +52,10 @@ time for matrix in $generated_list; do
 done
 
 for i in 2 4; do
-	make DOUBLE_PRECISION=1 KAT_N=$i
+	make KAT_N=$i
 	time for matrix in $generated_list; do
 		for format in \
-				"kat -s 84" \
+				"kat -s 64" \
 				"kat -s 128" \
 				"kat -s 256"; do
 			
