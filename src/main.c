@@ -211,6 +211,8 @@ int main(int argc, char *argv[]) {
 		printf("a_size %zu\n", vm_a->object_size);
 
 		if (format == KAT) {
+			printf("kat_n %d\n", KAT_N);
+			printf("kat_sm_size %d\n", ((kat_matrix_t*) vm_a)->sm_size);
 			printf("kat_a_inner %d\n", ((kat_matrix_t*) vm_a)->nodes_inner);
 			printf("kat_a_dense %d\n", ((kat_matrix_t*) vm_a)->nodes_den);
 			printf("kat_a_csr %d\n", ((kat_matrix_t*) vm_a)->nodes_csr);

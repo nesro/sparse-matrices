@@ -6,6 +6,21 @@
 # This is a helper file for running jobs on our school server STAR.
 # Please do NOT to try hack this in any way.
 
-make KAT_N=4 tests
-#time ./main -f csr -a <(gzip -cd ./matrices/cage12.mtx.gz) -b <(gzip -cd ./tests/matrices/vector_cage12_130228.mtx.gz) -V -v -o ./out.mtx
-time ./tests/graphs/format_size/run.sh
+set -x
+
+matrix=../test_matrices/test6.mtx.gz
+
+echo "--csr--"
+time ./main -f csr -a <( gzip -cd $matrix ) -v
+
+for i in 2 4; do
+for j in 256 512 1024; do
+
+echo "i=$i j=$j"
+make KAT_N=$i
+time ./main -f kat -s $j -a <( gzip -cd $matrix ) -v
+
+echo " ... "
+
+done
+done

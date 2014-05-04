@@ -10,6 +10,12 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+#ifdef OMP_NUM_THREADS
+#	define _OMP_NUM_THREADS_ num_threads(OMP_NUM_THREADS)
+#else
+#	define _OMP_NUM_THREADS_
+#endif
+
 /*
  * Warning: this can not be changed alone. All unrolled functions must be
  * updated too.

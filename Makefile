@@ -62,6 +62,10 @@ ifdef DOUBLE_PRECISION
 	CFLAGS += -D_DOUBLE_PRECISION=1
 endif
 
+ifdef OMP_NUM_THREADS
+	CFLAGS += -DOMP_NUM_THREADS=$(OMP_NUM_THREADS)
+endif
+
 # when FAKE, dense matix will be just one variable
 ifdef FAKE
 	CFLAGS += -D_FAKE=1

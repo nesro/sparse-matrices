@@ -655,8 +655,8 @@ __attribute__((optimize("unroll-loops")))
 static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
 
-	int i;
-	int j;
+	int l;
+	int m;
 	int k;
 	int sms = ma->sm_size;
 
@@ -665,18 +665,19 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 			(void* )a, a->node_type, (void* )a->node.sm.v,
 			(void* )b->node.sm.v);
 
-	for (i = 0; i < sms; i++) {
-		for (j = 0; j < sms; j++) {
+#pragma omp parallel for collapse(3) shared(ma,mb,b,c) _OMP_NUM_THREADS_
+	for (l = 0; l < sms; l++) {
+		for (m = 0; m < sms; m++) {
 			for (k = 0; k < sms; k++) {
 
 				_s_debugf(KAT_DEBUG,
 						"mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
-						a->node.sm.v[i * sms + k], i, k,
-						b->node.sm.v[k * sms + j], k, j, i + a->node.sm.y,
-						j + b->node.sm.x);
+						a->node.sm.v[l * sms + k], l, k,
+						b->node.sm.v[k * sms + m], k, m, l + a->node.sm.y,
+						m + b->node.sm.x);
 
-				c->v[i + a->node.sm.y][j + b->node.sm.x] += a->node.sm.v[i * sms
-						+ k] * b->node.sm.v[k * sms + j];
+				c->v[l + a->node.sm.y][m + b->node.sm.x] += a->node.sm.v[l * sms
+						+ k] * b->node.sm.v[k * sms + m];
 			}
 		}
 	}
@@ -766,9 +767,50 @@ static inline void kat_mul_csr_csr(const kat_matrix_t *ma,
  * Because of having multiple types of leaves, we need to determine which
  * function we'll call.
  */
-__attribute__((optimize("unroll-loops")))
+//__attribute__((optimize("unroll-loops")))
+//static void kat_node_mul_noomp(const kat_matrix_t *ma, const kat_matrix_t *mb,
+//		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
+//
+//	int i;
+//	int j;
+//	int k;
+//
+//	for (i = 0; i < KAT_N; i++) {
+//		for (j = 0; j < KAT_N; j++) {
+//			for (k = 0; k < KAT_N; k++) {
+//				if (a->node.knp[i][k] && b->node.knp[k][j]) {
+//
+//					if (a->node.knp[i][k]->node_type == KAT_N_DEN) {
+//						if (b->node.knp[k][j]->node_type == KAT_N_DEN) {
+//							kat_mul_den_den(ma, mb, a->node.knp[i][k],
+//									b->node.knp[k][j], c);
+//						} else if (b->node.knp[k][j]->node_type == KAT_N_CSR) {
+//							kat_mul_den_csr(ma, mb, a->node.knp[i][k],
+//									b->node.knp[k][j], c);
+//						}
+//						continue;
+//					}
+//
+//					if (a->node.knp[i][k]->node_type == KAT_N_CSR) {
+//						if (b->node.knp[k][j]->node_type == KAT_N_DEN) {
+//							kat_mul_csr_den(ma, mb, a->node.knp[i][k],
+//									b->node.knp[k][j], c);
+//						} else if (b->node.knp[k][j]->node_type == KAT_N_CSR) {
+//							kat_mul_csr_csr(ma, mb, a->node.knp[i][k],
+//									b->node.knp[k][j], c);
+//						}
+//						continue;
+//					}
+//
+//					kat_node_mul_noomp(ma, mb, a->node.knp[i][k], b->node.knp[k][j],
+//							c);
+//				}
+//			}
+//		}
+//	}
+//}
 static void kat_node_mul(const kat_matrix_t *ma, const kat_matrix_t *mb,
-		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c, int depth) {
+		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
 
 	int i;
 	int j;
@@ -778,11 +820,12 @@ static void kat_node_mul(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		for (j = 0; j < KAT_N; j++) {
 			for (k = 0; k < KAT_N; k++) {
 				if (a->node.knp[i][k] && b->node.knp[k][j]) {
-
 					if (a->node.knp[i][k]->node_type == KAT_N_DEN) {
 						if (b->node.knp[k][j]->node_type == KAT_N_DEN) {
+
 							kat_mul_den_den(ma, mb, a->node.knp[i][k],
 									b->node.knp[k][j], c);
+
 						} else if (b->node.knp[k][j]->node_type == KAT_N_CSR) {
 							kat_mul_den_csr(ma, mb, a->node.knp[i][k],
 									b->node.knp[k][j], c);
@@ -802,7 +845,7 @@ static void kat_node_mul(const kat_matrix_t *ma, const kat_matrix_t *mb,
 					}
 
 					kat_node_mul(ma, mb, a->node.knp[i][k], b->node.knp[k][j],
-							c, depth);
+							c);
 				}
 			}
 		}
@@ -929,7 +972,7 @@ double kat_mul(const kat_matrix_t *a, const vm_t *b, vm_t **c,
 		den_matrix_init((den_matrix_t **) c, a->_.w, b->w, 1);
 		start_time = omp_get_wtime();
 		kat_node_mul(a, (kat_matrix_t *) b, a->root, ((kat_matrix_t*) b)->root,
-				(den_matrix_t *) *c, 0);
+				(den_matrix_t *) *c);
 		end_time = omp_get_wtime();
 		break;
 	default:

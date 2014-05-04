@@ -178,7 +178,7 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 	(*den)->_.w = width;
 	(*den)->_.h = height;
 
-#if DENSE_FAKE_RESULT == 0
+#if 1 //DENSE_FAKE_RESULT == 0
 
 	(*den)->v = malloc(height * sizeof(datatype_t *));
 	(*den)->_.object_size += height * sizeof(datatype_t *);
@@ -209,7 +209,7 @@ void den_matrix_init(den_matrix_t **den, int width, int height, int zero) {
 
 void den_matrix_free(den_matrix_t *den_matrix) {
 
-#if DENSE_FAKE_RESULT == 0
+#if 1 //DENSE_FAKE_RESULT == 0
 	free(den_matrix->rows_block);
 #endif /* DENSE_FAKE_RESULT == 0 */
 

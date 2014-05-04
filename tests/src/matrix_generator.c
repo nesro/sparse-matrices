@@ -188,9 +188,9 @@ static void mtx_write(mtx_t *mtx, FILE *f) {
 	for (i = 0; i < mtx->items; i++) {
 		if (mtx->data[i].is_big) {
 			fprintf(f, "%d %d %lf\n", mtx->data[i].y, mtx->data[i].x,
-					v++ + 1000000);
+					v + 10);
 		} else {
-			fprintf(f, "%d %d %lf\n", mtx->data[i].y, mtx->data[i].x, v++);
+			fprintf(f, "%d %d %lf\n", mtx->data[i].y, mtx->data[i].x, v);
 		}
 	}
 }
@@ -290,6 +290,8 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 		/* count, size_probability, h, w, sparsity */
 		RANDOM_BLOCKS, /**/
 		MIRRORED_RANDOM_BLOCKS, /**/
+
+		DIAGONAL_BLOCKS, /**/
 	} type;
 
 	int ay;
@@ -326,6 +328,8 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 			type = RANDOM_BLOCKS;
 		} else if (strcmp(tmp, "mrblocks") == 0) {
 			type = MIRRORED_RANDOM_BLOCKS;
+		} else if (strcmp(tmp, "diablocks") == 0) {
+			type = DIAGONAL_BLOCKS;
 		} else {
 			fprintf(stderr, "matrix_sparse_items: not a valid item\n");
 			goto bad_format;
@@ -421,6 +425,12 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 					tmp_x = rand() % (mtx->width - bx - 1);
 				}
 
+				/* make the block on more friendly position */
+				if (1) {
+					tmp_y -= tmp_y % by;
+					tmp_x -= tmp_x % bx;
+				}
+
 				if (ax != 0)
 					tmp_size = rand() % ax;
 				else
@@ -433,6 +443,11 @@ static void mtx_sparse_items(mtx_t *mtx, char *blocks) {
 					mtx_fill(mtx, tmp_x, tmp_y, tmp_x + bx + tmp_size,
 							tmp_y + by + tmp_size, sparsity);
 				}
+			}
+			break;
+		case DIAGONAL_BLOCKS:
+			for (i = 0; i < mtx->height; i += ay) {
+				mtx_fill(mtx, i, i, i + ay, i + ay, 1);
 			}
 			break;
 		default:
