@@ -8,6 +8,9 @@
 
 set -x
 
+./tests/graphs/mul_speed/run.sh
+exit 0
+
 matrix_a=../test_matrices/test8/test8a.mtx.gz
 matrix_b=../test_matrices/test8/test8b.mtx.gz
 

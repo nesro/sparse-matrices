@@ -18,17 +18,17 @@ echo " ">>gp_$$_res.txt
 for format in \
 		"coo" \
 		"csr" \
-		"bsr -s 4" \
-		"bsr -s 8" \
-		"bsr -s 16"; do
+		"bsr -s 64" \
+		"bsr -s 128" \
+		"bsr -s 256"; do
 		
 		echo -n "\"${format}\" " >gp_$$_$(echo $format | tr ' ' '_').txt
 done
 for i in 2 4; do
 	for format in \
-				"kat -s 4" \
-				"kat -s 8" \
-				"kat -s 16"; do
+				"kat -s 64" \
+				"kat -s 128" \
+				"kat -s 256"; do
 		ktmp="k=$i ${format}"
 		echo -n "\"$ktmp\" " >>gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt
 	done
@@ -36,17 +36,17 @@ done
 
 
 
-time for matrix in $big_list; do
+time for matrix in $generated_list; do
 
 	for format in \
 		"coo" \
 		"csr" \
-		"bsr -s 4" \
-		"bsr -s 8" \
-		"bsr -s 16"; do
+		"bsr -s 64" \
+		"bsr -s 128" \
+		"bsr -s 256"; do
 
 		time ./main -f ${format} \
-			-a <(gzip -cd ${big_dir_mat}/${matrix}.mtx.gz) \
+			-a <(gzip -cd ${generated_dir}/${matrix}.mtx.gz) \
 			-v | grep "time_mul" | cut -d' ' -f2 | tr -d '\n' >>gp_$$_$(echo $format | tr ' ' '_').txt
 		
 		echo -n " ">>gp_$$_$(echo $format | tr ' ' '_').txt
@@ -55,16 +55,16 @@ done
 
 for i in 2 4; do
 	make DOUBLE_PRECISION=1 KAT_N=$i
-	time for matrix in $big_list; do
+	time for matrix in $generated_list; do
 		for format in \
-				"kat -s 4" \
-				"kat -s 8" \
-				"kat -s 16"; do
+				"kat -s 84" \
+				"kat -s 128" \
+				"kat -s 256"; do
 			
 			ktmp="k=$i ${format}"
 					
 			time ./main -f ${format} \
-			-a <(gzip -cd ${big_dir_mat}/${matrix}.mtx.gz) \
+			-a <(gzip -cd ${generated_dir}/${matrix}.mtx.gz) \
 			-v | grep "time_mul" | cut -d' ' -f2 | tr -d '\n' >>gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt
 			echo -n " " >>gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt
 		done
@@ -75,18 +75,18 @@ done
 for format in \
 		"coo" \
 		"csr" \
-		"bsr -s 4" \
-		"bsr -s 8" \
-		"bsr -s 16"; do
+		"bsr -s 64" \
+		"bsr -s 128" \
+		"bsr -s 256"; do
 		
 		echo " " >>gp_$$_$(echo $format | tr ' ' '_').txt
 		cat gp_$$_$(echo $format | tr ' ' '_').txt	>>gp_$$_res.txt
 done
 for i in 2 4; do
 	for format in \
-				"kat -s 4" \
-				"kat -s 8" \
-				"kat -s 16"; do
+				"kat -s 64" \
+				"kat -s 128" \
+				"kat -s 256"; do
 		ktmp="k=$i ${format}"
 		echo " " >>gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt
 		cat gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt >>gp_$$_res.txt

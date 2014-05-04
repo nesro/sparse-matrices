@@ -10,6 +10,10 @@ else
 	export big_list="c-23 eurqsa GT01R"
 	export big_dir_mat=../test_matrices
 	export big_dir_vec=../test_matrices
+	
+	export generated_dir=../test_matrices/generated
+	export generated_list="test1 test2 test3 test4"
+	
 fi
 
 function gnuplot_wrapper {
