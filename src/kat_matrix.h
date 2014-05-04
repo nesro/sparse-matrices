@@ -70,7 +70,6 @@ typedef struct kat_node {
 		struct {
 			int x;
 			int y;
-			datatype_t *v;
 
 			/*
 			 * When creating a k-ary tree, this variable is used to determine
@@ -95,7 +94,11 @@ typedef struct kat_node {
 				struct {
 					int *ci;
 					int *rp;
+					datatype_t *v;
 				} csr;
+				struct {
+					datatype_t **v;
+				} den;
 			} s;
 		} sm; /* submatrix */
 	} node;
@@ -108,7 +111,6 @@ typedef struct kat_matrix {
 	datatype_t *v; /* values */
 	datatype_t *last_v;
 	long int v_length;
-
 
 	/* info */
 	int nodes_inner;

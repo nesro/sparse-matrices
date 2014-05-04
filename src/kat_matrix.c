@@ -316,13 +316,18 @@ static void kat_prepare(kat_matrix_t *kat, kat_node_t *kat_node) {
 		switch (kat_node->node_type) {
 		case KAT_N_DEN:
 
-			kat_node->node.sm.v = kat->last_v;
+			kat_node->node.sm.s.den.v = malloc(
+					kat->sm_size * sizeof(datatype_t *));
+
+			for (i = 0; i < kat->sm_size; i++)
+				kat_node->node.sm.s.den.v[i] = &(kat->last_v[i * kat->sm_size]);
+
 			kat->last_v = &(kat->last_v[kat->sm_size * kat->sm_size]);
 
 			break;
 		case KAT_N_CSR:
 
-			kat_node->node.sm.v = kat->last_v;
+			kat_node->node.sm.s.csr.v = kat->last_v;
 			kat->last_v = &(kat->last_v[kat_node->node.sm.nnz]);
 
 			kat_node->node.sm.s.csr.ci = kat->last_ci;
@@ -541,10 +546,11 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 							+ (mm_file->data[i].col % (*kat)->sm_size),
 					tn->node.sm.y, tn->node.sm.x);
 
-			tn->node.sm.v[((mm_file->data[i].row % (*kat)->sm_size)
-					* (*kat)->sm_size)
-					+ (mm_file->data[i].col % (*kat)->sm_size)] =
-					mm_file->data[i].value;
+			/* newden */
+			tn->node.sm.s.den.v/**/
+			[(mm_file->data[i].row % (*kat)->sm_size)]/**/
+			[(mm_file->data[i].col % (*kat)->sm_size)]/**/
+			= mm_file->data[i].value;
 
 			break;
 		case KAT_N_CSR:
@@ -552,7 +558,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 					mm_file->data[i].value, mm_file->data[i].row,
 					mm_file->data[i].col, tn->node.sm.n_nnz);
 
-			tn->node.sm.v[tn->node.sm.n_nnz] = mm_file->data[i].value;
+			tn->node.sm.s.csr.v[tn->node.sm.n_nnz] = mm_file->data[i].value;
 			tn->node.sm.s.csr.ci[tn->node.sm.n_nnz] = (mm_file->data[i].col
 					% (*kat)->sm_size);
 			tn->node.sm.s.csr.rp[(mm_file->data[i].row % (*kat)->sm_size)]++;
@@ -598,7 +604,8 @@ static void kat_node_to_dense(kat_matrix_t *kat, kat_node_t *kat_node,
 		}
 		for (i = 0; i < kat_node->node.sm.n_nnz; i++) {
 			_s_debugf(KAT_DEBUG, "csr i=%d ci=%d v="DPF"\n", i,
-					kat_node->node.sm.s.csr.ci[i], kat_node->node.sm.v[i]);
+					kat_node->node.sm.s.csr.ci[i],
+					kat_node->node.sm.s.csr.v[i]);
 		}
 
 		for (i = 0; i < kat->sm_size; i++) {
@@ -608,7 +615,7 @@ static void kat_node_to_dense(kat_matrix_t *kat, kat_node_t *kat_node,
 				den->v /**/
 				[kat_node->node.sm.y + i] /**/
 				[kat_node->node.sm.x + kat_node->node.sm.s.csr.ci[j]] +=
-						kat_node->node.sm.v[j];
+						kat_node->node.sm.s.csr.v[j];
 			}
 		}
 		return;
@@ -618,7 +625,7 @@ static void kat_node_to_dense(kat_matrix_t *kat, kat_node_t *kat_node,
 		for (i = 0; i < kat->sm_size; i++)
 			for (j = 0; j < kat->sm_size; j++)
 				den->v[kat_node->node.sm.y + i][kat_node->node.sm.x + j] +=
-						kat_node->node.sm.v[i * kat->sm_size + j];
+						kat_node->node.sm.s.den.v[i][j];
 		return;
 	}
 
@@ -662,22 +669,21 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 
 	_s_debugf(KAT_DEBUG,
 			"mul_den_den a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
-			(void* )a, a->node_type, (void* )a->node.sm.v,
-			(void* )b->node.sm.v);
+			(void* )a, a->node_type, (void* )a->node.sm.s.den.v,
+			(void* )b->node.sm.s.den.v);
 
-#pragma omp parallel for collapse(3) shared(ma,mb,b,c) _OMP_NUM_THREADS_
 	for (l = 0; l < sms; l++) {
 		for (m = 0; m < sms; m++) {
 			for (k = 0; k < sms; k++) {
 
 				_s_debugf(KAT_DEBUG,
 						"mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
-						a->node.sm.v[l * sms + k], l, k,
-						b->node.sm.v[k * sms + m], k, m, l + a->node.sm.y,
+						a->node.sm.s.den.v[l][k], l, k,
+						b->node.sm.s.den.v[k][m], k, m, l + a->node.sm.y,
 						m + b->node.sm.x);
 
-				c->v[l + a->node.sm.y][m + b->node.sm.x] += a->node.sm.v[l * sms
-						+ k] * b->node.sm.v[k * sms + m];
+				c->v[l + a->node.sm.y][m + b->node.sm.x] +=
+						a->node.sm.s.den.v[l][k] * b->node.sm.s.den.v[k][m];
 			}
 		}
 	}
@@ -691,11 +697,6 @@ static void kat_mul_den_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 	int k;
 	int sms = ma->sm_size;
 
-	_s_debugf(KAT_DEBUG,
-			"mul_den_csr a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
-			(void* )a, a->node_type, (void* )a->node.sm.v,
-			(void* )b->node.sm.v);
-
 	for (i = 0; i < sms; i++) {
 		for (j = 0; j < sms; j++) {
 			for (k = b->node.sm.s.csr.rp[j]; k < b->node.sm.s.csr.rp[j + 1];
@@ -706,10 +707,11 @@ static void kat_mul_den_csr(const kat_matrix_t *ma, const kat_matrix_t *mb,
 //							a->node.sm.v[i * sms + k], i, k,
 //							b->node.sm.v[k * sms + j], k, j, i + a->node.sm.y,
 //							j + b->node.sm.x);
+//				_s_debugf(KAT_DEBUG, "j=%d", j);
 
-				_s_debugf(KAT_DEBUG, "j=%d", j);
+
 				c->v[i + a->node.sm.y][b->node.sm.s.csr.ci[k] + b->node.sm.x] +=
-						a->node.sm.v[i * sms + j] * b->node.sm.v[k];
+						a->node.sm.s.den.v[i][j] * b->node.sm.s.csr.v[k];
 			}
 		}
 	}
@@ -724,25 +726,24 @@ static inline void kat_mul_csr_den(const kat_matrix_t *ma,
 	int ac;
 	int i;
 
-	_s_debugf(KAT_DEBUG,
-			"mul_csr_den a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
-			(void* )a, a->node_type, (void* )a->node.sm.v,
-			(void* )b->node.sm.v);
+//	_s_debugf(KAT_DEBUG,
+//			"mul_csr_den a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
+//			(void* )a, a->node_type, (void* )a->node.sm.v,
+//			(void* )b->node.sm.v);
 
 	for (r = 0; r < ma->sm_size; r++)
 		for (ac = a->node.sm.s.csr.rp[r]; ac < a->node.sm.s.csr.rp[r + 1]; ac++)
 			for (i = 0; i < ma->sm_size; i++) {
 
-				_s_debugf(KAT_DEBUG,
-						">> mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
-						a->node.sm.v[ac], 0, 0,
-						b->node.sm.v[ma->sm_size * a->node.sm.s.csr.ci[ac] + i],
-						0, 0, a->node.sm.y + r, b->node.sm.x + i);
+//				_s_debugf(KAT_DEBUG,
+//						">> mul "DPF" at y=%d x=%d with "DPF" at y=%d x=%d to y=%d x=%d\n",
+//						a->node.sm.v[ac], 0, 0,
+//						b->node.sm.v[ma->sm_size * a->node.sm.s.csr.ci[ac] + i],
+//						0, 0, a->node.sm.y + r, b->node.sm.x + i);
 
 				c->v[a->node.sm.y + r][b->node.sm.x + i] +=
-						a->node.sm.v[ac]
-								* b->node.sm.v[ma->sm_size
-										* a->node.sm.s.csr.ci[ac] + i];
+						a->node.sm.s.csr.v[ac]
+								* b->node.sm.s.den.v[a->node.sm.s.csr.ci[ac]][i];
 			}
 }
 
@@ -759,7 +760,7 @@ static inline void kat_mul_csr_csr(const kat_matrix_t *ma,
 			for (bc = b->node.sm.s.csr.rp[a->node.sm.s.csr.ci[ac]];
 					bc < b->node.sm.s.csr.rp[a->node.sm.s.csr.ci[ac] + 1]; bc++)
 				c->v[a->node.sm.y + r][b->node.sm.x + b->node.sm.s.csr.ci[bc]] +=
-						a->node.sm.v[ac] * b->node.sm.v[bc];
+						a->node.sm.s.csr.v[ac] * b->node.sm.s.csr.v[bc];
 
 }
 
@@ -767,48 +768,7 @@ static inline void kat_mul_csr_csr(const kat_matrix_t *ma,
  * Because of having multiple types of leaves, we need to determine which
  * function we'll call.
  */
-//__attribute__((optimize("unroll-loops")))
-//static void kat_node_mul_noomp(const kat_matrix_t *ma, const kat_matrix_t *mb,
-//		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
-//
-//	int i;
-//	int j;
-//	int k;
-//
-//	for (i = 0; i < KAT_N; i++) {
-//		for (j = 0; j < KAT_N; j++) {
-//			for (k = 0; k < KAT_N; k++) {
-//				if (a->node.knp[i][k] && b->node.knp[k][j]) {
-//
-//					if (a->node.knp[i][k]->node_type == KAT_N_DEN) {
-//						if (b->node.knp[k][j]->node_type == KAT_N_DEN) {
-//							kat_mul_den_den(ma, mb, a->node.knp[i][k],
-//									b->node.knp[k][j], c);
-//						} else if (b->node.knp[k][j]->node_type == KAT_N_CSR) {
-//							kat_mul_den_csr(ma, mb, a->node.knp[i][k],
-//									b->node.knp[k][j], c);
-//						}
-//						continue;
-//					}
-//
-//					if (a->node.knp[i][k]->node_type == KAT_N_CSR) {
-//						if (b->node.knp[k][j]->node_type == KAT_N_DEN) {
-//							kat_mul_csr_den(ma, mb, a->node.knp[i][k],
-//									b->node.knp[k][j], c);
-//						} else if (b->node.knp[k][j]->node_type == KAT_N_CSR) {
-//							kat_mul_csr_csr(ma, mb, a->node.knp[i][k],
-//									b->node.knp[k][j], c);
-//						}
-//						continue;
-//					}
-//
-//					kat_node_mul_noomp(ma, mb, a->node.knp[i][k], b->node.knp[k][j],
-//							c);
-//				}
-//			}
-//		}
-//	}
-//}
+__attribute__((optimize("unroll-loops")))
 static void kat_node_mul(const kat_matrix_t *ma, const kat_matrix_t *mb,
 		const kat_node_t *a, const kat_node_t *b, den_matrix_t *c) {
 
@@ -822,7 +782,6 @@ static void kat_node_mul(const kat_matrix_t *ma, const kat_matrix_t *mb,
 				if (a->node.knp[i][k] && b->node.knp[k][j]) {
 					if (a->node.knp[i][k]->node_type == KAT_N_DEN) {
 						if (b->node.knp[k][j]->node_type == KAT_N_DEN) {
-
 							kat_mul_den_den(ma, mb, a->node.knp[i][k],
 									b->node.knp[k][j], c);
 
@@ -866,7 +825,7 @@ static inline void kat_mul_den_vec(const kat_matrix_t *ma, const vec_t *b,
 
 	for (i = 0; i < ma->sm_size; i++)
 		for (j = 0; j < ma->sm_size; j++)
-			c->v[i + a->node.sm.y] += a->node.sm.v[i * ma->sm_size + j]
+			c->v[i + a->node.sm.y] += a->node.sm.s.den.v[i][j]
 					* b->v[a->node.sm.x + j];
 }
 
@@ -882,11 +841,10 @@ static inline void kat_mul_csr_vec(const kat_matrix_t *ma, const vec_t *b,
 	for (r = 0; r < ma->sm_size; r++)
 		for (ac = a->node.sm.s.csr.rp[r]; ac < a->node.sm.s.csr.rp[r + 1]; ac++)
 			c->v[a->node.sm.y + r] += /**/
-			a->node.sm.v[ac] * b->v[/**/
+			a->node.sm.s.csr.v[ac] * b->v[/**/
 			a->node.sm.x + /**/
 			a->node.sm.s.csr.ci[ac]];
 }
-
 #if KAT_DEBUG
 long int tmp_knv = 0;
 long int tmp_knvden = 0;
@@ -949,7 +907,6 @@ static void mul_katnode_vec(const kat_matrix_t *ma, const vec_t *mb,
 		}
 	}
 }
-
 /******************************************************************************/
 
 double kat_mul(const kat_matrix_t *a, const vm_t *b, vm_t **c,

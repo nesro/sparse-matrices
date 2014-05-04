@@ -8,13 +8,13 @@
 
 set -x
 
-matrix=../test_matrices/test6.mtx.gz
+matrix=../test_matrices/test7.mtx.gz
 
 echo "--csr--"
 time ./main -f csr -a <( gzip -cd $matrix ) -v
 
 for i in 2 4; do
-for j in 256 512 1024; do
+for j in 128 256; do
 
 echo "i=$i j=$j"
 make KAT_N=$i
