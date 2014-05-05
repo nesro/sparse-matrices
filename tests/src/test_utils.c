@@ -48,6 +48,11 @@ test_matrices_pair_t sparse_collection_pairs[] = {
 		{ MTX_SPA_COL "lns_511.mtx", 511, 511, 2796 }, /**/
 		}, /**/
 //
+		{ /**/
+		{ "../test_matrices/generated/dense256.mtx", 256, 256, 2796 }, /**/
+		{ "../test_matrices/generated/dense256.mtx", 256, 256, 2796 }, /**/
+		}, /**/
+//
 		{ { { 0 } } }, /**/
 };
 

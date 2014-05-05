@@ -8,14 +8,16 @@
 
 set -x
 
+./tests/graphs/mul_speed/run.sh
+exit 0
+
 make
 time ./main -f csr -a <( gzip -cd ../test_matrices/generated/test1.mtx.gz) -v
 time ./main -f coo -a <( gzip -cd ../test_matrices/generated/test1.mtx.gz) -v
 
 exit 0
 
-./tests/graphs/mul_speed/run.sh
-exit 0
+
 
 matrix_a=../test_matrices/test8/test8a.mtx.gz
 matrix_b=../test_matrices/test8/test8b.mtx.gz

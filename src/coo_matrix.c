@@ -163,52 +163,15 @@ void coo_transpose(coo_matrix_t *coo) {
 
 /******************************************************************************/
 
-/*
- * [BI-BAP: COO matrix X COO matrix]
- */
 static double mul_coo_coo(const coo_matrix_t *a, const coo_matrix_t *b,
 		den_matrix_t *c) {
 
 	double start_time;
-	int *arp;
-	int *brp;
-	int i;
-	int r;
-	int ac;
-	int bc;
 
 	start_time = omp_get_wtime();
 
-	/*
-	 * We need to compute row pointers like in CSR matrix.
-	 */
-	arp = calloc((a->_.h + b->_.h + 2), sizeof(int));
-	assert(arp != NULL);
-	brp = &(arp[a->_.h + 1]);
+	fdie("coo coo mul is not implemented yet %d\n", 0);
 
-	for (i = 0; i < a->_.nnz; i++)
-		arp[a->r[i] + 1]++;
-	for (i = 0; i < a->_.h; i++)
-		arp[i + 1] += arp[i];
-
-	for (i = 0; i < b->_.nnz; i++)
-		brp[b->r[i] + 1]++;
-	for (i = 0; i < b->_.h; i++)
-		brp[i + 1] += brp[i];
-
-	long int qqq=0;
-
-
-	for (r = 0; r < a->_.h; r++)
-		for (ac = arp[r]; ac < arp[r + 1]; ac++)
-			for (bc = brp[a->c[ac]]; bc < brp[a->c[ac] + 1]; bc++) {
-				c->v[r][b->c[bc]] += a->v[ac] * b->v[bc];
-				qqq++;
-			}
-
-	printf("COOqqq=%ld\n",qqq);
-
-	free(arp);
 	return omp_get_wtime() - start_time;
 }
 
@@ -287,7 +250,7 @@ double coo_from_mm(coo_matrix_t **coo, const char *filename,
 	for (i = 0; i < nz; i++) {
 		/* TODO: make better error */
 		if ((success = fscanf(f, "%d %d "DPF"\n", &(*coo)->r[i], &(*coo)->c[i],
-				&(*coo)->v[i])) != 2) {
+						&(*coo)->v[i])) != 2) {
 			/*printf("ounou: %d\n", success);*/
 
 		}

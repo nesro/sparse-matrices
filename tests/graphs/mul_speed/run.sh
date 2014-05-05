@@ -9,12 +9,16 @@ source ./tests/scripts/utils.sh
 make PRECISION=2
 
 echo -n "format "> gp_$$_res.txt
-for matrix in $big_list; do echo "$matrix " | tr -d '\n' >>gp_$$_res.txt; done
+for matrix in $generated_list; do echo "$matrix " | tr -d '\n' >>gp_$$_res.txt; done
 echo " ">>gp_$$_res.txt
 
+katon=1
+bsron=0
+
+
 # begin formats
+if (( $bsron == 1 )); then
 for format in \
-		"coo" \
 		"csr" \
 		"bsr -s 16" \
 		"bsr -s 32" \
@@ -24,6 +28,9 @@ for format in \
 		
 		echo -n "\"${format}\" " >gp_$$_$(echo $format | tr ' ' '_').txt
 done
+fi
+
+if (( $katon == 1 )); then
 for i in 2 4; do
 	for format in \
 				"kat -s 16" \
@@ -35,13 +42,12 @@ for i in 2 4; do
 		echo -n "\"$ktmp\" " >>gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt
 	done
 done 
+fi
 
-
-
+if (( $bsron == 1 )); then
 time for matrix in $generated_list; do
 
 	for format in \
-		"coo" \
 		"csr" \
 		"bsr -s 16" \
 		"bsr -s 32" \
@@ -56,7 +62,9 @@ time for matrix in $generated_list; do
 		echo -n " ">>gp_$$_$(echo $format | tr ' ' '_').txt
 	done
 done
+fi
 
+if (( $katon == 1 )); then
 for i in 2 4; do
 	make PRECISION=2 KAT_N=$i
 	time for matrix in $generated_list; do
@@ -76,10 +84,11 @@ for i in 2 4; do
 		done
 	done
 done
+fi
 
 # end formats
+if (( $bsron == 1 )); then
 for format in \
-		"coo" \
 		"csr" \
 		"bsr -s 16" \
 		"bsr -s 32" \
@@ -90,6 +99,9 @@ for format in \
 		echo " " >>gp_$$_$(echo $format | tr ' ' '_').txt
 		cat gp_$$_$(echo $format | tr ' ' '_').txt	>>gp_$$_res.txt
 done
+fi
+
+if (( $katon == 1 )); then
 for i in 2 4; do
 	for format in \
 				"kat -s 16" \
@@ -102,6 +114,7 @@ for i in 2 4; do
 		cat gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt >>gp_$$_res.txt
 	done
 done 
+fi
 
 exit 0
 if false; then #----------------------------------------------------------------

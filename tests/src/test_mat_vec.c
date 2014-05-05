@@ -95,7 +95,7 @@ void mat_vec() {
 
 /******************************************************************************/
 
-vm_type_t types[] = { CSR, BSR, KAT, /**/ COO };
+vm_type_t types[] = { CSR, BSR, KAT };
 int types_size = 3;
 
 void mat_mat() {
