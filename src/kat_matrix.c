@@ -151,7 +151,7 @@ static int is_uniq_pos(kat_matrix_t *kat, kat_node_t *kat_node, int y, int x) {
  * This function return a pointer to the right block. Automatically build
  * the path to the block.
  */
-static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
+static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x, int may_add) {
 
 #if KAT_DEBUG
 	int tmp_height = 0;
@@ -207,6 +207,12 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 		assert(node_x <= KAT_N);
 
 		if (*tmp_node == NULL) {
+
+			if (may_add) {
+				printf("fatal err 1\n");
+				exit(1);
+			}
+
 			_s_debugf(KAT_DEBUG,
 					"creating an inner node knp[%d][%d] when block_start_y=%d, block_start_x=%d, block_size=%d\n",
 					node_y, node_x, block_start_y, block_start_x, block_size);
@@ -250,6 +256,12 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 	block_start_x += node_x * kat->sm_size;
 
 	if (*tmp_node == NULL) {
+
+		if (may_add) {
+			printf("fatal err 2\n");
+			exit(1);
+		}
+
 		_s_debugf(KAT_DEBUG,
 				"creating a LAST inner node knp[%d][%d] when block_start_y=%d, block_start_x=%d, block_size=%d\n",
 				node_y, node_x, block_start_y, block_start_x, block_size);
@@ -270,6 +282,11 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x) {
 	assert(block_start_x == sm_x);
 
 	if (*tmp_node == NULL) {
+
+		if (may_add) {
+			printf("fatal err 3\n");
+			exit(1);
+		}
 
 #if KAT_DEBUG
 		if (is_uniq_pos(kat, kat->root, sm_y, sm_x) == 1) {
@@ -466,7 +483,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 
 		_s_debugf(KAT_DEBUG, "i=%d v="DPF"\n", i, mm_file->data[i].value);
 
-		tn = kat_get_node(*kat, mm_file->data[i].row, mm_file->data[i].col);
+		tn = kat_get_node(*kat, mm_file->data[i].row, mm_file->data[i].col, 0);
 
 		/*
 		 * If the matrix is dense, there is no reason to count its elements.
@@ -480,8 +497,9 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 		 * Every block is CSR by default. If there is too many elemtents
 		 * inside, we'll treat it like a dense matrix.
 		 */
-		if (tn->node_type != KAT_N_DEN && tn->node.sm.nnz > KAT_DENSE_TRESHOLD) {
-
+		if (tn->node_type != KAT_N_DEN
+				&& (tn->node.sm.nnz
+								> (KAT_DENSE_TRESHOLD * sm_size * sm_size))) {
 			_s_debugf(KAT_DEBUG, "tmp_node at y=%d x=%d is now DENSE\n",
 					tn->node.sm.y, tn->node.sm.x);
 
@@ -525,7 +543,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 	 */
 	for (i = 0; i < mm_file->nnz; i++) {
 
-		tn = kat_get_node(*kat, mm_file->data[i].row, mm_file->data[i].col);
+		tn = kat_get_node(*kat, mm_file->data[i].row, mm_file->data[i].col, 1);
 
 		switch (tn->node_type) {
 		case KAT_N_DEN:
@@ -547,6 +565,12 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 					tn->node.sm.y, tn->node.sm.x);
 
 			/* newden */
+
+//			printf("   adding: v=%lf y=%d x=%d ry=%d\n", mm_file->data[i].value,
+//					(mm_file->data[i].row % (*kat)->sm_size),
+//					(mm_file->data[i].col % (*kat)->sm_size),
+//					mm_file->data[i].row);
+
 			tn->node.sm.s.den.v/**/
 			[(mm_file->data[i].row % (*kat)->sm_size)]/**/
 			[(mm_file->data[i].col % (*kat)->sm_size)]/**/
@@ -673,6 +697,15 @@ static void kat_mul_den_den(const kat_matrix_t *ma, const kat_matrix_t *mb,
 			"mul_den_den a=%p a->node_type=%d a->node.sm.v=%p b->node.sm.v=%p\n",
 			(void* )a, a->node_type, (void* )a->node.sm.s.den.v,
 			(void* )b->node.sm.s.den.v);
+
+//	_s_debugf(1, "den den y=%d x=%d sms=%d\n", a->node.sm.y, a->node.sm.x, sms);
+//	for (l = 0; l < sms; l++) {
+//		for (m = 0; m < sms; m++) {
+//				printf("%lf, ", a->node.sm.s.den.v[l][m]);
+//		}
+//				printf("\n");
+//	}
+//	_s_debugf(1, "den den y=%d x=%d sms=%d\n", a->node.sm.y, a->node.sm.x, sms);
 
 	for (l = 0; l < sms; l++) {
 		for (m = 0; m < sms; m++) {

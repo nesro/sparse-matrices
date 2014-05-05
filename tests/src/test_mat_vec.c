@@ -95,8 +95,8 @@ void mat_vec() {
 
 /******************************************************************************/
 
-vm_type_t types[] = {  BSR, CSR, COO, KAT, DEN  };
-int types_size = 1;
+vm_type_t types[] = { KAT, BSR, CSR, /**/ COO };
+int types_size = 3;
 
 void mat_mat() {
 
@@ -109,7 +109,9 @@ void mat_mat() {
 	vm_t *spa_c = NULL;
 	const test_matrices_pair_t *tp;
 	double time;
-	int sms = 8;
+	int sms_start = 8;
+//	int sms_stop = 64;
+	int sms = sms_start;
 
 	while ((tp = foreach_pair(mat_mat_pairs)) != NULL) {
 
@@ -125,7 +127,19 @@ void mat_mat() {
 				block_loop: /**/
 				CASSERTION_MSG("begin format %d witch sms=%d\n", types[i], sms);
 				vm_load_mm(&spa_a, types[i], tp->a.path, sms);
-				printf("mat a loaded -------------\n");
+
+				if (types[i] == KAT) {
+					printf("kat_n %d\n", KAT_N);
+					printf("kat_sm_size %d\n",
+							((kat_matrix_t*) spa_a)->sm_size);
+					printf("kat_a_inner %d\n",
+							((kat_matrix_t*) spa_a)->nodes_inner);
+					printf("kat_a_dense %d\n",
+							((kat_matrix_t*) spa_a)->nodes_den);
+					printf("kat_a_csr %d\n",
+							((kat_matrix_t*) spa_a)->nodes_csr);
+				}
+
 				vm_load_mm(&spa_b, types[i], tp->b.path, sms);
 			} else {
 				CASSERTION_MSG("begin format %d\n", types[i]);
@@ -138,14 +152,16 @@ void mat_mat() {
 			time = spa_a->f.mul(spa_a, spa_b, &spa_c, NAIVE);
 
 			CASSERTION(den_c->f.compare(den_c, spa_c) == 0,
-					"a=%s,b=%s,sms=%d,time=%lf,format=%d", tp->a.path, tp->b.path, sms,
-					time, types[i]);
+					"a=%s,b=%s,sms=%d,time=%lf,format=%d", tp->a.path,
+					tp->b.path, sms, time, types[i]);
 
 #if 0
-		printf("---- dense:\n");
-		den_c->f.print(den_c);
-		printf("---- cspa:\n");
-		spa_c->f.print(spa_c);
+			printf("---- dense bef:\n");
+			den_c->f.print(den_a);
+			printf("---- dense:\n");
+			den_c->f.print(den_c);
+			printf("---- cspa:\n");
+			spa_c->f.print(spa_c);
 #endif
 
 			spa_a->f.free(spa_a);
@@ -157,10 +173,10 @@ void mat_mat() {
 
 			if (vm_has_blocks(types[i])) {
 				sms *= 2;
-				if (sms <= 64)
+				if (sms <= tp->a.height)
 					goto block_loop;
 				else
-					sms = 8;
+					sms = sms_start;
 			}
 		}
 

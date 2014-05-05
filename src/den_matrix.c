@@ -78,8 +78,8 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 				diff++;
 
 				if (0) {
-					fprintf(stdout, ">>> diff y=%d x=%d v1="DPF" v2="DPF"\n", i, j,
-							a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
+					fprintf(stdout, ">>> diff y=%d x=%d v1="DPF" v2="DPF"\n", i,
+							j, a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
 					fflush(stdout);
 				}
 			}
@@ -154,6 +154,9 @@ void den_from_mm(den_matrix_t **den, const char *mm_filename,
 	den_matrix_init(den, mm_file->width, mm_file->height, 1);
 
 	for (i = 0; i < mm_file->nnz; i++) {
+
+		assert((*den)->v[mm_file->data[i].row][mm_file->data[i].col] == 0);
+
 		(*den)->v[mm_file->data[i].row][mm_file->data[i].col] +=
 				mm_file->data[i].value;
 	}

@@ -18,8 +18,14 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 	MM_typecode matcode;
 	FILE *f;
 	int i;
+	int j;
 	int is_symmetric;
 	int rounded_size;
+
+	/* for sort */
+	int swap_r;
+	int swap_c;
+	datatype_t swap_v;
 
 	if ((f = fopen(filename, "r")) == NULL) {
 		fdie("File %s doesn't exists. Exiting.\n", filename);
@@ -77,6 +83,11 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 		mm_file->data[i].row--;
 		mm_file->data[i].col--;
 
+		/* FIXME: all symetric, and sort */
+		if (is_symmetric && mm_file->data[i].row < mm_file->data[i].col) {
+			mm_file->data[i].value = 0;
+		}
+
 		if (is_symmetric && mm_file->data[i].row != mm_file->data[i].col) {
 			i++;
 			mm_file->data[i].row = mm_file->data[i - 1].col;
@@ -85,6 +96,38 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 			mm_file->nnz++;
 		}
 	}
+
+	/* TODO: better sort pls */
+	/* bubble sort */
+	if (is_symmetric) { /* we should sort every time */
+		for (i = 0; i < (mm_file->nnz - 1); i++) {
+			for (j = 0; j < mm_file->nnz - i - 1; j++) {
+				if (mm_file->data[j].row > mm_file->data[j + 1].row) {
+
+					swap_r = mm_file->data[j].row;
+					swap_c = mm_file->data[j].col;
+					swap_v = mm_file->data[j].value;
+
+					mm_file->data[j].row = mm_file->data[j + 1].row;
+					mm_file->data[j].col = mm_file->data[j + 1].col;
+					mm_file->data[j].value = mm_file->data[j + 1].value;
+
+					mm_file->data[j + 1].row = swap_r;
+					mm_file->data[j + 1].col = swap_c;
+					mm_file->data[j + 1].value = swap_v;
+				}
+			}
+		}
+	}
+
+#if 0
+
+	for (i = 0; i < mm_file->nnz; i++) {
+		printf("i=%d y=%d, x=%d, v=%lf\n", i, mm_file->data[i].row,
+				mm_file->data[i].col, mm_file->data[i].value);
+	}
+
+#endif
 
 	if (f != stdin)
 		fclose(f);

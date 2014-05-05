@@ -107,7 +107,7 @@ static void mtx_add(mtx_t *mtx, int y, int x, int is_big) {
 	/*
 	 * If the matrix is symmetric, check out, if the item is under the diagonal.
 	 */
-	if (is_symmetric && !(y <= max(y, x) && x <= max(y, x))) {
+	if (is_symmetric && y < x) {
 		fprintf(stderr, "item at y=%d, x=%d is above main diagonal"
 				" although the matrix is symmetric\n", y, x);
 	}
