@@ -14,12 +14,12 @@
 mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 
 	mm_file_t *mm_file;
-
 	MM_typecode matcode;
 	FILE *f;
 	int i;
 	int j;
 	int is_symmetric;
+	int is_pattern;
 	int rounded_size;
 
 	/* for sort */
@@ -45,6 +45,11 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 		is_symmetric = 1;
 	else
 		is_symmetric = 0;
+
+	if (mm_is_pattern(matcode))
+		is_pattern = 1;
+	else
+		is_pattern = 0;
 
 	mm_file = malloc(sizeof(mm_file_t));
 
@@ -74,10 +79,19 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 	mm_file->data = malloc(mm_file->data_size * sizeof(mm_item_t));
 
 	for (i = 0; i < mm_file->nnz; i++) {
-
-		if (fscanf(f, "%d %d "DPF"\n", &mm_file->data[i].row,
-				&mm_file->data[i].col, &mm_file->data[i].value) != 3) {
-			fdie("fscanf failed for file %s and item no. %i\n", filename, i);
+		if (is_pattern) {
+			if (fscanf(f, "%d %d\n", &mm_file->data[i].row,
+					&mm_file->data[i].col) != 2) {
+				fdie("fscanf failed for file %s (pattern) and item no. %i\n",
+						filename, i);
+			}
+			mm_file->data[i].value = 1;
+		} else {
+			if (fscanf(f, "%d %d "DPF"\n", &mm_file->data[i].row,
+					&mm_file->data[i].col, &mm_file->data[i].value) != 3) {
+				fdie("fscanf failed for file %s and item no. %i\n", filename,
+						i);
+			}
 		}
 
 		mm_file->data[i].row--;
@@ -97,9 +111,11 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 		}
 	}
 
-	/* TODO: better sort pls */
-	/* bubble sort */
-	if (is_symmetric) { /* we should sort every time */
+	/* TODO: a better sort pls and maybe we should sort every time with O(n)
+	 * check whether the data are sorted or not */
+	/* WARN: this is O(n^2) */
+	if (is_symmetric) {
+		/* bubble sort */
 		for (i = 0; i < (mm_file->nnz - 1); i++) {
 			for (j = 0; j < mm_file->nnz - i - 1; j++) {
 				if (mm_file->data[j].row > mm_file->data[j + 1].row) {
