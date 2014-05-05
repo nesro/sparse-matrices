@@ -380,20 +380,44 @@ static void kat_csr_rp(kat_matrix_t *kat, kat_node_t *kat_node) {
 	int j;
 	int tmp;
 	int sum;
+	int row;
+	int dst;
+	int lst;
 
 	if (kat_node->node_type == KAT_N_CSR) {
 		_s_debugf(KAT_DEBUG, "computing block at y=%d, x=%d\n",
 				kat_node->node.sm.y, kat_node->node.sm.x);
 
 		sum = 0;
-
 		for (i = 0; i < kat->sm_size; i++) {
 			tmp = kat_node->node.sm.s.csr.rp[i];
 			kat_node->node.sm.s.csr.rp[i] = sum;
 			sum += tmp;
 		}
-
 		kat_node->node.sm.s.csr.rp[kat->sm_size] = kat_node->node.sm.nnz;
+
+		for (i = 0; i < kat_node->node.sm.n_nnz; i++) {
+			kat->csr_tmp_v[i] = kat_node->node.sm.s.csr.v[i];
+			kat->csr_tmp_ci[i] = kat_node->node.sm.s.csr.ci[i];
+		}
+		for (i = 0; i < kat_node->node.sm.n_nnz; i++) {
+			row = kat_node->node.sm.s.csr.tmp_r[i];
+			dst = kat_node->node.sm.s.csr.rp[row];
+
+			kat_node->node.sm.s.csr.v[dst] = kat->csr_tmp_v[i];
+			kat_node->node.sm.s.csr.ci[dst] = kat->csr_tmp_ci[i];
+
+			kat_node->node.sm.s.csr.rp[row]++;
+		}
+
+		lst = 0;
+		for (i = 0; i < kat->sm_size; i++) {
+			tmp = kat_node->node.sm.s.csr.rp[i];
+			kat_node->node.sm.s.csr.rp[i] = lst;
+			lst = tmp;
+		}
+
+		free(kat_node->node.sm.s.csr.tmp_r);
 
 		return;
 	}
@@ -498,8 +522,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 		 * inside, we'll treat it like a dense matrix.
 		 */
 		if (tn->node_type != KAT_N_DEN
-				&& (tn->node.sm.nnz
-								> (KAT_DENSE_TRESHOLD * sm_size * sm_size))) {
+				&& (tn->node.sm.nnz > (KAT_DENSE_TRESHOLD * sm_size * sm_size))) {
 			_s_debugf(KAT_DEBUG, "tmp_node at y=%d x=%d is now DENSE\n",
 					tn->node.sm.y, tn->node.sm.x);
 
@@ -536,6 +559,13 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 			* ((*kat)->sm_size + 1) * sizeof(int);
 	(*kat)->last_rp = (*kat)->rp;
 
+	/* csr tmp array. they'll be freed at the end of this fc */
+	(*kat)->csr_tmp_v = calloc((*kat)->sm_size * (*kat)->sm_size,
+			sizeof(datatype_t));
+	(*kat)->csr_tmp_ci = calloc((*kat)->sm_size * (*kat)->sm_size, sizeof(int));
+	assert((*kat)->csr_tmp_v != NULL);
+	assert((*kat)->csr_tmp_ci != NULL);
+
 	kat_prepare(*kat, (*kat)->root);
 
 	/*
@@ -570,7 +600,6 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 //					(mm_file->data[i].row % (*kat)->sm_size),
 //					(mm_file->data[i].col % (*kat)->sm_size),
 //					mm_file->data[i].row);
-
 			tn->node.sm.s.den.v/**/
 			[(mm_file->data[i].row % (*kat)->sm_size)]/**/
 			[(mm_file->data[i].col % (*kat)->sm_size)]/**/
@@ -578,6 +607,14 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 
 			break;
 		case KAT_N_CSR:
+
+			/* tmp array to store rows */
+			if (tn->node.sm.s.csr.tmp_r == NULL) {
+				tn->node.sm.s.csr.tmp_r = calloc(
+						(*kat)->sm_size * (*kat)->sm_size, sizeof(int));
+				assert(tn->node.sm.s.csr.tmp_r != NULL);
+			}
+
 			_s_debugf(KAT_DEBUG, "adding "DPF" at y=%d x=%d to CSR. n_nnz=%d\n",
 					mm_file->data[i].value, mm_file->data[i].row,
 					mm_file->data[i].col, tn->node.sm.n_nnz);
@@ -585,6 +622,9 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 			tn->node.sm.s.csr.v[tn->node.sm.n_nnz] = mm_file->data[i].value;
 			tn->node.sm.s.csr.ci[tn->node.sm.n_nnz] = (mm_file->data[i].col
 					% (*kat)->sm_size);
+			tn->node.sm.s.csr.tmp_r[tn->node.sm.n_nnz] = (mm_file->data[i].row
+					% (*kat)->sm_size);
+
 			tn->node.sm.s.csr.rp[(mm_file->data[i].row % (*kat)->sm_size)]++;
 			break;
 		default:
