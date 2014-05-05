@@ -2,15 +2,13 @@
 
 \section{Prostředí}
 
-Popsané algoritmy jsme implementovali v jazyce C99. Implementace probíhala v operačním systému Lubuntu, v IDE Eclipse CDT. Zdrojový kód byl kompilován pomocí překladače GNU C.
+Popsané algoritmy jsme implementovali v jazyce C99. Implementace probíhala v operačním systému Lubuntu, v IDE Eclipse CDT. Zdrojový kód byl kompilován pomocí překladače GNU C, s optimalizačním přepínačem \texttt{--Ofast}.
 
-K lazení chyb pro práci s pamětí jsme použili nástroj Valgrind s přepínači \texttt{- - leak-check=full}. Běžící progam jsme krokovali pomocí nástoje GNU Debugger.
+K lazení chyb pro práci s pamětí jsme použili nástroj Valgrind s přepínači \texttt{-- --leak--check=full}. Běžící progam jsme krokovali pomocí nástoje GNU Debugger. Zdrojový kód pro lazení chyb byl kompilován s přepínači \texttt{--Wall --pedantic --Og --ggdb}.
 
 %-----------------------------------------------------------------------------
 
 \section{Design implementace}
-
-Popsané algoritmy byly implementovány v progrovacím jazyce C99.
 
 Protože matice mají některé vlastnosti stejné a lze s podobně pracovat, byl zvolen jednoduchý objektově orientovaný model \cite{schreiner1994objektorientierte}. Nadřazeným objektem je virtuální matice $vm_t$, obsahující virtualní tabulku funkcí.
 	
@@ -20,7 +18,7 @@ Protože matice mají některé vlastnosti stejné a lze s podobně pracovat, by
 	\label{fig:uml}
 \end{figure}
 
-Výsledný program načte dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit, nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích.
+Výsledný program načte jednu, nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit, nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích.
 
 %-----------------------------------------------------------------------------
 

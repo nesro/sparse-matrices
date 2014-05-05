@@ -1,6 +1,6 @@
 \chapter{Algoritmy násobení matic}
 
-V této kapitole představíme některé základní a pokročilejší algoritmy pro násobení matic. Základní algoritmy mají stejnou asymptotickou složitost $O(n^3)$ a liší se pouze přístupům k prvkům, což je důležité pro řídké formáty. Pokročilejší algoritmy jsou sice asymptoticky rychlejší, ale přinášejí nevýhodu ve formě numerické stability a velké skryté konstantě.
+V této kapitole představíme některé základní a pokročilejší algoritmy pro násobení matic. Základní algoritmy mají stejnou asymptotickou složitost $\bigO(n^3)$ a liší se pouze přístupům k prvkům, což je důležité pro řídké formáty. Pokročilejší algoritmy jsou sice asymptoticky rychlejší, ale přinášejí nevýhodu ve formě numerické stability a velké skryté konstantě.
 
 \subsection{Pseudokódy}
 
@@ -27,7 +27,7 @@ Základním algoritmem násobení dvou matic je podle definice. Ve třech for cy
 	\end{algorithmic}
 \end{algorithm}
 
-Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N$ sčítaní. Asymptotická složitost je tedy $O(n^2(n + n))$ = $O(2n^3)$. V ukázkových výpočtech je násobení pouze $N-1$ krát, to proto, že neuvádíme přičítání k nule (řádek 6).
+Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N$ sčítaní. Asymptotická složitost je tedy $\bigO(n^2(n + n))$ = $\bigO(2n^3)$. V ukázkových výpočtech je násobení pouze $N-1$ krát, to proto, že neuvádíme přičítání k nule (řádek 6).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -191,7 +191,7 @@ Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice
     8T(n/2) + \Theta(1) & \quad \text{if $n$ > 1}
   \end{array} \right.\]
 
-Protože platí, že $a=8, b=2, r=\log_{2} 8, n^r=n^{\log_{2} 8}=n^3=\Omega(1)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-recursive}(n) = $O(n^3)$.
+Protože platí, že $a=8, b=2, r=\log_{2} 8, n^r=n^{\log_{2} 8}=n^3=\Omega(1)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-recursive}(n) = $\bigO(n^3)$.
 
 Kvůli režii rekurzivního dělení v praxi nezmenšujeme podmatice až na velikost jedna. Vhodný práh velikosti podmatice je například takový, co se vejde do L1 cache.
 
@@ -200,7 +200,7 @@ Kvůli režii rekurzivního dělení v praxi nezmenšujeme podmatice až na veli
 
 V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO}, ve kterém jako první představil algoritmus násobení dvou matic s menší asymptotickou složitostí než algotimus podle definice, tedy $O(n^3)$.
 
-Algoritmus je založen na myšlence, že sčítání je operace méně náročnejší než operace násobení. Respektive dvě matice umíme sečíst nebo odečíst v složitosti $O(n^2)$, ale vynásobit v $O(n^3)$.
+Algoritmus je založen na myšlence, že sčítání je operace méně náročnejší než operace násobení. Respektive dvě matice umíme sečíst nebo odečíst v složitosti $\bigO(n^2)$, ale vynásobit v $\bigO(n^3)$.
 
 Volker Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou matic $A$ a $B$ o velikosti dva a výslednou matici $C$ seskládal pomocí sedmi pomocných matic. Obrázek \ref{fig:StrVis} ukazuje, z čeho se pomocné matice skládají a jak jsou do výsledné matice seskládany. V ilustračních maticích o velikosti čtyři ukazujeme, které sčítance pomocná matice do výsledku přičítá a které odečítá. 
 
@@ -285,7 +285,6 @@ V pseudokódu používáme procedury \texttt{offset-add} respektive \texttt{offs
 	\end{algorithmic}
 \end{algorithm}
 
-
 Výpočet asymptotické složitosti vypočteme podobně jako u \texttt{MMM-recursive}, tedy mistrovskou metodou. 
 
 V každém kroku rekurze počítáme $\Theta(n^2)$ operací na vytvoření pomocných matic.
@@ -296,7 +295,7 @@ V každém kroku rekurze počítáme $\Theta(n^2)$ operací na vytvoření pomoc
     7T(n/2) + \Theta(n^2) & \quad \text{if $n$ > 1}
   \end{array} \right.\]
 
-Protože platí, že $a=7, b=2, r=\log_{2} 7, n^r=n^{\log_{2} 7}=\Omega(n^2)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-strassen}(n) = $O(n^{\log_{2} 7}) \approx O(n^{2.8})$.
+Protože platí, že $a=7, b=2, r=\log_{2} 7, n^r=n^{\log_{2} 7}=\Omega(n^2)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-strassen}(n) = $\bigO(n^{\log_{2} 7}) \approx \bigO(n^{2.8})$.
 
 Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme konkrétní desetinná čísla, abychom ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
 
@@ -358,7 +357,7 @@ Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se
 
 \section{Rychlé algoritmy}
 
-Po tom, co Strassen ukázal, že existují rychlejší algoritmy než $O(n^3)$, ještě rychlejší algoritmy než ten jeho na sebe nenechaly dlouho čekat. Složitost násobení matic pro jednoduchost označíme jako $O(n^\omega)$.
+Po tom, co Strassen ukázal, že existují rychlejší algoritmy než $\bigO(n^3)$, ještě rychlejší algoritmy než ten jeho na sebe nenechaly dlouho čekat. Složitost násobení matic pro jednoduchost označíme jako $\bigO(n^\omega)$.
 
 Nejpomalejší algoritmus s $\omega=3$ je podle definice. Strassenův algoritmus se sedmi násobeními má $\omega\approx2.807354$. Jeden z nejrychlejších algoritmů je algoritmus Virginie Williamsové \cite{DBLP:conf/stoc/Williams12}\cite{BreakigCWB}, pro který je $\omega<2.3727$. 
 
@@ -391,9 +390,9 @@ Kdyby nastal nejhorší možný případ, počet operací násobení při použi
 \label{fast-sparse}
 \section{Rychlé násobení řídkých matic}
 
-Strassenův algoritmus $\omega=2.8$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega=2.3$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $O(mn)$. Například pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
+Strassenův algoritmus $\omega=2.8$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega=2.3727$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $\bigO(mn)$. Například pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
 
-Raphael Yuster a Uri Zwick ukázali algoritmus \cite{DBLP:journals/talg/YusterZ05} s asymptotickou složitostí $O(m^{0.7}n^{1.2}+n^{2+o(1))}$, který rozdělí permutace řádků a sloupců na řídké a husté. Řídké permutace násobí algoritmem podle definice v úpravě pro řídké matice $O(mn)$. Husté permutace vynásobí v té době nejznámějším nejrychlejším algoritmem a to od Dona Coppersmitha a Shmuela Winograda s asymptotickou složitostí $\omega=2.3$ \cite{DBLP:journals/jsc/CoppersmithW90}.
+Raphael Yuster a Uri Zwick ukázali algoritmus \cite{DBLP:journals/talg/YusterZ05} s asymptotickou složitostí $\bigO(m^{0.7}n^{1.2}+n^{2+o(1))}$, který rozdělí permutace řádků a sloupců na řídké a husté. Řídké permutace násobí algoritmem podle definice v úpravě pro řídké matice $\bigO(mn)$. Husté permutace vynásobí v té době nejznámějším nejrychlejším algoritmem a to od Dona Coppersmitha a Shmuela Winograda s asymptotickou složitostí $\omega=2.3$ \cite{DBLP:journals/jsc/CoppersmithW90}.
 
 \section{Další algoritmy pro řídké matice}
 
