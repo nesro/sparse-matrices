@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "virtual_matrix.h"
 #include "utils.h"
@@ -58,7 +59,9 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 		die("wrong mm_read_mtx_crd_size");
 	}
 
-	if (round_to_power_2) {
+	/* TODO: for dense, coo and csr matrices, there is no reason
+	 * to round them up. but this is for testing much easier */
+	if (1 ||round_to_power_2) {
 		rounded_size = maxi(mm_file->height, mm_file->width);
 		rounded_size--;
 		rounded_size |= rounded_size >> 1;
@@ -97,9 +100,13 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 		mm_file->data[i].row--;
 		mm_file->data[i].col--;
 
+		/* XXX: numerical stability? */
+//		mm_file->data[i].value = floor(1.5*mm_file->data[i].value);
+//		mm_file->data[i].value /= 1.5;
+
 		/* FIXME: all symetric, and sort */
 		if (is_symmetric && mm_file->data[i].row < mm_file->data[i].col) {
-			mm_file->data[i].value = 0;
+			fdie("Bad symmetric value at %d\n", i);
 		}
 
 		if (is_symmetric && mm_file->data[i].row != mm_file->data[i].col) {

@@ -63,7 +63,7 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 	int j;
 	int diff = 0;
 	vm_t *tmp = NULL;
-
+	datatype_t d;
 	if (a->_.w != b->w || a->_.h != b->h)
 		return 2;
 
@@ -72,17 +72,27 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 	else
 		tmp = b;
 
-	for (i = 0; i < a->_.h; i++)
-		for (j = 0; j < a->_.w; j++)
-			if (a->v[i][j] != ((den_matrix_t *) tmp)->v[i][j]) {
+	for (i = 0; i < a->_.h; i++) {
+		for (j = 0; j < a->_.w; j++) {
+			/* we need some tolerance */
+
+			if (a->v[i][j] > ((den_matrix_t *) tmp)->v[i][j])
+				d = a->v[i][j] - ((den_matrix_t *) tmp)->v[i][j];
+			else
+				d = ((den_matrix_t *) tmp)->v[i][j] - a->v[i][j];
+
+			if (d > ((datatype_t)DIFF_TRESHOLD)) {
 				diff++;
 
 				if (0) {
-					fprintf(stdout, ">>> diff y=%d x=%d v1="DPF" v2="DPF"\n", i,
-							j, a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
+					fprintf(stdout,
+							"\n>>> diff="DPF" y=%d x=%d v1="DPF" v2="DPF"\n", d,
+							i, j, a->v[i][j], ((den_matrix_t *) tmp)->v[i][j]);
 					fflush(stdout);
 				}
 			}
+		}
+	}
 
 	if (b != tmp && tmp != NULL)
 		tmp->f.free(tmp);
@@ -231,7 +241,12 @@ void den_matrix_print(den_matrix_t *den) {
 
 	for (i = 0; i < den->_.h; i++) {
 		for (j = 0; j < den->_.w; j++) {
-			printf(DPF ", ", den->v[i][j]);
+//			printf(DPF ", ", den->v[i][j]);
+			if (den->v[i][j] != 0)
+				printf("%.lf,", den->v[i][j]);
+			else
+				printf(",");
+//			printf("%.lf, ", den->v[i][j]);
 		}
 
 		printf("\n");

@@ -8,6 +8,7 @@
 
 #define MTX_DIR "./tests/matrices/"
 #define MTX_GEN_DIR MTX_DIR "generated/"
+#define MTX_SPA_COL "../test_matrices/small/"
 
 typedef struct test_matrix {
 	char path[50];
@@ -31,6 +32,9 @@ extern test_matrices_pair_t bsr_pairs[];
 
 extern test_matrices_pair_t mat_vec_pairs[];
 extern test_matrices_pair_t mat_mat_pairs[];
+
+extern test_matrix_t sparse_collection[];
+extern test_matrices_pair_t sparse_collection_pairs[];
 
 const test_matrix_t *foreach_matrix(const test_matrix_t *);
 const test_matrices_pair_t *foreach_pair(const test_matrices_pair_t *);

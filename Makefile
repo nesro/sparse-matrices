@@ -58,9 +58,21 @@ ifdef KAT_N
 	CFLAGS += -D_KAT_N=$(KAT_N)
 endif
 
-ifdef DOUBLE_PRECISION
-	CFLAGS += -D_DOUBLE_PRECISION=1
+ifdef PRECISION
+	CFLAGS += -D_PRECISION=$(PRECISION)
 endif
+
+ifdef DIFF_TRESHOLD
+	CFLAGS += -D_DIFF_TRESHOLD=$(DIFF_TRESHOLD)
+endif
+
+ifdef DEBUG
+	CFLAGS += -Og -ggdb #-Wextra
+else
+	CFLAGS += -Ofast
+endif
+
+#-------------------------------------------------------------------------------
 
 ifdef OMP_NUM_THREADS
 	CFLAGS += -DOMP_NUM_THREADS=$(OMP_NUM_THREADS)
@@ -71,11 +83,6 @@ ifdef FAKE
 	CFLAGS += -D_FAKE=1
 endif
 
-ifdef DEBUG
-	CFLAGS += -O0 -ggdb #-Wextra
-else
-	CFLAGS += -O3
-endif
 
 ifdef OMP_THREADS
 	CFLAGS += -DOMP_THREADS=$(OMP_THREADS)

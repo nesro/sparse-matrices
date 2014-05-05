@@ -95,7 +95,7 @@ void mat_vec() {
 
 /******************************************************************************/
 
-vm_type_t types[] = { KAT, BSR, CSR, /**/ COO };
+vm_type_t types[] = { CSR, BSR, KAT, /**/ COO };
 int types_size = 3;
 
 void mat_mat() {
@@ -109,11 +109,12 @@ void mat_mat() {
 	vm_t *spa_c = NULL;
 	const test_matrices_pair_t *tp;
 	double time;
-	int sms_start = 8;
-//	int sms_stop = 64;
+	int sms_start = 1;
+//	int sms_stop = 32;
 	int sms = sms_start;
 
-	while ((tp = foreach_pair(mat_mat_pairs)) != NULL) {
+//	while ((tp = foreach_pair(mat_mat_pairs)) != NULL) {
+	while ((tp = foreach_pair(sparse_collection_pairs)) != NULL) {
 
 		CASSERTION_MSG("begin dense a=%s,b=%s\n", tp->a.path, tp->b.path);
 
@@ -156,8 +157,8 @@ void mat_mat() {
 					tp->b.path, sms, time, types[i]);
 
 #if 0
-			printf("---- dense bef:\n");
-			den_c->f.print(den_a);
+//			printf("---- dense bef:\n");
+//			den_c->f.print(den_a);
 			printf("---- dense:\n");
 			den_c->f.print(den_c);
 			printf("---- cspa:\n");
@@ -173,7 +174,11 @@ void mat_mat() {
 
 			if (vm_has_blocks(types[i])) {
 				sms *= 2;
+#if 0
+				if (sms <= sms_stop)
+#else
 				if (sms <= tp->a.height)
+#endif
 					goto block_loop;
 				else
 					sms = sms_start;

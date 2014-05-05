@@ -10,17 +10,31 @@
 #ifndef VIRTUAL_MATRIX_H_
 #define VIRTUAL_MATRIX_H_
 
-#ifdef _DOUBLE_PRECISION
+#ifdef _DIFF_TRESHOLD
+#define DIFF_TRESHOLD _DIFF_TRESHOLD
+#else /* _DIFF_TRESHOLD */
+#define DIFF_TRESHOLD 0.001
+#endif /* _DIFF_TRESHOLD */
 
-#define DPF "%lf" /* datatype_t printf format */
-typedef double datatype_t;
+#ifdef _PRECISION
+#	if _PRECISION == 1
+#		define DPF "%f"
+		typedef float datatype_t;
+#	elif _PRECISION == 2
+#		define DPF "%lf"
+		typedef double datatype_t;
+#	elif _PRECISION == 3
+#		define DPF "%Lf"
+		typedef long double datatype_t;
+#	else
+#		define DPF "%lf"
+		typedef double datatype_t;
+#	endif
+#else /* _PRESICION */
+#		define DPF "%lf"
+		typedef double datatype_t;
+#endif /* _PRESICION */
 
-#else /* DOUBLE_PRECISION */
-
-#define DPF "%f" /* datatype_t printf format */
-typedef float datatype_t;
-
-#endif /* DOUBLE_PRECISION */
 
 #define UNROLL 8
 

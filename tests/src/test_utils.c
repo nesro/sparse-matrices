@@ -5,6 +5,54 @@
 #include <stdio.h>
 #include "test_utils.h"
 
+test_matrix_t sparse_collection[] = {
+//
+		{ MTX_SPA_COL "dolphins.mtx", 62, 62, 159 }, /**/
+		{ MTX_SPA_COL "d_ss.mtx", 53, 53, 149 }, /**/
+		{ MTX_SPA_COL "GD95_c.mtx", 62, 62, 287 }, /**/
+		{ MTX_SPA_COL "GD97_b.mtx", 47, 47, 132 }, /**/
+		{ { 0 } }, /**/
+		{ MTX_SPA_COL "bfwb62.mtx", 62, 62, 202 }, /**/
+};
+
+test_matrices_pair_t sparse_collection_pairs[] = {
+//
+		{ /**/
+		{ MTX_SPA_COL "GD95_c.mtx", 62, 62, 287 }, /**/
+		{ MTX_SPA_COL "GD95_c.mtx", 62, 62, 287 }, /**/
+		}, /**/
+//
+		{ /**/
+		{ MTX_SPA_COL "dolphins.mtx", 62, 62, 159 }, /**/
+		{ MTX_SPA_COL "dolphins.mtx", 62, 62, 159 }, /**/
+		}, /**/
+//
+		{ /**/
+		{ MTX_SPA_COL "d_ss.mtx", 53, 53, 149 }, /**/
+		{ MTX_SPA_COL "d_ss.mtx", 53, 53, 149 }, /**/
+		}, /**/
+//
+		{ /**/
+		{ MTX_SPA_COL "GD97_b.mtx", 47, 47, 132 }, /**/
+		{ MTX_SPA_COL "GD97_b.mtx", 47, 47, 132 }, /**/
+		}, /**/
+
+//
+		{ /**/
+		{ MTX_SPA_COL "bfwb62.mtx", 62, 62, 202 }, /**/
+		{ MTX_SPA_COL "bfwb62.mtx", 62, 62, 202 }, /**/
+		}, /**/
+//
+		{ /**/
+		{ MTX_SPA_COL "lns_511.mtx", 511, 511, 2796 }, /**/
+		{ MTX_SPA_COL "lns_511.mtx", 511, 511, 2796 }, /**/
+		}, /**/
+//
+		{ { { 0 } } }, /**/
+};
+
+/******************************************************************************/
+
 test_matrices_pair_t mat_mat_pairs[] = { /**/
 
 //{ /**/
@@ -31,34 +79,34 @@ test_matrices_pair_t mat_mat_pairs[] = { /**/
 //}, /**/
 //{ { { 0 } } }, /**/
 
-{ /**/
-{ MTX_GEN_DIR "256.mtx", 256, 256, 4096 }, /**/
-{ MTX_GEN_DIR "256.mtx", 256, 256, 4096 }, /**/
-}, /**/
+		{ /**/
+		{ MTX_GEN_DIR "256.mtx", 256, 256, 4096 }, /**/
+		{ MTX_GEN_DIR "256.mtx", 256, 256, 4096 }, /**/
+		}, /**/
 
-{ /**/
-{ MTX_GEN_DIR "256s05.mtx", 256, 256, 4096 }, /**/
-{ MTX_GEN_DIR "256s05.mtx", 256, 256, 4096 }, /**/
-}, /**/
+		{ /**/
+		{ MTX_GEN_DIR "256s05.mtx", 256, 256, 4096 }, /**/
+		{ MTX_GEN_DIR "256s05.mtx", 256, 256, 4096 }, /**/
+		}, /**/
 
-{ /**/
-{ MTX_GEN_DIR "1024s05.mtx", 1024, 1024, 4096 }, /**/
-{ MTX_GEN_DIR "1024s05.mtx", 1024, 1024, 4096 }, /**/
-}, /**/
+		{ /**/
+		{ MTX_GEN_DIR "1024s05.mtx", 1024, 1024, 4096 }, /**/
+		{ MTX_GEN_DIR "1024s05.mtx", 1024, 1024, 4096 }, /**/
+		}, /**/
 
-{ { { 0 } } }, /**/
+		{ { { 0 } } }, /**/
 
-{ /**/
-{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
-{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
-}, /**/
+		{ /**/
+		{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
+		{ MTX_DIR "4x4_16nz_01.mtx", 4, 4, 16 }, /**/
+		}, /**/
 
-{ /**/
-{ MTX_DIR "generated_1024_5p_01.mtx", 1024, 1024, 53309 }, /**/
-{ MTX_DIR "generated_1024_5p_02.mtx", 1024, 1024, 53285 }, /**/
-}, /**/
+		{ /**/
+		{ MTX_DIR "generated_1024_5p_01.mtx", 1024, 1024, 53309 }, /**/
+		{ MTX_DIR "generated_1024_5p_02.mtx", 1024, 1024, 53285 }, /**/
+		}, /**/
 
-{ { { 0 } } }, /**/
+		{ { { 0 } } }, /**/
 
 };
 

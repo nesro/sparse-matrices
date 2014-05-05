@@ -6,7 +6,7 @@ set -x
 
 source ./tests/scripts/utils.sh
 
-make
+make PRECISION=2
 
 echo -n "format "> gp_$$_res.txt
 for matrix in $big_list; do echo "$matrix " | tr -d '\n' >>gp_$$_res.txt; done
@@ -16,6 +16,8 @@ echo " ">>gp_$$_res.txt
 for format in \
 		"coo" \
 		"csr" \
+		"bsr -s 16" \
+		"bsr -s 32" \
 		"bsr -s 64" \
 		"bsr -s 128" \
 		"bsr -s 256"; do
@@ -24,6 +26,8 @@ for format in \
 done
 for i in 2 4; do
 	for format in \
+				"kat -s 16" \
+				"kat -s 32" \
 				"kat -s 64" \
 				"kat -s 128" \
 				"kat -s 256"; do
@@ -39,6 +43,8 @@ time for matrix in $generated_list; do
 	for format in \
 		"coo" \
 		"csr" \
+		"bsr -s 16" \
+		"bsr -s 32" \
 		"bsr -s 64" \
 		"bsr -s 128" \
 		"bsr -s 256"; do
@@ -52,9 +58,11 @@ time for matrix in $generated_list; do
 done
 
 for i in 2 4; do
-	make KAT_N=$i
+	make PRECISION=2 KAT_N=$i
 	time for matrix in $generated_list; do
 		for format in \
+				"kat -s 16" \
+				"kat -s 32" \
 				"kat -s 64" \
 				"kat -s 128" \
 				"kat -s 256"; do
@@ -73,6 +81,8 @@ done
 for format in \
 		"coo" \
 		"csr" \
+		"bsr -s 16" \
+		"bsr -s 32" \
 		"bsr -s 64" \
 		"bsr -s 128" \
 		"bsr -s 256"; do
@@ -82,6 +92,8 @@ for format in \
 done
 for i in 2 4; do
 	for format in \
+				"kat -s 16" \
+				"kat -s 32" \
 				"kat -s 64" \
 				"kat -s 128" \
 				"kat -s 256"; do
@@ -90,9 +102,6 @@ for i in 2 4; do
 		cat gp_$$_$(echo $ktmp | tr ' ' '_' | tr -d '"').txt >>gp_$$_res.txt
 	done
 done 
-
- >gp_$$_result.txt
-
 
 exit 0
 if false; then #----------------------------------------------------------------
