@@ -331,7 +331,8 @@ star-clean:
 		/mnt/data/$(USERNAME)/sparse-matrices/_*.sh \
 		/mnt/data/$(USERNAME)/sparse-matrices/log_*.txt \
 		/mnt/data/$(USERNAME)/sparse-matrices/resvec_*.mtx \
-		/mnt/data/$(USERNAME)/sparse-matrices/core
+		/mnt/data/$(USERNAME)/sparse-matrices/core \
+		/mnt/data/$(USERNAME)/sparse-matrices/nohup.out
 
 #-------------------------------------------------------------------------------
 

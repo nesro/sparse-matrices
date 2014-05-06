@@ -2,6 +2,41 @@
 # Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
 # https://github.com/nesro/sparse-matrices
 
+#-------------------------------------------------------------------------------
+
+export username=nesrotom
+
+#-------------------------------------------------------------------------------
+
+export utils_debug=1
+
+function debug_print {
+	if [[ "$utils_debug" == "1" ]]; then
+		echo "$@"
+	fi
+}
+
+#-------------------------------------------------------------------------------
+
+# We don't want to bother others. So we'll have 2 jobs max.
+function wait_for_slot {
+
+	if [[ "$(hostname)" != "star" ]]; then
+		debug_print "You're not the STAR server!"
+		return
+	fi
+
+	sleep 5
+	while :; do
+		if (( $( qstat | grep $username | wc -l ) < 2 )); then
+			return
+		fi
+		sleep 5
+	done
+}
+
+#-------------------------------------------------------------------------------
+
 if false; then
 	export big_list="cage12 ldoor Freescale1 thermal2 atmosmodj nlpkkt120"
 	export big_dir_mat=../big_matrices
