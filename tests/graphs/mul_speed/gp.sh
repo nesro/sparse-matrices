@@ -19,7 +19,7 @@ gnuplot <<__EOF__
 	set datafile missing '-'
 	set style data histograms
 	set xlabel "matrix"
-	set ylabel "size [B]"
+	set ylabel "time [s]"
 	set xtics border in scale 0,0 nomirror rotate by -45 offset character 0, 0, 0 autojustify
 	set xtics norangelimit font ",8"
 	set xtics ()

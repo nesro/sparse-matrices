@@ -170,7 +170,7 @@ static double mul_coo_coo(const coo_matrix_t *a, const coo_matrix_t *b,
 
 	start_time = omp_get_wtime();
 
-	fdie("coo coo mul is not implemented yet %d\n", 0);
+	printf("coo coo mul is not implemented yet\n");
 
 	return omp_get_wtime() - start_time;
 }

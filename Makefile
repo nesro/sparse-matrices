@@ -54,6 +54,10 @@ CASSERTION=./cassertion
 
 #-------------------------------------------------------------------------------
 
+ifdef KAT_DENSE_TRESHOLD
+	CFLAGS += _D_KAT_DENSE_TRESHOLD=$(KAT_DENSE_TRESHOLD)
+endif
+
 ifdef KAT_N
 	CFLAGS += -D_KAT_N=$(KAT_N)
 endif

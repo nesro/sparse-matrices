@@ -72,19 +72,19 @@ void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 	/*
 	 * This is not needed.
 	 */
-	(*kat)->height =
-			ceil(
-					(log((width * height) / (sm_size * sm_size))
-							/ (double) log(KAT_K)));
+//	(*kat)->height =
+//			ceil(
+//					(log((width * height) / (sm_size * sm_size))
+//							/ (double) log(KAT_K)));
 
-	printf("_kat init h=%d w=%d height=%d\n", width, height, (*kat)->height);
+//	printf("_kat init h=%d w=%d height=%d\n", width, height, (*kat)->height);
 
 	// not really
 //	assert(width < sm_size * KAT_N);
 
-	_s_debugf(KAT_DEBUG,
-			"initializing kat_matrix_t with: n=%d, nnz=%d, sm_size=%d, height=%d\n",
-			width, nnz, sm_size, (*kat)->height);
+//	_s_debugf(KAT_DEBUG,
+//			"initializing kat_matrix_t with: n=%d, nnz=%d, sm_size=%d, height=%d\n",
+//			width, nnz, sm_size, (*kat)->height);
 
 }
 
@@ -549,7 +549,7 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 	 */
 	(*kat)->ci = calloc((*kat)->_.nnz, sizeof(int));
 	assert((*kat)->ci!=NULL);
-	(*kat)->_.object_size += (*kat)->_.nnz, sizeof(int);
+	(*kat)->_.object_size += (*kat)->_.nnz * sizeof(int);
 	(*kat)->last_ci = (*kat)->ci;
 	(*kat)->rp = calloc(
 			((*kat)->blocks - (*kat)->den_blocks) * ((*kat)->sm_size + 1),
@@ -643,6 +643,8 @@ double kat_load_mm(kat_matrix_t **kat, const char *filename, int sm_size) {
 
 #if KAT_CSR
 	kat_csr_rp(*kat, (*kat)->root);
+	free((*kat)->csr_tmp_v);
+	free((*kat)->csr_tmp_ci);
 #endif /* KAT_CSR */
 
 	end_time = omp_get_wtime();

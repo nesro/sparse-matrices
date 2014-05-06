@@ -133,8 +133,7 @@ void bsr_from_mm(bsr_t **bsr, const char *mm_filename, va_list va) {
 void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 		int b_cnt) {
 
-	if (bsr != NULL && *bsr != NULL)
-		bsr_free(*bsr);
+	assert(bsr != NULL);
 
 	*bsr = calloc(1, sizeof(bsr_t));
 	(*bsr)->_.object_size += sizeof(bsr_t);
@@ -150,13 +149,6 @@ void bsr_init(bsr_t **bsr, int width, int height, int nnz, int b_size,
 
 	/**************************************************************************/
 
-//	printf("test a\n");
-//
-//	double *d;
-//	d = malloc(45988380672);
-//	assert(d != NULL);
-//
-//	printf("test b\n");
 	(*bsr)->v = calloc(((*bsr)->bc * b_size * b_size), sizeof(datatype_t));
 	assert((*bsr)->v != NULL);
 

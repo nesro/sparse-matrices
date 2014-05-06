@@ -6,9 +6,18 @@
 # This is a helper file for running jobs on our school server STAR.
 # Please do NOT to try hack this in any way.
 
+
+./tests/graphs/measure_program/do_job.sh "$@"
+
+exit 0
+
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
 set -x
 
-./tests/graphs/mul_speed/run.sh
+./tests/graphs/format_size/run.sh
 exit 0
 
 make

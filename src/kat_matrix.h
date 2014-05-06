@@ -43,7 +43,11 @@
  * If a submatrix will have at least KAT_DENSE_TRESHOLD of max nnz of a node,
  * it will be treated like a dense matrix.
  */
+#ifdef _KAT_DENSE_TRESHOLD
+#define KAT_DENSE_TRESHOLD (_KAT_DENSE_TRESHOLD)
+#else
 #define KAT_DENSE_TRESHOLD (0.75)
+#endif
 
 /*
  * If true, leaves of k-ary tree will be (also) in CSR format.
@@ -119,7 +123,7 @@ typedef struct kat_matrix {
 	int nodes_den;
 
 	int sm_size;
-	int height;
+//	int height;
 	int blocks;
 
 	int den_blocks;

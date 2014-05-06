@@ -46,7 +46,7 @@ void csr_init(csr_t **csr, int width, int height, int nnz) {
 	(*csr)->_.nnz = nnz;
 
 	(*csr)->v = malloc(nnz * sizeof(datatype_t));
-	(*csr)->_.object_size += sizeof(csr_t);
+	(*csr)->_.object_size += nnz * sizeof(datatype_t);
 	assert((*csr)->v != NULL);
 
 	(*csr)->ci = malloc(nnz * sizeof(int));
@@ -169,19 +169,14 @@ static double mul_csr_csr(const csr_t *a, const csr_t *b, den_matrix_t *c) {
 //				_s_debugf(CSR_DEBUG, "r=%d ac=%d bc=%d bcFrom=%d\n", r, ac,
 //						bc, b->rp[a->ci[ac]]);
 
-	long int qqq = 0;
-
 	for (r = 0; r < a->_.h; r++) {
 		cr = c->v[r];
 		for (ac = arp[r]; ac < arp[r + 1]; ac++) {
 			for (bc = brp[aci[ac]]; bc < brp[aci[ac] + 1]; bc++) {
 				cr[bci[bc]] += av[ac] * bv[bc];
-				qqq++;
 			}
 		}
 	}
-
-	printf("CSRqqq=%ld\n", qqq);
 
 	return omp_get_wtime() - start_time;
 }

@@ -39,7 +39,8 @@ cat >> _$$.sh << __EOF__
 # Do not change.
 #$ -q 12c_1slots_per_host.q
 
-time ./tests/scripts/star_job.sh
+./tests/graphs/measure_program/do_job.sh $1 $2 $3 $4 $5
+#./tests/scripts/star_job.sh "$@"
 
 __EOF__
 
