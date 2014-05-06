@@ -61,17 +61,21 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 
 	/* TODO: for dense, coo and csr matrices, there is no reason
 	 * to round them up. but this is for testing much easier */
-	if (1 ||round_to_power_2) {
-		rounded_size = maxi(mm_file->height, mm_file->width);
-		rounded_size--;
-		rounded_size |= rounded_size >> 1;
-		rounded_size |= rounded_size >> 2;
-		rounded_size |= rounded_size >> 4;
-		rounded_size |= rounded_size >> 8;
-		rounded_size |= rounded_size >> 16;
-		rounded_size++;
-		mm_file->height = rounded_size;
-		mm_file->width = rounded_size;
+	if (1 || round_to_power_2) {
+
+		if (round_to_power_2 != 666) {
+
+			rounded_size = maxi(mm_file->height, mm_file->width);
+			rounded_size--;
+			rounded_size |= rounded_size >> 1;
+			rounded_size |= rounded_size >> 2;
+			rounded_size |= rounded_size >> 4;
+			rounded_size |= rounded_size >> 8;
+			rounded_size |= rounded_size >> 16;
+			rounded_size++;
+			mm_file->height = rounded_size;
+			mm_file->width = rounded_size;
+		}
 	}
 
 	if (is_symmetric)
@@ -103,7 +107,6 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 		/* XXX: numerical stability? */
 //		mm_file->data[i].value = floor(1.5*mm_file->data[i].value);
 //		mm_file->data[i].value /= 1.5;
-
 		/* FIXME: all symetric, and sort */
 		if (is_symmetric && mm_file->data[i].row < mm_file->data[i].col) {
 			fdie("Bad symmetric value at %d\n", i);

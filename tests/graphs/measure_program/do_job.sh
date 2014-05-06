@@ -11,7 +11,7 @@ matrix_name=${2:-0}
 mul_vector=${3:-0}
 format=${4:-0}
 block_size=${5:-0}
-kat_n=${6:-0}
+kat_n=${6:-2}
 
 echo "matrix_dir $matrix_dir"
 echo "matrix_name $matrix_name"
@@ -52,13 +52,19 @@ fi
 
 if [[ "$mul_vector" == "1" ]]; then
 	matrix_b=${matrix_dir}/vector_${matrix_name}.mtx.gz
-	if [[ ! -f $matrix_b ]];
+	if [[ ! -f $matrix_b ]]; then
 		echo "vector matrix_b ( $matrix_b ) not found!"
 		exit 1
 	fi
 	outfile=out_mvm_${matrix_name}_${format}_${block_size}_${kat_n}_.txt
 else
 	outfile=out_mmm_${matrix_name}_${format}_${block_size}_${kat_n}_.txt
+fi
+
+if [[ $block_size == "0" ]]; then
+	block_size_param=""
+else
+	block_size_param="-s $block_size"
 fi
 
 #-------------------------------------------------------------------------------
@@ -69,7 +75,7 @@ set -x
 
 make PRECISION=2 KAT_N=$kat_n
 
-if (( $matrix_b == 0 )); then
+if [[ "$matrix_b" == "0" ]]; then
 	# matrix * matrix
 	time ./main -f $format $block_size_param \
 		-a <( gzip -cd $matrix_a ) -v 2>&1 >$outfile

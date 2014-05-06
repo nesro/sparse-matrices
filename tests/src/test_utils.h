@@ -35,6 +35,7 @@ extern test_matrices_pair_t mat_mat_pairs[];
 
 extern test_matrix_t sparse_collection[];
 extern test_matrices_pair_t sparse_collection_pairs[];
+extern test_matrices_pair_t sparse_collection_vectors_pairs[];
 
 const test_matrix_t *foreach_matrix(const test_matrix_t *);
 const test_matrices_pair_t *foreach_pair(const test_matrices_pair_t *);

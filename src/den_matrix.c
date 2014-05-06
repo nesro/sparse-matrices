@@ -81,7 +81,7 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 			else
 				d = ((den_matrix_t *) tmp)->v[i][j] - a->v[i][j];
 
-			if (d > ((datatype_t)DIFF_TRESHOLD)) {
+			if (d > ((datatype_t) DIFF_TRESHOLD)) {
 				diff++;
 
 				if (0) {
@@ -688,6 +688,7 @@ double mul(const den_matrix_t *a, const vm_t *b, vm_t **c, char flag) {
 	int init_zeros = 1;
 
 	if (b->type == VEC) {
+		_s_debugf(1, "aw=%d bw=%d\n", a->_.w, b->h);
 		assert(a->_.w == b->h);
 		vec_init((vec_t **) c, b->h);
 		return mul_den_vec(a, (vec_t *) b, (vec_t *) *c);

@@ -98,11 +98,11 @@ void vec_from_mm(vec_t **vec, const char *file, va_list va) {
 
 	min_size = va_get_int(va, -1, &va_flag);
 
-	printf("vec minsiz %d\n", min_size);
-	fflush(stdout);
-
-	printf("vec mifile %s\n", file);
-	fflush(stdout);
+//	printf("vec minsiz %d\n", min_size);
+//	fflush(stdout);
+//
+//	printf("vec mifile %s\n", file);
+//	fflush(stdout);
 
 	vec_load_mm(vec, file, min_size);
 }
@@ -114,13 +114,16 @@ double vec_load_mm(vec_t **vec, const char *filename, int min_size) {
 	mm_file_t *mm_file;
 	int i;
 
-	mm_file = mm_load(filename, 0);
+	mm_file = mm_load(filename, 666);
 
 	/*
 	 * Start timer after mm_file is loaded. We don't want to IO operations
 	 * in our timer.
 	 */
 	start_time = omp_get_wtime();
+
+	printf("vector width = %d height=%d filename=%s minsize=%d\n", mm_file->width,
+			mm_file->height, filename,min_size);
 
 	assert(mm_file->width == 1);
 
