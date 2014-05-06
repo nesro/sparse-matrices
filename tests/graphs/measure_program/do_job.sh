@@ -45,7 +45,7 @@ fi
 
 matrix_a=${matrix_dir}/${matrix_name}.mtx.gz
 
-if [[ ! -f $matrix_a ]];
+if [[ ! -f $matrix_a ]]; then
 	echo "matrix_a ( $matrix_a ) not found!"
 	exit 1
 fi
@@ -72,11 +72,11 @@ make PRECISION=2 KAT_N=$kat_n
 if (( $matrix_b == 0 )); then
 	# matrix * matrix
 	time ./main -f $format $block_size_param \
-		-a <( gzip -cd $matrix_a ) -v >$outfile
+		-a <( gzip -cd $matrix_a ) -v 2>&1 >$outfile
 else
 	# matrix * vector
 	time ./main -f $format $block_size_param -V \
-		-a <( gzip -cd $matrix_a ) -b <( gzip -cd $matrix_b ) -v >$outfile
+		-a <( gzip -cd $matrix_a ) -b <( gzip -cd $matrix_b ) -v 2>&1 >$outfile
 fi
 
 #-------------------------------------------------------------------------------

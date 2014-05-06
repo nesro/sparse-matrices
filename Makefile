@@ -313,6 +313,9 @@ star-deploy: clean
 star-run:
 	./tests/scripts/star.sh
 
+star-create-jobs:
+	./tests/graphs/measure_program/create_jobs.sh
+
 # Watch the job list
 star-watch:
 	watch -n 1 qstat
@@ -320,6 +323,7 @@ star-watch:
 # Remove all your jobs
 star-remove:
 	qstat | grep $(USERNAME) | cut -d ' ' -f2 | xargs qdel
+	ps auxc | grep nesrotom | grep create_jobs.sh | cut -d' ' -f 2 | xargs kill
 
 # Show results
 star-results:
