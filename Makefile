@@ -323,7 +323,8 @@ star-watch:
 # Remove all your jobs
 star-remove:
 	qstat | grep $(USERNAME) | cut -d ' ' -f2 | xargs qdel
-	ps auxc | grep nesrotom | grep create_jobs.sh | cut -d' ' -f 2 | xargs kill
+	ps auxc | grep nesrotom | grep create_jobs.sh | cut -d ' ' -f 2 | xargs kill
+	killall create_jobs.sh
 
 # Show results
 star-results:
