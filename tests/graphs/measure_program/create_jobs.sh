@@ -19,7 +19,7 @@ case $jobs_type in
 	;;
 2)
 	matrix_dir="../test_matrices/matvec"
-	matrices="TSOPF_RS_b678_c1"
+	matrices="TSOPF_RS_b678_c1 Dubcova2 ship_003"
 	mul_vector=1	
 	;;
 *)
@@ -38,7 +38,7 @@ for matrix in $matrices; do
 		$script $matrix_dir $matrix $mul_vector $f 0 2
 		wait_for_slot
 	done
-	for bs in 16 32 64 128 256 512; do
+	for bs in 2 4 8 16 32 64 128 256 512; do
 		for f in bsr; do
 			$script $matrix_dir $matrix $mul_vector $f $bs 2
 			wait_for_slot

@@ -81,7 +81,7 @@ if [[ "$matrix_b" == "0" ]]; then
 		-a <( gzip -cd $matrix_a ) -v 2>&1 >$outfile
 else
 	# matrix * vector
-	time ./main -f $format $block_size_param -V \
+	time ./main -f $format $block_size_param -r 1000 -V \
 		-a <( gzip -cd $matrix_a ) -b <( gzip -cd $matrix_b ) -v 2>&1 >$outfile
 fi
 

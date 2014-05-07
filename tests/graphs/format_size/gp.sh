@@ -10,14 +10,15 @@ for (( i=3; i<6; i++ )); do
 done  
 
 gnuplot <<__EOF__
-	set term pdf
+	set term pdf monochrome
 	set output '$gp.pdf'
 	set boxwidth 0.9 absolute
 	set style fill solid 1.00 border lt -1
 	set key inside right top vertical Left noreverse noenhanced autotitles nobox
-	set style histogram clustered gap 1 title  offset character 0, 0, 0
+	#set style histogram clustered gap 1 title  offset character 0, 0, 0
 	set datafile missing '-'
 	set style data histograms
+	set style fill pattern
 	set xlabel "matrix"
 	set ylabel "size [B]"
 	set xtics border in scale 0,0 nomirror rotate by -45 offset character 0, 0, 0 autojustify

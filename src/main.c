@@ -96,9 +96,11 @@ int main(int argc, char *argv[]) {
 	vm_t *vm_a = NULL;
 	vm_t *vm_b = NULL;
 	vm_t *vm_c = NULL;
-	double time_mul;
+	double time_mul = 0;
 	int verbose = 0;
 	int mul_vector = 0;
+	int repeat = 1;
+	int i;
 
 	if (argc < 2) {
 		fprintf(stderr,
@@ -108,7 +110,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "a:b:f:hs:o:tvV")) != -1) {
+	while ((c = getopt(argc, argv, "a:b:f:hs:o:tr:vV")) != -1) {
 		switch (c) {
 		case 'a':
 			matrix_a = optarg;
@@ -133,6 +135,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'V':
 			mul_vector = 1;
+			break;
+		case 'r':
+			repeat = atoi(optarg);
 			break;
 		case '?':
 			if (optopt == 'a')
@@ -198,10 +203,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (matrix_b != NULL)
-		time_mul = vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE);
-	else
-		time_mul = vm_a->f.mul(vm_a, vm_a, &vm_c, NAIVE);
+	for (i = 0; i < repeat; i++) {
+		if (matrix_b != NULL)
+			time_mul += vm_a->f.mul(vm_a, vm_b, &vm_c, NAIVE);
+		else
+			time_mul += vm_a->f.mul(vm_a, vm_a, &vm_c, NAIVE);
+	}
 
 	if (output != NULL)
 		vm_c->f.mm_save(vm_c, output);

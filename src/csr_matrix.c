@@ -156,25 +156,12 @@ static double mul_csr_csr(const csr_t *a, const csr_t *b, den_matrix_t *c) {
 	int ac; /* col of A */
 	int bc; /* col of B */
 
-	datatype_t *cr;
-
-	int *arp = a->rp;
-	int *aci = a->ci;
-	datatype_t *av = a->v;
-	int *brp = b->rp;
-	int *bci = b->ci;
-	datatype_t *bv = b->v;
-
 	start_time = omp_get_wtime();
 
-//				_s_debugf(CSR_DEBUG, "r=%d ac=%d bc=%d bcFrom=%d\n", r, ac,
-//						bc, b->rp[a->ci[ac]]);
-
 	for (r = 0; r < a->_.h; r++) {
-		cr = c->v[r];
-		for (ac = arp[r]; ac < arp[r + 1]; ac++) {
-			for (bc = brp[aci[ac]]; bc < brp[aci[ac] + 1]; bc++) {
-				cr[bci[bc]] += av[ac] * bv[bc];
+		for (ac = a->rp[r]; ac < a->rp[r + 1]; ac++) {
+			for (bc = b->rp[a->ci[ac]]; bc < b->rp[a->ci[ac] + 1]; bc++) {
+				c->v[r][b->ci[bc]] += a->v[ac] * b->v[bc];
 			}
 		}
 	}

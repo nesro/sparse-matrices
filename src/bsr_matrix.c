@@ -241,7 +241,6 @@ static inline double mul_bsr_vec(const bsr_t *a, const vec_t *b, vec_t *c) {
 	int l;
 	int m;
 
-	_s_debugf(1, "w=%d h=%d\n", a->_.w, b->_.h);
 	assert(a->_.w == b->_.h);
 
 	start_time = omp_get_wtime();
