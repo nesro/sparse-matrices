@@ -1,6 +1,7 @@
 #!/bin/bash
 # Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
 # https://github.com/nesro/sparse-matrices
+<<<<<<< HEAD
 
 #-------------------------------------------------------------------------------
 
@@ -86,6 +87,8 @@ else
 	export generated_list="test1 test2 test3 test4"
 	
 fi
+=======
+>>>>>>> latex
 
 function gnuplot_wrapper {
 	input_filename=$1
