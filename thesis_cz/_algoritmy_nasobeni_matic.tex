@@ -1,6 +1,6 @@
 \chapter{Algoritmy násobení matic}
 
-V této kapitole představíme některé základní a pokročilejší algoritmy pro násobení matic. Základní algoritmy mají stejnou asymptotickou složitost $\bigO(n^3)$ a liší se pouze přístupům k prvkům, což je důležité pro řídké formáty. Pokročilejší algoritmy jsou sice asymptoticky rychlejší, ale přinášejí nevýhodu ve formě numerické stability a velké skryté konstantě.
+V této kapitole představíme některé základní a pokročilejší algoritmy pro násobení matic. Základní algoritmy mají stejnou asymptotickou složitost $\bigO(n^3)$ a liší se pouze přístupům k prvkům, což je důležité pro řídké formáty. Pokročilejší algoritmy jsou sice asymptoticky rychlejší, ale přinášejí nevýhodu ve formě numerické stability a velké skryté konstanty.
 
 \subsection{Pseudokódy}
 
@@ -8,7 +8,7 @@ Pseudokódy v této práci jsou ve stylu syntaxe jazyka Fortran, ale budou před
 
 \section{Podle definice}
 
-Základním algoritmem násobení dvou matic je podle definice. Ve třech for cyklech postupně  vybíráme řádky matice A, sloupce matice B a v N krocích násobíme. N je jak šírka matice A, tak i výška matice B.
+Základním algoritmem násobení dvou matic je podle definice. Ve třech for cyklech postupně  vybíráme řádky matice A, sloupce matice B a v N krocích násobíme. N je jak šířka matice A, tak i výška matice B.
 
 \begin{algorithm}[H]
 	\caption{Násobení matic podle definice}\label{mmm-by-definiton}
@@ -63,7 +63,7 @@ Podobný algoritmus můžeme použít i~pokud nám formát nedovolí procházet 
 
 Další možností jak násobit dvě matice, kde nám formát uložení nedovolí procházet po sloupcích je procházet současně řádky matice A i B a přičítat jednotlivé součiny na správné místo ve výsledné matici C.
 
-Nevýhodou tohoto řešení je velký počet přístupů do pole C. Protože k~prvkům přičítáme, tedy načítáme a sčítáme, je potřeba před samotným násobením nastavit všechny prvky matice C na hodnotu nula.
+Nevýhodou tohoto řešení je velký počet náhodných přístupů do pole C. Protože k~prvkům přičítáme, tedy načítáme a sčítáme, je potřeba před samotným násobením nastavit všechny prvky matice C na hodnotu nula.
 
 %tohle neplati: Matice musí být stejně široké i vysoké.
 
@@ -139,7 +139,7 @@ b_{1,1} & b_{1,2} & b_{1,3} & b_{1,4} \\
 b_{2,1} & b_{2,2} & b_{2,3} & b_{2,4} \\
 b_{3,1} & b_{3,2} & b_{3,3} & b_{3,4} \\
 b_{4,1} & b_{4,2} & b_{4,3} & b_{4,4}
-\end{pmatrix} = \\
+\end{pmatrix} = \notag\\
 \begin{pmatrix}
 %----------------------------------------
 \begin{pmatrix}
@@ -160,7 +160,7 @@ b_{4,1} & b_{4,2} & b_{4,3} & b_{4,4}
 \end{pmatrix} &
 \hdots \\
 \hdots & \hdots
-\end{pmatrix} = \\
+\end{pmatrix} = \notag\\
 \begin{pmatrix}
 %----------------------------------------
 \begin{pmatrix}
@@ -171,16 +171,16 @@ b_{4,1} & b_{4,2} & b_{4,3} & b_{4,4}
  a_{1,3} b_{3,1}+a_{1,4} b_{4,1} & \hdots \\
  \hdots & \hdots
 \end{pmatrix} &
-\hdots \\
+\hdots \notag\\
 \hdots & \hdots
-\end{pmatrix} = \\
+\end{pmatrix} = \notag\\
 \begin{pmatrix}
 \begin{pmatrix}
  a_{1,1} b_{1,1}+a_{1,2} b_{2,1}+a_{1,3} b_{3,1}+a_{1,4} b_{4,1} & \hdots \\
 \hdots & \hdots
 \end{pmatrix} &
 \hdots \\\hdots & \hdots
-\end{pmatrix}
+\end{pmatrix} \notag
 \end{align}
 
 Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice. Asymptotickou složitost rekurzivního algoritmu můžeme spočítat pomocí mistrovské metody.
@@ -191,26 +191,26 @@ Asymptotická složitost je samozřejmě stejná jako u algoritmu podle definice
     8T(n/2) + \Theta(1) & \quad \text{if $n$ > 1}
   \end{array} \right.\]
 
-Protože platí, že $a=8, b=2, r=\log_{2} 8, n^r=n^{\log_{2} 8}=n^3=\Omega(1)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-recursive}(n) = $\bigO(n^3)$.
+Protože platí, že $a=8, b=2, r=\log_{2} 8, n^r=n^{\log_{2} 8}=n^3=\Omega(1)$, tak asymptotická složitost podle mistrovské metody je \texttt{MMM-recursive}(n) = $\bigO(n^3)$.
 
 Kvůli režii rekurzivního dělení v praxi nezmenšujeme podmatice až na velikost jedna. Vhodný práh velikosti podmatice je například takový, co se vejde do L1 cache.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Strassenův algoritmus} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO}, ve kterém jako první představil algoritmus násobení dvou matic s menší asymptotickou složitostí než algotimus podle definice, tedy $O(n^3)$.
+V roce 1969 Volker Strassen v časopise Numerische Mathematik publikoval článek \cite{GEMnO}, ve kterém jako první představil algoritmus násobení dvou matic s menší asymptotickou složitostí než algoritmus podle definice, tedy $O(n^3)$.
 
-Algoritmus je založen na myšlence, že sčítání je operace méně náročnejší než operace násobení. Respektive dvě matice umíme sečíst nebo odečíst v složitosti $\bigO(n^2)$, ale vynásobit v $\bigO(n^3)$.
+Algoritmus je založen na myšlence, že sčítání je operace méně náročnější než operace násobení. Respektive dvě matice umíme sečíst nebo odečíst v složitosti $\bigO(n^2)$, ale vynásobit v $\bigO(n^3)$.
 
-Volker Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou matic $A$ a $B$ o velikosti dva a výslednou matici $C$ seskládal pomocí sedmi pomocných matic. Obrázek \ref{fig:StrVis} ukazuje, z čeho se pomocné matice skládají a jak jsou do výsledné matice seskládany. V ilustračních maticích o velikosti čtyři ukazujeme, které sčítance pomocná matice do výsledku přičítá a které odečítá. 
+Volker Strassen tedy využil jisté symetrie \cite{StrNat} v násobení dvou matic $A$ a $B$ o velikosti dva a výslednou matici $C$ seskládal pomocí sedmi pomocných matic. Obrázek \ref{fig:StrVis} ukazuje, z čeho se pomocné matice skládají a jak jsou do výsledné matice seskládány. V ilustračních maticích o velikosti čtyři ukazujeme, které sčítance pomocná matice do výsledku přičítá a které odečítá. 
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen}
-	\caption{Strassen (TODO: převzato z wikipedie: předělat?)}
+	\caption{Strassen (TODO: [predelat na vlastni, cernobilou verzi])}
 	\label{fig:StrVis}
 \end{figure}
 
-Zápis Strassenova algoritmu vypadá následnovně:	
+Zápis Strassenova algoritmu vypadá následovně:	
 
 \begin{align}
 A \cdot B = \begin{pmatrix}
@@ -219,21 +219,21 @@ A \cdot B = \begin{pmatrix}
 \end{pmatrix} \cdot \begin{pmatrix}
  B_{1,1} & B_{1,2} \\
  B_{2,1} & B_{2,2} \\
-\end{pmatrix} \\
-M_{1} = (A_{1,1} + A_{2,2}) \cdot (B_{1,1} + B_{2,2}) \\
-M_{2} = (A_{2,1} + A_{2,2}) \cdot B_{1,1} \\
-M_{3} = A_{1,1} \cdot (B_{1,2} - B_{2,2}) \\
-M_{4} = A_{2,2} \cdot (B_{2,1} - B_{1,1}) \\
-M_{5} = (A_{1,1} + A_{1,2}) \cdot B_{2,2} \\
-M_{6} = (A_{2,1} - A_{1,1}) \cdot (B_{1,1} + B_{1,2}) \\
-M_{7} = (A_{1,2} - A_{2,2}) \cdot (B_{2,1} + B_{2,2}) \\
+\end{pmatrix} \notag\\
+M_{1} = (A_{1,1} + A_{2,2}) \cdot (B_{1,1} + B_{2,2}) \notag\\
+M_{2} = (A_{2,1} + A_{2,2}) \cdot B_{1,1} \notag\\
+M_{3} = A_{1,1} \cdot (B_{1,2} - B_{2,2}) \notag\\
+M_{4} = A_{2,2} \cdot (B_{2,1} - B_{1,1}) \notag\\
+M_{5} = (A_{1,1} + A_{1,2}) \cdot B_{2,2} \notag\\
+M_{6} = (A_{2,1} - A_{1,1}) \cdot (B_{1,1} + B_{1,2}) \notag\\
+M_{7} = (A_{1,2} - A_{2,2}) \cdot (B_{2,1} + B_{2,2}) \notag\\
 C = \begin{pmatrix}
  M_{1} + M_{4} - M_{5} + M_{7} & M_{3} + M_{5} \\
  M_{2} + M_{4} & M_{1} - M_{2} + M_{3} + M_{6}
 \end{pmatrix}
 \end{align}
 
-V pseudokódu používáme procedury \texttt{offset-add} respektive \texttt{offset-sub}. Slouží ke sčítání respektive odečítání bloku prvků o velikosti n v maticích od nějakého offsetu \texttt{y} a \texttt{x}. Paremetry obou funkcí jsou: \texttt{offset-*}$(A,B,C,ay,ax,by,bx,cy,cx,n)$. 
+V pseudokódu používáme procedury \texttt{offset-add} respektive \texttt{offset-sub}. Slouží ke sčítání respektive odečítání bloku prvků o velikosti n v maticích od nějakého offsetu \texttt{y} a \texttt{x}. Parametry obou funkcí jsou: \texttt{offset-*}$(A,B,C,ay,ax,by,bx,cy,cx,n)$. 
 
 \begin{algorithm}[H]
 	\caption{Strassenův algoritmus}\label{mmm-strassen}
@@ -295,11 +295,11 @@ V každém kroku rekurze počítáme $\Theta(n^2)$ operací na vytvoření pomoc
     7T(n/2) + \Theta(n^2) & \quad \text{if $n$ > 1}
   \end{array} \right.\]
 
-Protože platí, že $a=7, b=2, r=\log_{2} 7, n^r=n^{\log_{2} 7}=\Omega(n^2)$, tak asymptotická složitost podle mistrovké metody je \texttt{MMM-strassen}(n) = $\bigO(n^{\log_{2} 7}) \approx \bigO(n^{2.8})$.
+Protože platí, že $a=7, b=2, r=\log_{2} 7, n^r=n^{\log_{2} 7}=\Omega(n^2)$, tak asymptotická složitost podle mistrovské metody je \texttt{MMM-strassen}(n) = $\bigO(n^{\log_{2} 7}) \approx \bigO(n^{2.8})$.
 
-Stejně jako v předešlém algorimu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme konkrétní desetinná čísla, abychom ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
+Stejně jako v předešlém algoritmu, i zde demonstrujeme výpočet levého horního prvku matice z násobení dvou matic o velikosti dva. Místo parametrické matice použijeme konkrétní desetinná čísla, abychom ukázali numerickou stabilitu Strassenova algoritmu. Pro ukázku budeme uvažovat počítač, který u čísel ukládá pouze pět cifer, znaménko a desetinnou čárku.	
 
-Pomocí algoritmu podle definice, by takový počítač vypočítal součin dvou matic následnovně:
+Pomocí algoritmu podle definice, by takový počítač vypočítal součin dvou matic následovně:
 
 \begin{align}
 \begin{pmatrix}
@@ -311,7 +311,7 @@ Pomocí algoritmu podle definice, by takový počítač vypočítal součin dvou
 \end{pmatrix} = \begin{pmatrix}
  27.392 & \hdots \\
  \hdots & \hdots
-\end{pmatrix}
+\end{pmatrix} \notag
 \end{align}
 
 Správný výsledek je $30.234 \times 0.8912 + 0.5678 \times 0.7891 = 26.9445408 + 0.44805098 = 27.39259178$.
@@ -325,27 +325,27 @@ Nyní výpočet provedeme pomocí Strassenova algoritmu:
 \end{pmatrix} \cdot \begin{pmatrix}
  0.8912 & 0.3456 \\
  0.7891 & 9.999
-\end{pmatrix} \\
-M_{1} = (30.234 + 10.456) \cdot (0.8912 + 9.999) = 443.12  \\
-\hdots \\
-M_{4} = 10.456 \cdot (0.7891 - 0.8912) = -1.067 \\
-M_{5} = (30.234 + 0.5678) \cdot 9.999 = 307.98 \\
-\hdots \\
-M_{7} = (0.5678 - 10.456) \cdot (0.7891 + 9.999) = -106.67 \\
+\end{pmatrix} \notag\\
+M_{1} = (30.234 + 10.456) \cdot (0.8912 + 9.999) = 443.12  \notag\\
+\hdots \notag\\
+M_{4} = 10.456 \cdot (0.7891 - 0.8912) = -1.067 \notag\\
+M_{5} = (30.234 + 0.5678) \cdot 9.999 = 307.98 \notag\\
+\hdots \notag\\
+M_{7} = (0.5678 - 10.456) \cdot (0.7891 + 9.999) = -106.67 \notag\\
  \begin{pmatrix}
  M_{1} + M_{4} - M_{5} + M_{7} & \hdots \\
  \hdots & \hdots
 \end{pmatrix} = \begin{pmatrix}
  27.403 & \hdots \\
  \hdots & \hdots
-\end{pmatrix}
+\end{pmatrix} \notag
 \end{align}
 
 % zdroj http://math.nist.gov/MatrixMarket/data/Harwell-Boeing/oilgen/orsirr_1.html
 
 Jak můžeme vidět, zatímco u algoritmu podle definice jsme pouze ztratili desetinnou přesnost, výsledek Strassenova algoritmu se lišil už v prvním desetinném čísle. 
 
-Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na velikost 1024) algoritmem podle definice a Strassenovým algoritmem s různýmy práhy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesenosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu \ref{fig:StrassenStability} je vidět exponencionální závislost mezi velikostí prahu a celkovou chybou.
+Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na velikost 1024) algoritmem podle definice a Strassenovým algoritmem s různými prahy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojté desetinné přesnosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu \ref{fig:StrassenStability} je vidět exponenciální závislost mezi velikostí prahu a celkovou chybou.
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen_stability}
@@ -353,7 +353,7 @@ Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment
 	\label{fig:StrassenStability}
 \end{figure}
 
-Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se říká Strassen-like \cite{DBLP:journals/iacr/CenkH13}. Pro sedm operací násobení je monžné snížit počet sčítání a odečítání. Pro jednoduchost zde ovšem uvádíme originalní algoritmus.
+Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se říká Strassen-like \cite{DBLP:journals/iacr/CenkH13}. Pro sedm operací násobení je možné snížit počet sčítání a odečítání. Pro jednoduchost zde uvádíme pouze originální algoritmus.
 
 \section{Rychlé algoritmy}
 
@@ -366,20 +366,25 @@ Hranicí nejlepší možné složitosti může být $\omega=2$, protože každý
 \section{Algoritmus podle definice upravený pro řídké matice}
 
 Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat násobení takových dvou prvků, z nichž je alespoň jeden nulový. Označme $nnzr_{M,i}$ jako počet nenulových prvků v i-tém řádku matice M a $nnzc_{M,i}$ jako počet nenulových prvků v i-tém sloupci matice M. Protože násobíme každý řádek s každým sloupcem, bude celkový počet operací násobení dán vzorcem:
+
+\begin{figure}[htb]
 \begin{align}
-\sum_{i=1}^{N} nnzr_{A,i} nnzc_{B,i}
+\sum_{i=1}^{n} nnzr_{A,i} nnzc_{B,i}
 \end{align}
+\end{figure}
+
 Složitost tohoto algoritmu pro násobení dvou matic $A$ a $B$ o velikosti $n$ tedy můžeme vyjádřit jako $O(mn)$, kde $m = max(nnz(A),nnz(B)$. Pro husté matice bez jediného nulového prvku samozřejmě platí, že $m=n^2$. Nutno podotknout, že $O(mn)$ je nejhorší případ, kdy se všechny nenulové prvky matice $A$ budou násobit se všemy nenulovými prvky matice $B$.
 
 Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se jedná o dvě matice orsirr\_1. Matice orsirr\_1 má velikost $n=1030$ a~$m=6858$ nnz. Rozmístění nnz před respektive po vynásobení ukazují obrázky \ref{fig:befOrsirr1} respektive \ref{fig:aftOrsirr1}.
 
-\begin{figure}[H]
+
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/orsirr_1_orig}
 	\caption{Matice orsirr\_1 před vynásobením}
 	\label{fig:befOrsirr1}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/orsirr_1_mul}
 	\caption{Matice orsirr\_1 po vynásobením sama se sebou}
 	\label{fig:aftOrsirr1}
@@ -390,9 +395,9 @@ Kdyby nastal nejhorší možný případ, počet operací násobení při použi
 \label{fast-sparse}
 \section{Rychlé násobení řídkých matic}
 
-Strassenův algoritmus $\omega=2.8$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega=2.3727$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $\bigO(mn)$. Například pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
+Strassenův algoritmus $\omega\approx2.807354$ od $nnz<n^{1.8}$ a algoritmus Virginie Williamsové $\omega<2.3727$ od $nnz<n^{1.37}$ jsou asymptoticky stejně rychlé jako algoritmus podle definice upravený pro řídké matice $\bigO(mn)$. Například pro $n=1000$ je tato hranice pro Strassenův algoritmus $251189$ (40 \%) nnz a pro algoritmus Virginie Williamsové $12882$ (78 \%) nnz z celkových možných $1000000$ prvků.
 
-Raphael Yuster a Uri Zwick ukázali algoritmus \cite{DBLP:journals/talg/YusterZ05} s asymptotickou složitostí $\bigO(m^{0.7}n^{1.2}+n^{2+o(1))}$, který rozdělí permutace řádků a sloupců na řídké a husté. Řídké permutace násobí algoritmem podle definice v úpravě pro řídké matice $\bigO(mn)$. Husté permutace vynásobí v té době nejznámějším nejrychlejším algoritmem a to od Dona Coppersmitha a Shmuela Winograda s asymptotickou složitostí $\omega=2.3$ \cite{DBLP:journals/jsc/CoppersmithW90}.
+Raphael Yuster a Uri Zwick ukázali algoritmus \cite{DBLP:journals/talg/YusterZ05} s asymptotickou složitostí $\bigO(m^{0.7}n^{1.2}+n^{2+o(1))}$, který rozdělí permutace řádků a sloupců na řídké a husté. Řídké permutace násobí algoritmem podle definice v úpravě pro řídké matice $\bigO(mn)$. Husté permutace vynásobí v té době nejznámějším nejrychlejším algoritmem a to od Dona Coppersmitha a Shmuela Winograda s asymptotickou složitostí $\omega=2.375477$ \cite{DBLP:journals/jsc/CoppersmithW90}.
 
 \section{Další algoritmy pro řídké matice}
 

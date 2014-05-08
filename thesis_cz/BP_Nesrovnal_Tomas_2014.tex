@@ -14,6 +14,8 @@
 \usepackage{amsmath} % advanced maths
 \usepackage{amssymb} % additional math symbols
 
+\hypersetup{unicode}
+
 \usepackage{dirtree} % directory tree visualisation
 
 % % list of acronyms
@@ -61,13 +63,13 @@
 \authorFN{Nesrovnal} %příjmení autora
 \authorWithDegrees{Tomáš Nesrovnal} %jméno autora včetně současných akademických titulů
 \supervisor{Ing. Ivan Šimeček, Ph.D}
-\acknowledgements{Děkuji vedoucímu práce Ing. Ivanu Šimečkovi, Ph.D. a bc.~Štefanu Šafárovi za cenné rady.}
-\abstractCS{V~několika větách shrňte obsah a přínos této práce v~češtině. Po přečtení abstraktu by se čtenář měl mít čtenář dost informací pro rozhodnutí, zda chce Vaši práci číst.}
-\abstractEN{Sem doplňte ekvivalent abstraktu Vaší práce v~angličtině.}
+\acknowledgements{Děkuji vedoucímu práce Ing. Ivanu Šimečkovi, Ph.D. za cenné rady. Bc.~Štefanu Šafárovi za korektury a poznámky.}
+\abstractCS{Tato práce popisuje formáty pro uložení řídkých matic COO, CSR, BSR, Quadtree a jeho modifikace v podobě snížení výšky stromu. Dále popisuje algoritmy pro násobení matic v těchto formátech. Součástí práce je i implementace těchto formátů a algoritmů v jazyce C a experimentální porovnání výkonnosti s teoretickými předpoklady.}
+\abstractEN{We describe sparse matrix storage formats COO, CSR, BSR, Quadtree and its modification in form of a lowering its height in this thesis. We also describe alogirthms for matrix multiplication in these formats. An implementation of these formats and algorithms in the C language with an experimental comparsion of measured results with theoretical assumptions is a part of this thesis too.}
 \placeForDeclarationOfAuthenticity{V~Praze}
 \declarationOfAuthenticityOption{4} %volba Prohlášení (číslo 1-6)
-\keywordsCS{Nahraďte seznamem klíčových slov v češtině oddělených čárkou.}
-\keywordsEN{Nahraďte seznamem klíčových slov v angličtině oddělených čárkou.}
+\keywordsCS{řídká matice, kvadrantový strom, násobení řídkých matic}
+\keywordsEN{sparse matrix, quadtree, sparse matrix multiplication}
 
 \begin{document}
 
@@ -75,7 +77,15 @@
 % \newacronym{FIT}{FIT}{Fakulta informa{\v c}n{\' i}ch technologi{\' i}}
 
 \begin{introduction}
-	%sem napište úvod Vaší práce
+
+Při řešení problémů často hledáme způsob, jak interpretovat data v takovém formátu, se kterým již umíme pracovat. Jedním z takových základních prvků je matice. V některých případech takové matice obsahují nemalý počet nulových prvků. Takové matice obecně nazýváme řídké a při práci s nimi této vlastnost využíváme.
+
+Binární operace násobení nad množinou matic patří mezi základní operace z lineární algebry. Pomocí násobení matic lze skládat lineární transformace. Tato operace najde uplatnění v mnohých vědeckých disciplínách.
+
+Formát uložení řídké matice má vliv na výkonnost násobení řídkých matic. V této práci popíšeme formáty COO, CSR, BSR, Quadtree a navrhneme modifikaci formátu Quadtree snížením výšky stromu. Implementujeme tyto formáty spolu s algoritmy pro násobení matic v těchto formátech a porovnáme teoretické předpoklady s naměřenými hodnotami.
+
+V první kapitole ukážeme některé příklady použití násobení řídkých matic v praxi a definujeme některé pojmy. Ve druhé kapitole ukážeme obecné algoritmy pro násobení matic a ve třetí kapitole popíšeme řídké formáty COO, CSR, BSR, Quadtree a jeho modifikaci a algoritmy pro násobení matic v těchto formátech. Ve čtvrté kapitole ukážeme některé současné programy pro práci s řídkými maticemi. V páté kapitole popíšeme naší implementaci a ukážeme naměřené hodnoty.
+
 \end{introduction}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -120,7 +130,7 @@
 
 \begin{conclusion}
 	%sem napište závěr Vaší práce
-	Zaver.
+	Závěr.
 \end{conclusion}
 
 \bibliographystyle{csn690}
