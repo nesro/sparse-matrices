@@ -76,16 +76,12 @@ void kat_init(kat_matrix_t **kat, int width, int height, int nnz, int sm_size) {
 //			ceil(
 //					(log((width * height) / (sm_size * sm_size))
 //							/ (double) log(KAT_K)));
-
 //	printf("_kat init h=%d w=%d height=%d\n", width, height, (*kat)->height);
-
-	// not really
+// not really
 //	assert(width < sm_size * KAT_N);
-
 //	_s_debugf(KAT_DEBUG,
 //			"initializing kat_matrix_t with: n=%d, nnz=%d, sm_size=%d, height=%d\n",
 //			width, nnz, sm_size, (*kat)->height);
-
 }
 
 /******************************************************************************/
@@ -156,6 +152,16 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x, int may_add) {
 #if KAT_DEBUG
 	int tmp_height = 0;
 #endif
+
+	/*
+	 * If we want the same node as in the previous call of this function,
+	 * return it from the "cache".
+	 */
+	if (kat->cache_node != NULL && /**/
+	kat->cache_y <= y && kat->cache_y + kat->sm_size > y && /**/
+	kat->cache_x <= x && kat->cache_x + kat->sm_size > x) {
+		return kat->cache_node;
+	}
 
 	/*
 	 * Pointer to a node. We'll use it to traverse through the tree.
@@ -315,6 +321,10 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x, int may_add) {
 	}
 
 	_s_debug(KAT_DEBUG, "returning the node\n");
+
+	kat->cache_y = sm_y;
+	kat->cache_x = sm_x;
+	kat->cache_node = *tmp_node;
 
 	return *tmp_node;
 }

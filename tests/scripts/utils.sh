@@ -18,6 +18,42 @@ function debug_print {
 
 #-------------------------------------------------------------------------------
 
+function gnuplot_bars {
+
+	file_in=$1
+	file_out=$2
+	to=$2
+
+	plot="plot '${file_in}.txt' using 2:xtic(1) ti col axes x1y2"
+	for (( i=3; i<$to; i++ )); do
+			plot+=", \"\" u $i ti col axes x1y2 "
+	done  
+
+	gnuplot <<__EOF__
+set term pdf monochrome
+set output '${file_out}.pdf'
+set boxwidth 0.9 absolute
+set style fill solid 1.00 border lt -1
+set key inside right top vertical Left noreverse noenhanced autotitles nobox
+#set style histogram clustered gap 1 title  offset character 0, 0, 0
+set style fill pattern
+set datafile missing '-'
+set style data histograms
+set xlabel "matrix"
+set ylabel "time [s]"
+set xtics border in scale 0,0 nomirror rotate by -45 offset character 0, 0, 0 autojustify
+set xtics norangelimit font ",8"
+set xtics ()
+set logscale y2
+unset ytics
+set y2tics mirror
+$plot
+__EOF__
+
+}
+
+#-------------------------------------------------------------------------------
+
 # We don't want to bother others. So we'll have 2 jobs max.
 function wait_for_slot {
 

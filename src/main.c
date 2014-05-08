@@ -215,6 +215,7 @@ int main(int argc, char *argv[]) {
 
 	if (verbose) {
 		printf("time_mul %lf\n", time_mul);
+		printf("a_n %d\n", vm_a->h);
 		printf("a_size %zu\n", vm_a->object_size);
 
 		if (format == KAT) {

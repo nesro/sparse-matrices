@@ -122,6 +122,11 @@ typedef struct kat_matrix {
 	int nodes_csr;
 	int nodes_den;
 
+	/* node cache */
+	int cache_y;
+	int cache_x;
+	kat_node_t *cache_node;
+
 	int sm_size;
 //	int height;
 	int blocks;
