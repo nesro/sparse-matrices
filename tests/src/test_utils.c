@@ -52,10 +52,10 @@ test_matrices_pair_t sparse_collection_vectors_pairs[] = {
 		{ "../test_matrices/generated/vector_dense256.mtx", 256, 256, 2796 }, /**/
 		}, /**/
 //
-		{ /**/
-		{ "../test_matrices/generated/1024sb.mtx", 1024, 1024, 2796 }, /**/
-		{ "../test_matrices/generated/vector_1024sb.mtx", 1024, 1024, 2796 }, /**/
-		}, /**/
+//		{ /**/
+//		{ "../test_matrices/generated/1024sb.mtx", 1024, 1024, 2796 }, /**/
+//		{ "../test_matrices/generated/vector_1024sb.mtx", 1024, 1024, 2796 }, /**/
+//		}, /**/
 //
 		{ { { 0 } } }, /**/
 };
@@ -98,10 +98,10 @@ test_matrices_pair_t sparse_collection_pairs[] = {
 		{ "../test_matrices/generated/dense256.mtx", 256, 256, 2796 }, /**/
 		}, /**/
 //
-		{ /**/
-		{ "../test_matrices/generated/1024sb.mtx", 1024, 1024, 2796 }, /**/
-		{ "../test_matrices/generated/1024sb.mtx", 1024, 1024, 2796 }, /**/
-		}, /**/
+//		{ /**/
+//		{ "../test_matrices/generated/1024sb.mtx", 1024, 1024, 2796 }, /**/
+//		{ "../test_matrices/generated/1024sb.mtx", 1024, 1024, 2796 }, /**/
+//		}, /**/
 //
 		{ { { 0 } } }, /**/
 };

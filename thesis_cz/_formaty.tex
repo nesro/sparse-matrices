@@ -88,6 +88,13 @@ V části s násobením již pole s \texttt{y} souřadnicemi nepotřebujeme. Lep
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Formát MatrixMarket}
+\label{mtxsubsect}
+
+MatrixMarket \cite{Boisvert:1997:MMW:265834.265854} je internetová sada matic s vlastním formátem pro uložení řídkých matic \texttt{.mtx}. Tato sada obsahuje skoro pět set matic z různých oblastí. Obsahuje i generátory řídkých matic, jejichž výstupy jsou matice různých vlastností.
+
+Formát MatrixMarket je velice podobný formátu COO. Navíc umožňuje nastavit matici jako symetrickou a uložit pouze její polovinu.
+
 \section{CSR - Compressed sparse row}
 
 Problém efektivnosti formátu COO pro větší množství prvků řeší formát CSR, česky komprimované řídké řádky. Formát CSR obsahuje pole $row\_pointers$, které ukládá informace o tom, kolik se v daném řádku nachází prvků, tedy to, co jsme si předpočítali v algoritmu \ref{coo-mmm}. K poli s hodnotami je další pole $col\_indices$, přiřazující ke každému prvku informaci o sloupci.

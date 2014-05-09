@@ -12,21 +12,20 @@
 #include "mmio.h"
 #include "mm_load.h"
 
+int cmp_item(const void * a, const void * b) {
+	return (((mm_item_t*) a)->value - ((mm_item_t*) b)->value);
+}
+
 mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 
 	mm_file_t *mm_file;
 	MM_typecode matcode;
 	FILE *f;
 	int i;
-	int j;
+
 	int is_symmetric;
 	int is_pattern;
 	int rounded_size;
-
-	/* for sort */
-	int swap_r;
-	int swap_c;
-	datatype_t swap_v;
 
 	if ((f = fopen(filename, "r")) == NULL) {
 		fdie("File %s doesn't exists. Exiting.\n", filename);
@@ -125,7 +124,12 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 	 * check whether the data are sorted or not */
 	/* WARN: this is O(n^2) */
 	if (is_symmetric) {
+#if 0
 		/* bubble sort */
+		int j;
+		int swap_r;
+		int swap_c;
+		datatype_t swap_v;
 		for (i = 0; i < (mm_file->nnz - 1); i++) {
 			for (j = 0; j < mm_file->nnz - i - 1; j++) {
 				if (mm_file->data[j].row > mm_file->data[j + 1].row) {
@@ -144,6 +148,9 @@ mm_file_t *mm_load(const char *filename, int round_to_power_2) {
 				}
 			}
 		}
+#else
+		qsort(mm_file->data, mm_file->nnz, sizeof(mm_item_t), cmp_item);
+#endif
 	}
 
 #if 0
