@@ -18,8 +18,8 @@ case $jobs_type in
 	matrices="test1 test2 test3 test4"
 	;;
 2)
-	matrix_dir="../test_matrices/matvec"
-	matrices="4" # 8blks twotone ship_003 TSOPF_RS_b678_c1 Dubcova2
+	matrix_dir="../test_matrices/final"
+	matrices="exdata_1" # 8blks twotone ship_003 TSOPF_RS_b678_c1 Dubcova2
 	mul_vector=1	
 	;;
 *)
