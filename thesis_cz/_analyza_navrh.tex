@@ -26,14 +26,8 @@ Wolfram Mathematica \cite{mathematica} je mocný výpočetní software. Práce v
 
 V této práci pomocí Wolfram Mathematicy vizualizujeme řídké matice z formátu \texttt{.mtx}, který bude popsán v \ref{MM}. Mathematica umí pracovat i s maticemi v souborech \texttt{.mtx.gz}, tedy komprimovanými soubory. Příkaz pro importování řídké matice a její vizualizaci je \texttt{Import["/var/tmp/matrix.mtx", "Graphics"]}, následné uložení matice lze provést například příkazem \\ \texttt{Export["/var/tmp/matrix.pdf", \%]} \cite{mathematicaMTX}.
 
-\section{Možnosti řešení}
+\section{Řešení implementace}
 
-Jedna z možných variant pro porovnání všech zvolených formátů byla doimplementovat formát Quadtree, respektive KAT do knihovny SciPy.sparse.
+Jedna z možných variant pro porovnání všech zvolených formátů byla doimplementovat formát Quadtree, respektive KAT do knihovny SciPy.sparse. Další možnost byla pokračovat v semestrální práci z předmětu Efektivní implementace algoritmů s tématem násobení matic ve formátu CSR.
 
-Další možnost byla pokračovat s semestrální práci z předmětu Efektivní implementace algoritmů s tématem násobení matic ve formátu CSR.
-
-\section{Zvolené řešení}
-
-Protože se v této práci zabýváme pouze vlivem uložení řídké matice pro operaci násobení, rozhodli jsme se vytvořit program jen pro tuto operaci. Obecná knihovna pro práci s řídkými maticemi, jakým například SciPy.sparse je, nemůže využít některých vlastností matic při jejich násobení. Hlavně zacházení s násobenými maticemi jako s konstantami.
-
-Navážeme tedy na semestrální práci. Vytvoříme více druhů matic a pro každou implementujeme operaci násobení s maticí a násobení s vektorem.
+Protože se v této práci zabýváme pouze vlivem uložení řídké matice pro operaci násobení, rozhodli jsme se vytvořit program pouze pro tuto operaci. Obecná knihovna pro práci s řídkými maticemi, jakým například SciPy.sparse je, nemůže využít některých vlastností matic při jejich násobení. Hlavně zacházení s násobenými maticemi jako s konstantami. Navíc pokud nebudou použity žádné jiné implementace, budou všechny algoritmy stejně optimalizované. Navážeme tedy na semestrální práci. Pro každý formát vytvoříme ve zdrojovém kódu třídu, v níž implementujeme operaci násobení s maticí a násobení s vektorem.

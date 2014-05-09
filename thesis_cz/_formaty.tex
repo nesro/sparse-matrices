@@ -90,7 +90,7 @@ V části s násobením již pole s \texttt{y} souřadnicemi nepotřebujeme. Lep
 
 \section{CSR - Compressed sparse row}
 
-Problém efektivnosti formátu COO pro větší množství prvků řeší formát CSR, česky komprimované řídké řádky. Formát CSR obsahuje pole $row\_pointers$, které ukládá informace o tom, kolik se v daném řádku nachází prvků, tedy to, co jsme si předpočítali v algoritmu \ref{coo-mmm}. K poli s hodnotami je další pole $col\_indicies$, přiřazující ke každému prvku informaci o sloupci.
+Problém efektivnosti formátu COO pro větší množství prvků řeší formát CSR, česky komprimované řídké řádky. Formát CSR obsahuje pole $row\_pointers$, které ukládá informace o tom, kolik se v daném řádku nachází prvků, tedy to, co jsme si předpočítali v algoritmu \ref{coo-mmm}. K poli s hodnotami je další pole $col\_indices$, přiřazující ke každému prvku informaci o sloupci.
 
 \begin{figure}[htb]\centering
 	\includegraphics[width=\textwidth]{./images/csr/csr}
@@ -151,12 +151,12 @@ Matici $A$ ve formátu BSR ukládáme, velice podobně jako u formátu CSR, pomo
 	\label{fig:BSR}
 \end{figure}
 
-Uložení matice ve formátu BSR ilustruje obrázek \ref{fig:BSR}. Pole $row\_pointers$ obsahuje informace o tom, na kterém řádku je kolik bloků. Na řádku $i$ je $row\_pointers[i+1] - row\_pointers[i]$ bloků. Ve kterém sloupci se blok prvků nachází udává pole $col\_indices$. První blok z řádku $i$ je ve sloupci $col\_indices[row\_pointers[i]]$ a poslední blok je ve sloupci $col\_indices[row\_pointers[i+1]]$. Pole $values$ obsahuje prvky v blocích, včetně nulových prvků.
+Uložení matice ve formátu BSR ilustruje obrázek \ref{fig:BSR}. Pole $row\_pointers$ obsahuje informace o tom, na kterém řádku je kolik bloků. Na řádku $i$ je $row\_pointers[i+1] - row\_pointers[i]$ bloků. Ve kterém sloupci se blok prvků nachází udává pole $col\_indices$. První blok z řádku $i$ je ve sloupci $col\_indices[$ $row\_pointers[i]]$ a poslední blok je ve sloupci $col\_indices[ row\_pointers[i+1] ]$. Pole $values$ obsahuje prvky v blocích, včetně nulových prvků.
 
-Pokud vezmeme algoritmus násobení dvou CSR matic respektive CSR matice s vektorem, jen místo prvků násobíme bloky, vznikne nám algoritmus pro násobení dvou BSR matric respektive BSR matice s vektorem. Za povšimnutí stojí větší počet for cyklů s menším rozsahem iterace než u CSR. To nám v nejvnitřnějších cyklech dovoluje lépe využívat cache. Jedná se tedy o přístup podobný optimalizační technice loop-tiling.
+Pokud vezmeme algoritmus násobení dvou CSR matic respektive CSR matice s vektorem, jen místo prvků násobíme bloky, vznikne nám algoritmus pro násobení dvou BSR matric respektive BSR matice s vektorem. Za povšimnutí stojí větší počet for cyklů s menším rozsahem iterace než u CSR. To nám v nejvnitřnějších cyklech dovoluje lépe využívat cache. Jedná se tedy o přístup podobný optimalizační technice loop tiling\cite{Wolf:1991:DLO:113445.113449}.
 
 \label{alg:bsr-mvm}
-\begin{algorithm}[htb]
+\begin{algorithm}[H]
 	\caption{Násobení matice BSR s vektorem}\label{bsr-mvm}
 	\begin{algorithmic}[1]
 		\Procedure{BSR-MVM}{A,B,C}
@@ -175,7 +175,7 @@ Pokud vezmeme algoritmus násobení dvou CSR matic respektive CSR matice s vekto
 \end{algorithm}
 
 \label{alg:bsr-mmm}
-\begin{algorithm}[htb]
+\begin{algorithm}[H]
 	\caption{Násobení dvou BSR matic}\label{bsr-mmm}
 	\begin{algorithmic}[1]
 		\Procedure{BSR-MMM}{A,B,C}
@@ -201,7 +201,7 @@ Paměťová složitost je závislá na počtu bloků $b$, velikosti bloků $bloc
 
 \section{Quadtree}
 
-Předchozí popsáné formáty uložení řídkých matic jsou velmi přímočaré. Neumožňují rekurzivní přístup, který je pro velké matice vhodnější. Tento problém řeší formát Quadtree \cite{JA_SNA_08_QUAD}\cite{qdtsf}. Jedná se o matici uloženou v 4-árním stromě.
+Předchozí popsáné formáty uložení řídkých matic jsou velmi přímočaré. Neumožňují rekurzivní přístup, který potřebný například pro Strassenův algoritmus. Tento problém řeší formát Quadtree \cite{JA_SNA_08_QUAD}\cite{qdtsf}. Jedná se o matici uloženou v 4-árním stromě.
 
 Tento formát dělí matici na čtvrtiny do té doby, než se dosáhne velikosti podmatice $sm\_size$. Pokud je celá čtvrtina prázdná, je uzel označen jako prázdný, $E$. Pokud obsahuje nějaké prvky, je list označen jako hustý, $D$. Vnitřní uzly jsou označeny jako smíšené, $M$.
 
@@ -217,31 +217,25 @@ Tento formát dělí matici na čtvrtiny do té doby, než se dosáhne velikosti
 	\label{fig:BSR}
 \end{figure}
 
-Algoritmy pro práci s formátem Quadtree budou ukázány v kapitole o obecnějším formátu \ref{katchapter}.
-
-% \section{?}
-%TODO: tady jsem chtel spocictat kdy  se vyplati mit ridkou matici, ale lepsi bude tabulka. Pokud například uložíme matici o %rozměrech 100x100 v dvojté přestnosti, bude zabírat \texttt{M x N x sizeof(double) = 100 x 100 x 8 = 80000B = 80kB}. Pokud zvolíme %řídký formát matice, kde ke každému elementu uložíme i jeho x a y souřadnici, tak do 80kB uložíme \texttt{80000 / %(sizeof(int)+sizeof(int)+sizeof(double)) = 80000/16= 5000} elementů. Pokud matice obsahuje více jak 50  \% nulových elementů, %vyplatí se nám ji uložit do řídkého formátu.
-
-%-----------------------------------------------------------------------------
-
-\label{katchapter}
-\chapter{Modifikace formátu quadtree}
-
-Protože formát Quadtree je 4-ární strom, jeho výška při reprezentaci matice o velikosti $n$ a při velikosti podmatice $sm\_size$ je:
-
-% n=1024 ss=128 height=3
-%
+Výška stromu Quadtree je při reprezentaci matice o velikosti $n$ a při velikosti podmatice $sm\_size$:
 
 \label{quadtreeheight}
 \begin{align}
 \Bigg\lceil\log_{4}\frac{n^2}{sm\_size^2}\Bigg\rceil
 \end{align}
 
+\label{quadexampl}
 Například pro matici o velikosti $n=16384$ s velikostí bloku $sm\_size=128$ je výška stromu $7$.
 
-\section{KAT - k-ary tree matrix}
+Algoritmy pro práci s formátem Quadtree budou ukázány v kapitole o obecnějším formátu \ref{katchapter}.
 
-V této práci navrhneme místo 4-árního stromu obecný $k$-ární strom. Výška stromu se tím sníží. Pro předchozí příklad by tedy pro 16-ární strom byla výška pouze $4$. Tento formát nazveme \texttt{k-ary tree matrix} se zkratkou KAT. Pro přehlednost nebudeme uvádět $k$, ale $KAT.n = sqrt(k)$. Formát Quadtree můžeme prohlásit za matici KAT s $KAT.n = 2$. Pro snadnější rekurzivní přístup budeme jako $n$ uvažovat pouze mocniny dvou.
+% \section{?}
+%TODO: tady jsem chtel spocictat kdy  se vyplati mit ridkou matici, ale lepsi bude tabulka. Pokud například uložíme matici o %rozměrech 100x100 v dvojté přestnosti, bude zabírat \texttt{M x N x sizeof(double) = 100 x 100 x 8 = 80000B = 80kB}. Pokud zvolíme %řídký formát matice, kde ke každému elementu uložíme i jeho x a y souřadnici, tak do 80kB uložíme \texttt{80000 / %(sizeof(int)+sizeof(int)+sizeof(double)) = 80000/16= 5000} elementů. Pokud matice obsahuje více jak 50  \% nulových elementů, %vyplatí se nám ji uložit do řídkého formátu.
+
+\section{Modifikace formátu quadtree}
+\label{katchapter}
+
+V této práci navrhujeme místo 4-árního stromu obecný $k$-ární strom. Výška stromu se tím sníží. Pro předchozí příklad \ref{quadexampl} by tedy pro 16-ární strom byla výška pouze $4$. Tento formát nazveme \texttt{k-ary tree matrix} se zkratkou KAT. Pro přehlednost nebudeme uvádět $k$, ale $KAT.n = sqrt(k)$. Formát Quadtree můžeme prohlásit za matici KAT s $KAT.n = 2$. Pro snadnější rekurzivní přístup budeme jako $KAT.n$ uvažovat pouze mocniny dvou.
 
 Výška stromu pro KAT matici označíme jako \texttt{KAT.height} a vypočítáme ji jako výšku Quadtree, jen s parametrem $k$:
 
@@ -252,53 +246,14 @@ KAT.height = \Bigg\lceil\log_{k}\frac{n^2}{sm\_size^2}\Bigg\rceil
 
 Pokud to bude z kontextu jasné, budeme výšku KAT stromu značit pouze $height$.
 
-\section{Typy listů}
+
+\subsection{Typy listů}
 
 KAT matice obsahuje proměnnou $KAT.dense\_treshold$, která udává maximální počet prvků, aby se s listem pracovalo některým z řídkých formátů, tedy COO, CSR, BSR. Při překročení této hranice je list uložen ve formátu husté matice, tedy bude obsahovat i nulové prvky.
 
 [TODO: ilustrace kat matrix]
 
-\section{Tvoření stromu}
-
-Pro každý prvek procházíme strom a hledáme správný list. Protože výška stromu je daná třemi parametry, tedy velikostí matice $n$, velikostí podmatice $sm\_size$ a počtu větvení uzlu $k$, nejefektivnější využití bude, pokud je $n$ bezezbytku dělitelné $k * sm\_size$. Pokud toto neplatí, rodiče listů budou mít část synů nevyužitých i při uložení husté matice.
-
-Protože se prvky do matice načítají po řádcích zleva doprava, je velká pravděpodobnost, že další načtený prvek bude patřit do stejného listu. Z tohoto důvodu si pamatujeme poslední list a pokud prvek patří do něj, vrátíme jej. 
-
-\label{alg:kat-create}
-\begin{algorithm}[htb]
-	\caption{Vyhledání listu pro KAT matici}\label{kat-create}
-	\begin{algorithmic}[1]
-		\Procedure{KAT-getNode}{KAT, y, x}
-		\If{ \{y, x\} $\in$ lastLeaf.area}
-			\State \texttt{return lastLeaf;}
-		\EndIf
-		\State \texttt{tmpNode $\gets$ KAT.root;}
-		\State \texttt{blockY $\gets$ 0;}\Comment{výřez matice}
-		\State \texttt{blockX $\gets$ 0;}
-		\State \texttt{blockS $\gets$ KAT.sm\_size;}
-		\\\Comment{až do předposledního vnitřního uzlu traverzujeme podle velikosti KAT.n}
-		\While{\texttt{blockS > (KAT.n * KAT.sm\_size)}}
-			\State \texttt{nodeY $\gets$ (y - blockY) / (blockS / KAT.n);}
-			\State \texttt{nodeX $\gets$ (x - blockX) / (blockS / KAT.n);}
-			\State \texttt{tmpNode $\gets$ tmpNode.childs[nodeY][nodeX];}
-			\State \texttt{blockY += nodeY * (blockS / KAT.n);}
-			\State \texttt{blockX += nodeX * (blockS / KAT.n);}
-			\State \texttt{blockS /= KAT.n;}
-		\EndWhile
-		\\\Comment{do posledního vnitnřního uzlu traverzujeme podle velikosti KAT.sm\_size}
-		\State \texttt{nodeY $\gets$ (y - blockY) / KAT.sm\_size;}
-		\State \texttt{nodeX $\gets$ (x - blockX) / KAT.sm\_size;}
-		\State \texttt{tmpNode $\gets$ tmpNode.childs[nodeY][nodeX];} 	
-		\\\Comment{nyní je tmpNode list}
-		\State \texttt{tmpNode.y $\gets$ $\lfloor$y / KAT.sm\_size$\rfloor$ * KAT.sm\_size ;}
-		\State \texttt{tmpNode.x $\gets$ $\lfloor$x / KAT.sm\_size$\rfloor$ * KAT.sm\_size ;}
-		\State \texttt{lastLeaf $\gets$ tmpNode;}
-		\State \texttt{return tmpNode;}
-		\EndProcedure
-	\end{algorithmic}
-\end{algorithm}
-
-\section{Násobení}
+\subsection{Násobení}
 
 Pro násobení budeme používat algoritmus rekurzivního násobení popsaného v \ref{RecMul}. Popsaný algoritmus dělí matice na čtvrtiny, jde tedy aplikovat na formát Quadtree. Při násobení matice uložené v $k$-árním stromě budeme násobit matici podmatic o velikosti $k$:
 
@@ -339,7 +294,7 @@ Pro násobení budeme používat algoritmus rekurzivního násobení popsaného 
 							\State \texttt{coninue;}
 						\EndIf
 						\If{\texttt{KAT\_node.childs[i][k].type = "inner"}}
-							\State \texttt{KAT-MMM(KATa,KATa\_node.childs[i][k], KATb,KATb\_node.childs[k][j] C);}
+							\State \texttt{KAT-MMM(KATa,KATa\_node.childs[i][k], KATb,KATb\_node.childs[k][j], C);}
 							\State \texttt{coninue;}
 						\EndIf
 					\EndIf
@@ -351,5 +306,7 @@ Pro násobení budeme používat algoritmus rekurzivního násobení popsaného 
 \end{algorithm}
 
 Přesnější asymptotická složitost násobení matic v KAT formátu je vyšší než u předchozích formátů, protože je potřeba připočítat průchod stromem. Pokud převedeme hustou matici do formátu KAT se složitostí násobení dvou listů \bigO($sm\_size^3$), bude asymptotická složitost násobení dvou KAT matic \bigO$((\frac{n^2}{sm\_size}*(height+sm\_size^3))$.
+
+\subsection{Paměťová složitost}
 
 Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu bez listů. Velikost uzlu je pole $k$ odkazů na syny. Počet vnitřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} * k)$

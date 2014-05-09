@@ -4,13 +4,13 @@
 
 Popsané algoritmy jsme implementovali v jazyce C99[todo: zdroj]. Implementace probíhala v operačním systému Lubuntu[todo: zdroj], v IDE Eclipse CDT[todo: zdroj]. Zdrojový kód byl kompilován pomocí překladače GNU C[todo: zdroj], s optimalizačním přepínačem \texttt{--Ofast}.
 
-K lazení chyb pro práci s pamětí jsme použili nástroj Valgrind[todo: zdroj] s přepínači \texttt{----leak--check=full ----show-reachable=yes}. Běžící progam jsme krokovali pomocí nástroje GNU Debugger[todo: zdroj]. Zdrojový kód pro lazení chyb byl kompilován s přepínači \texttt{--Wall --pedantic --Og --ggdb}.
+K lazení chyb pro práci s pamětí jsme použili nástroj Valgrind[todo: zdroj] s přepínači \texttt{----leak--check=full ----show-reachable=yes}. Běžící program jsme krokovali pomocí nástroje GNU Debugger[todo: zdroj]. Zdrojový kód pro lazení chyb byl kompilován s přepínači \texttt{--Wall --pedantic --Og --ggdb}.
 
 %-----------------------------------------------------------------------------
 
 \section{Design implementace}
 
-Protože matice mají některé vlastnosti stejné a lze s podobně pracovat, byl zvolen jednoduchý objektově orientovaný model \cite{schreiner1994objektorientierte}. Nadřazeným objektem je virtuální matice $vm_t$, obsahující virtuální tabulku funkcí.
+Protože matice mají některé vlastnosti stejné a lze s podobně pracovat, byl zvolen jednoduchý objektově orientovaný model \cite{schreiner1994objektorientierte}. Nadřazeným objektem je virtuální matice \texttt{vm\_t}, obsahující virtuální tabulku funkcí. Obrázek \ref{fig:uml} ukazuje jednoduchý návrh tříd v UML.
 	
 \begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/uml/uml}
@@ -18,7 +18,7 @@ Protože matice mají některé vlastnosti stejné a lze s podobně pracovat, by
 	\label{fig:uml}
 \end{figure}
 
-Výsledný program načte jednu, nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit, nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích.
+Program běží v příkazovém řádku bez GUI. Program načte jednu, nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit, nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích. Podrobnější popis nastavení programu je v příloze.
 
 %-----------------------------------------------------------------------------
 
@@ -28,7 +28,48 @@ U formátů COO, CSR, BSR je implementace přímočará podle pseudokódů. U im
 
 Jeden z důležitých parametrů je $k$, tedy maximální počet synů vnitřních uzlů. V naší implementaci je tento parametr uložen v konstantě \texttt{KAT.n}, pro připomenutí $KAT.n = sqrt(k)$. Překladač poté cykly, kde iterujeme do této konstanty, rozbalí. Překladači i explicitně sdělujeme, ať cykly rozbalí přes atribut \texttt{\_\_attribute\_\_((optimize("unroll-loops")))}.
 
-V bakalářské práci Rozšíření implementace formátu kvadrantového stromu od Tomáše Karabely [CITACE] je Quadtree implementován jako strom, jehož listy tvoří virtuální matice podobným těm v naší práci. Protože jeho formát byl určený pro algoritmus LU rozklad, jeho virtuální matice musely umět přijímat i další prvky. Protože v naší práci se s formáty uložení řídké matice zachází jako s konstantami, rozhodli jsme se hodnoty prvků a informace v polích \texttt{row\_pointers} a \texttt{col\_indices} uložit mimo listy stromu. V listech se nachází ukazatel do velkého pole na příslušné místo pro daný list. Ušetříme tak práci knihovně libc s mnohonásobným volání funkce \texttt{malloc}.
+V bakalářské práci Rozšíření implementace formátu kvadrantového stromu od Tomáše Karabely[todo: zdroj] je Quadtree implementován jako strom, jehož listy tvoří virtuální matice podobným těm v naší práci. Protože jeho formát byl určený pro algoritmus LU rozklad, jeho virtuální matice musely umět přijímat i další prvky. Protože v naší práci se s formáty uložení řídké matice zachází jako s konstantami, rozhodli jsme se hodnoty prvků a informace v polích \texttt{row\_pointers} a \texttt{col\_indices} uložit mimo listy stromu. V listech se nachází ukazatel do velkého pole na příslušné místo pro daný list. Ušetříme tak práci knihovně libc s mnohonásobným volání funkce \texttt{malloc}
+
+\subsection{Tvoření stromu}
+
+Při tvoření matice v KAT formátu, pro každý prvek procházíme strom a hledáme správný list. Protože výška stromu je daná třemi parametry, tedy velikostí matice $n$, velikostí podmatice $sm\_size$ a počtu větvení uzlu $k$, nejefektivnější využití bude, pokud je $n$ bezezbytku dělitelné $k * sm\_size$. Pokud toto neplatí, rodiče listů budou mít část synů nevyužitých i při uložení husté matice. Protože se prvky do matice načítají po řádcích zleva doprava, je velká pravděpodobnost, že další načtený prvek bude patřit do stejného listu. Z tohoto důvodu si pamatujeme poslední list a pokud prvek patří do něj, vrátíme jej. Algoritmus \ref{kat-create} ukazuje, jakým způsobem vyhledáváme list pro prvek.
+
+
+\label{alg:kat-create}
+\begin{algorithm}[htb]
+	\caption{Vyhledání listu pro KAT matici}\label{kat-create}
+	\begin{algorithmic}[1]
+		\Procedure{KAT-getNode}{KAT, y, x}
+		\If{ \{y, x\} $\in$ lastLeaf.area}
+			\State \texttt{return lastLeaf;}
+		\EndIf
+		\State \texttt{tmpNode $\gets$ KAT.root;}
+		\State \texttt{blockY $\gets$ 0;}\Comment{výřez matice}
+		\State \texttt{blockX $\gets$ 0;}
+		\State \texttt{blockS $\gets$ KAT.sm\_size;}
+		\\\Comment{až do předposledního vnitřního uzlu traverzujeme podle velikosti KAT.n}
+		\While{\texttt{blockS > (KAT.n * KAT.sm\_size)}}
+			\State \texttt{nodeY $\gets$ (y - blockY) / (blockS / KAT.n);}
+			\State \texttt{nodeX $\gets$ (x - blockX) / (blockS / KAT.n);}
+			\State \texttt{tmpNode $\gets$ tmpNode.childs[nodeY][nodeX];}
+			\State \texttt{blockY += nodeY * (blockS / KAT.n);}
+			\State \texttt{blockX += nodeX * (blockS / KAT.n);}
+			\State \texttt{blockS /= KAT.n;}
+		\EndWhile
+		\\\Comment{do posledního vnitnřního uzlu traverzujeme podle velikosti KAT.sm\_size}
+		\State \texttt{nodeY $\gets$ (y - blockY) / KAT.sm\_size;}
+		\State \texttt{nodeX $\gets$ (x - blockX) / KAT.sm\_size;}
+		\State \texttt{tmpNode $\gets$ tmpNode.childs[nodeY][nodeX];} 	
+		\\\Comment{nyní je tmpNode list}
+		\State \texttt{tmpNode.y $\gets$ $\lfloor$y / KAT.sm\_size$\rfloor$ * KAT.sm\_size ;}
+		\State \texttt{tmpNode.x $\gets$ $\lfloor$x / KAT.sm\_size$\rfloor$ * KAT.sm\_size ;}
+		\State \texttt{lastLeaf $\gets$ tmpNode;}
+		\State \texttt{return tmpNode;}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Násobení listů matice KAT}
 
 Protože dovolujeme dva druhy listů, tedy hustý a řídký ve formátu CSR, bylo potřeba implementovat následující algoritmy:
 
@@ -41,7 +82,7 @@ Protože dovolujeme dva druhy listů, tedy hustý a řídký ve formátu CSR, by
   \item CSR list $\cdot$ vektor
 \end{enumerate}
 
-Protože tyto algoritmy jsou velice podobné již popsaným algoritmům, ukážeme zde pro představu násobení CSR listu s hustým listem.
+Protože tyto algoritmy jsou velice podobné již popsaným algoritmům \ref{algo}, ukážeme zde pouze násobení CSR listu s hustým listem.
 
 \begin{algorithm}[htb]
 	\caption{Násobení hustého KAT listu s CSR listem}\label{kat-mmm-den-csr}
@@ -161,8 +202,11 @@ Generátory z MatrixMarketu běží v internetovém prohlížeči a v jazyce Jav
 
 
 
-
-
 \section{Měření}
 
+Měření probíhalo na serveru \texttt{star.fit.cvut.cz}.
+
 TODO: popsat jak a kde to budu měřit, cas z omp a cachegrind/callgrind/velikost struktur/pocet uzlu ve strome, zrychleni oproti csr*csr>den, mensi velikost oproti den
+
+\section{Zhodnocení}
+
