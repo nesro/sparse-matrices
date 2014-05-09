@@ -2,8 +2,19 @@
 # Tomas Nesrovnal, nesro@nesro.cz, Copyright 2014
 # https://github.com/nesro/sparse-matrices
 
-file=$1
+file=${1%%.*}
 to=$2
+
+logscale=${3:-0}
+
+xlabel=${4:-"xlabel"}
+ylabel=${5:-"ylabel"}
+
+if [[ $logscale = 0 ]]; then
+	logscale_str=""
+else
+	logscale_str="set logscale y2"
+fi
 
 plot="plot '${file}.txt' using 2:xtic(1) ti col axes x1y2"
 for (( i=3; i<$to; i++ )); do
@@ -20,12 +31,12 @@ set key inside right top vertical Left noreverse noenhanced autotitles nobox
 set style fill pattern
 set datafile missing '-'
 set style data histograms
-set xlabel "matrix"
-set ylabel "time [s]"
+set xlabel "$xlabel"
+set ylabel "$ylabel"
 set xtics border in scale 0,0 nomirror rotate by -45 offset character 0, 0, 0 autojustify
 set xtics norangelimit font ",8"
 set xtics ()
-set logscale y2
+$logscale_str
 unset ytics
 set y2tics mirror
 $plot
