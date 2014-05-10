@@ -178,7 +178,7 @@ done
 
  ./tests/scripts/gnuplot.sh $tmpdir/mmm-speedup.txt 8 0 "formát matice" "zrychlení oproti CSR"
  ./tests/scripts/gnuplot.sh $tmpdir/mvm-speedup.txt 8 0 "formát matice" "zrychlení oproti CSR" 1
- ./tests/scripts/gnuplot.sh $tmpdir/ram-up.txt 8 1 "formát matice" "% velikost husté matice"
+ ./tests/scripts/gnuplot.sh $tmpdir/ram-up.txt 8 1 "formát matice" "% velikost husté matice" 1
  
  ls  $tmpdir/kat_nodes* | xargs -i ./tests/scripts/gnuplot.sh {} 8 1 "formát matice" "počet uzlů"
  

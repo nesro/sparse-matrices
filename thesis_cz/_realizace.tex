@@ -250,45 +250,44 @@ Graf \ref{fig:mtxsize} ukazuje v bytech přesnou velikost datových struktur mat
 	\label{fig:mtxsize}
 \end{figure}
 
-\subsection{Počet uzlů v KAT}
+\subsection{Počet uzlů v matici KAT}
 
-Následující grafy ukazují počet uzlů ve stromě a jejich druh.
+Grafy \ref{fig:mtxsizeEX6} \ref{fig:mtxsizeexdata} \ref{fig:mtxsizefp} \ref{fig:mtxsizegupta} \ref{fig:mtxsizeheart} \ref{fig:mtxsizehuman} ukazují počet uzlů ve stromě a jejich druh.
 
-
-\begin{figure}[H]
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_EX6}
 	\caption{Počet uzlů v matici KAT pro uložení matice EX6}
-	\label{fig:mtxsize}
+	\label{fig:mtxsizeEX6}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_exdata-1}
 	\caption{Počet uzlů v matici KAT pro uložení matice exdata-1}
-	\label{fig:mtxsize}
+	\label{fig:mtxsizeexdata}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_fp}
 	\caption{Počet uzlů v matici KAT pro uložení matice fp}
-	\label{fig:mtxsize}
+	\label{fig:mtxsizefp}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_gupta3}
 	\caption{Počet uzlů v matici KAT pro uložení matice gupta3}
-	\label{fig:mtxsize}
+	\label{fig:mtxsizegupta}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_heart1}
 	\caption{Počet uzlů v matici KAT pro uložení matice heart1}
-	\label{fig:mtxsize}
+	\label{fig:mtxsizeheart}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_human-gene2}
 	\caption{Počet uzlů v matici KAT pro uložení matice human-gene2}
-	\label{fig:mtxsize}
+	\label{fig:mtxsizehuman}
 \end{figure}
 
 
@@ -298,4 +297,12 @@ Následující grafy ukazují počet uzlů ve stromě a jejich druh.
 
 \section{Zhodnocení výsledků}
 
+Matice ve formátu BSR dosahovaly velmi špatných výsledků, protože	 její bloky jsou pouze husté. V případě větších bloků s menším počtem nulových prvků tak dochází jak k ukládání těchto nulových prvků zbytečně, tak se tím zpomalí výpočet.
 
+Největším zlepšením byla matice KAT pro matici exdata-1 \cite{mtxexdata}, kde se výpočet zrychlil o více než dvojnásobek. Důvodem bylo efektivní rozdělení matice na husté a řídké části. I paměťová velikost byla srovnatelná s formátem CSR.
+
+U matic, kde není nějaký vzor ve formě bloků, například u matice EX6 \cite{mtxex}, byl formát CSR rychlejší ve všech případech. K za povšimnutí také stojí, že v základním nastavení programu nebyl v matici KAT zvolen pro tuto matici ani jeden hustý list.
+
+Ani jeden hustý list nebyl nebyl zvolen ani pro matici human\_gene2 \cite{mtxhuman}. Vzhledem k její hustotě a velikosti ale pro velké CSR bloky 128 a 256 díky časové a prostorové lokalitě \cite{cachelocal} výsledky lepší než v obyčejném CSR.
+
+Přestože se s větším $k$ u KAT matic výrazně snížil počet vnitřních uzlů, tak se celková datová velikost matice výrazně zvýšila. Důvodem je velikost uzlu, která obsauje $k^2$ ukazatelů na syny. 
