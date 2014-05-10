@@ -207,50 +207,93 @@ Měření probíhalo na serveru \texttt{star.fit.cvut.cz}. Měřené parametry b
   \item Velikost datových struktur matic
 \end{enumerate}
 
+V grafech značíme matici KAT jako $KAT.n kat block\_size$. Matici BSR jako $bsr block\_size$. 
 
-\begin{table}
+Pro měření výsledků byly použity následující matice:
+
+\begin{table}[H]
    \begin{tabular}{llllll}
-    Skupina    & Název matice & Řádků & Sloupců & Nenulových prvků            & Druh                  \\
+    Skupina    & Název matice & Velikost & Nenulových prvků            & Oblast                  \\
     \hline
-    GHS\_indef & exdata\_1 \cite{mtxexdata}    & 6001  & 6001    & 2.269500 $\cdot 10^6$ & optimalizační problém \\
-    Norris     & heart1 \cite{mtxheart}       & 3557  & 3557    & 1.385317 $\cdot 10^6$ & 2D/3D problém         \\
-%    ~          & ~            & ~     & ~       & ~                           & ~                     \\
+    GHS\_indef 	& exdata\_1 \cite{mtxexdata}    &  6001    & 2.269500 $\cdot 10^6$ & optimalizace \\
+    Norris     	& heart1 \cite{mtxheart}       & 3557    & 1.385317 $\cdot 10^6$ & 2D/3D          \\
+    Gupta     	& gupta3 \cite{mtxgupta}       &  16783    & 9323427 $\cdot 10^6$ & optimalizace         \\
+    JGD\_SPG    	& EX6 \cite{mtxex}       & 6545     & 2.95680 $\cdot 10^5$ & kombinatorika \\
+    MKS     		& fp \cite{mtxfp}       & 7548     & 8.34222 $\cdot 10^5$ & elektromagnetika         \\
+    Belcastro   	& human-gene2 \cite{mtxhuman}        & 14340    & 1.8068388 $\cdot 10^7$ & graf         \\
     \end{tabular}
 \end{table}
 
-\begin{sidewaysfigure}
+\subsection{Rychlost výpočtu}
+
+Graf \ref{fig:mmmspeed} ukazuje zrychlení výpočtu na ukázkových matic oproti násobení ve formátu CSR. Graf \ref{fig:mvmspeed} ukazuje stejný případ pro operaci násobení matice vektorem.
+
 \begin{figure}[H]
-	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_nodes}
-	\caption{Počet uzlů v matici formátu KAT}
-	\label{fig:generatedMtx}
+	\includegraphics[width=1.0\textwidth]{./images/measure1/mmm-speedup}
+	\caption{Zrychlení výpočtu matice $\cdot$ matice oproti formátu CSR}
+	\label{fig:mmmspeed}
 \end{figure}
-\end{sidewaysfigure}
 
-
-\begin{sidewaysfigure}
 \begin{figure}[H]
-	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_speedup}
-	\caption{Zrychlení výpočtu při násobení matice maticí}
-	\label{fig:generatedMtx}
+	\includegraphics[width=1.0\textwidth]{./images/measure1/mvm-speedup}
+	\caption{Zrychlení výpočtu matice $\cdot$ vektor oproti formátu CSR}
+	\label{fig:mvmspeed}
 \end{figure}
-\end{sidewaysfigure}
 
-\begin{sidewaysfigure}
-\begin{figure}[H]
-	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_speedupmvm}
-	\caption{Zrychlení výpočtu při násobení matice vektorem}
-	\label{fig:generatedMtx}
-\end{figure}
-\end{sidewaysfigure}
+\subsection{Velikost datových struktur}
 
-\begin{sidewaysfigure}
+Graf \ref{fig:mtxsize} ukazuje v bytech přesnou velikost datových struktur matic v porovnání proti uložení matice v hustém formátu. Pro každý prvek bylo potřeba 8B dat, respektive prvky byly uloženy v proměnné typu double.
+
 \begin{figure}[H]
-	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_ramup}
+	\includegraphics[width=1.0\textwidth]{./images/measure1/ram-up}
 	\caption{Velikost datových struktur}
-	\label{fig:generatedMtx}
+	\label{fig:mtxsize}
 \end{figure}
-\end{sidewaysfigure}
 
+\subsection{Počet uzlů v KAT}
+
+Následující grafy ukazují počet uzlů ve stromě a jejich druh.
+
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_EX6}
+	\caption{Počet uzlů v matici KAT pro uložení matice EX6}
+	\label{fig:mtxsize}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_exdata-1}
+	\caption{Počet uzlů v matici KAT pro uložení matice exdata-1}
+	\label{fig:mtxsize}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_fp}
+	\caption{Počet uzlů v matici KAT pro uložení matice fp}
+	\label{fig:mtxsize}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_gupta3}
+	\caption{Počet uzlů v matici KAT pro uložení matice gupta3}
+	\label{fig:mtxsize}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_heart1}
+	\caption{Počet uzlů v matici KAT pro uložení matice heart1}
+	\label{fig:mtxsize}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/measure1/kat_nodes_human-gene2}
+	\caption{Počet uzlů v matici KAT pro uložení matice human-gene2}
+	\label{fig:mtxsize}
+\end{figure}
+
+
+% \begin{sidewaysfigure}
+% \end{sidewaysfigure}
 
 
 \section{Zhodnocení výsledků}

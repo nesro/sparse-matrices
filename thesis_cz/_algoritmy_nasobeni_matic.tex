@@ -45,7 +45,7 @@ Pokud nám formát uložení matice nedovolí procházet prvky po sloupcích, je
 	\For{\texttt{$rowB\gets0$\TO$B.height$}}\Comment{sloupce}
 		\State \texttt{$sum \gets 0;$}
 		\For{\texttt{$i\gets0$\TO$A.height$}}
-			\State \texttt{$sum $ += $ A[rowA][i] * B[i][rowB];$}
+			\State \texttt{$sum $ += $ A[rowA][i] * B[rowB][i];$}
 		\EndFor
 		\State \texttt{$C[rowA][rowB] \gets sum;$}
 	\EndFor

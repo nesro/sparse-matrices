@@ -19,7 +19,7 @@ case $jobs_type in
 	;;
 2)
 	matrix_dir="../test_matrices/final"
-	matrices="gupta3" #appu" #human_gene2" # c8_mat11_I" #heart1" #exdata_1" # 8blks twotone ship_003 TSOPF_RS_b678_c1 Dubcova2
+	matrices="fp EX6" # gupta3" #appu" #human_gene2" # c8_mat11_I" #heart1" #exdata_1" # 8blks twotone ship_003 TSOPF_RS_b678_c1 Dubcova2
 	mul_vector=1	
 	;;
 *)
