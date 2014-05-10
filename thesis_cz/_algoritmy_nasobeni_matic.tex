@@ -28,7 +28,7 @@ Základním algoritmem násobení dvou matic je podle definice. Ve třech for cy
 	\end{algorithmic}
 \end{algorithm}
 
-Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N$ sčítaní. Asymptotická složitost je tedy $\bigO(n^2(n + n))$ = $\bigO(2n^3)$. V ukázkových výpočtech je násobení pouze $N-1$ krát, to proto, že neuvádíme přičítání k nule (řádek 6).
+Z pseudokódu je vidět, že ve dvou for cyklech provádíme $N$ násobení a $N$ sčítaní. Asymptotická složitost je tedy $\bigO(n^2(n + n))$ = $\bigO(n^3)$. V ukázkových výpočtech je násobení pouze $N-1$ krát, to proto, že neuvádíme přičítání k nule (řádek 6).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -370,7 +370,7 @@ Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat n�
 
 \begin{figure}[htb]
 \begin{align}
-\sum_{i=1}^{n} nnzr_{A,i} nnzc_{B,i}
+\sum_{i=1}^{n} nnzr_{A,i} \cdot nnzc_{B,i}
 \end{align}
 \end{figure}
 

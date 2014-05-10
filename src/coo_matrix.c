@@ -11,6 +11,7 @@
 
 #include "utils.h"
 #include "mmio.h"
+#include "mm_load.h"
 #include "coo_matrix.h"
 
 static vm_vmt_t coo_vmt = { /**/
@@ -216,52 +217,21 @@ double coo_mul(const coo_matrix_t *a, const vm_t *b, vm_t **c,
 double coo_from_mm(coo_matrix_t **coo, const char *filename,
 		va_list va /* unused */) {
 
-	MM_typecode matcode;
-	FILE *f;
 	int i;
-	int M;
-	int N;
-	int nz;
-	int success;
+	mm_file_t *mm_file;
 
-	if ((f = fopen(filename, "r")) == NULL) {
-		fprintf(stderr, "File %s doesn't exists. Exiting.\n", filename);
-		exit(1);
+	/* XXX: FIXME: ssh! - for test purposes of course (8 */
+	mm_file = mm_load(filename, 1);
+
+	coo_init(coo, mm_file->width, mm_file->height, mm_file->nnz); /* N=width, M=height */
+
+	for (i = 0; i < mm_file->nnz; i++) {
+		(*coo)->r[i] = mm_file->data[i].row;
+		(*coo)->c[i] = mm_file->data[i].col;
+		(*coo)->v[i] = mm_file->data[i].value;
 	}
 
-	if (mm_read_banner(f, &matcode) != 0) {
-		printf("Could not process Matrix Market banner.\n");
-		exit(1);
-	}
-
-	if (mm_is_complex(matcode) && mm_is_matrix(matcode) && mm_is_sparse(matcode)) {
-		printf("Sorry, this application does not support ");
-		printf("Market Market type: [%s]\n", mm_typecode_to_str(matcode));
-		exit(1);
-	}
-
-	if (mm_read_mtx_crd_size(f, &M, &N, &nz) != 0) {
-		perror("mm_read_mtx_crd_size");
-		exit(1);
-	}
-
-	coo_init(coo, N, M, nz); /* N=width, M=height */
-
-	for (i = 0; i < nz; i++) {
-		/* TODO: make better error */
-		if ((success = fscanf(f, "%d %d "DPF"\n", &(*coo)->r[i], &(*coo)->c[i],
-						&(*coo)->v[i])) != 2) {
-			/*printf("ounou: %d\n", success);*/
-
-		}
-
-		/* BI-EIA: adjust from 1-based to 0-based because of Matrix Market */
-		(*coo)->r[i]--;
-		(*coo)->c[i]--;
-	}
-
-	if (f != stdin)
-		fclose(f);
+	mm_free(mm_file);
 
 	return 1.;
 }

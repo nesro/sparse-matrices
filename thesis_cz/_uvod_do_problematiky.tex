@@ -36,7 +36,7 @@ Jako příklad simulace můžeme uvést metodu konečných prvků \cite{4020926}
 % http://ocw.mit.edu/courses/materials-science-and-engineering/3-11-mechanics-of-materials-fall-1999/modules/fea.pdf
 % http://engineering.dartmouth.edu/~d22888z/documents/EIT_Bath_2011_v2.pdf
 
-Násobení matice maticí má menší praktické využití než násobení matice vektorem. V praxi ale můžeme složit více vektorů v jednu matici a tím si zrychlit výpočet. To se obzvlášť hodí pro real-time aplikace.
+Pokud potřebujeme vynásobit jednu matici s více vektory, můžeme vektory složit do matice a provést násobení matice s maticí. To se hodí například v real-time aplikacích.
 
 %psal to tady: http://www.researchgate.net/post/Could_anybody_tell_me_some_models_or_applications_in_which_Sparse_Matrix_Matrix_Products_are_required3
 %ale dava to smysl
@@ -73,7 +73,7 @@ Matici \textbf{V} typu (1, n) nazveme vektorem.
 Buď \textbf{A} matice typu ($m$,$n$) s prvky $a_{i,j}$ a \textbf{B} matice typu ($n$,$p$) s prvky $b_{j,k}$. Definujeme součin matic $\mathbf{A} \cdot \mathbf{B}$ jako matici \textbf{C} typu ($m$,$p$) s prvky $c_{i,k}$ které vypočteme jako:
 
 \begin{align}
-c_{row,col}=\sum_{k=1}^{N} a_{row,k} b_{k,col}
+c_{row,col}=\sum_{k=1}^{N} a_{row,k} \cdot b_{k,col}
 \end{align}
 
 Výsledek součinu matic se nezmění, pokud matice doplníme o~libovolný počet nulových řádků a~nebo sloupců. Této vlastnosti můžeme využít pro získání potřebných rozměrů:

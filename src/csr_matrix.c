@@ -95,7 +95,6 @@ void csr_from_mm(csr_t **csr, const char *mm_filename, va_list va) {
 	int dest;
 	int last;
 
-	/* XXX: FIXME: ssh! - for test purposes of course (8 */
 	mm_file = mm_load(mm_filename, 1);
 
 	csr_init(csr, mm_file->width, mm_file->height, mm_file->nnz);

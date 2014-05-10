@@ -42,7 +42,7 @@ Pro ukázku v tomto formátu uložíme matici o velikosti $n=8$ s $nnz=5$ nenulo
 
 Jak můžeme vidět, délka polí je závislá pouze na $nnz$. Pro velké matice s malým počtem neuspořádaných nenulových prvků je tento formát velmi efektivní. Pokud by bylo prvků velké množství, informace o uložení \texttt{y} nebo \texttt{x} souřadnic by byla často redundantní.
 
-Paměťová náročnost formátu COO je $O(3*nnz)$.
+Paměťová náročnost formátu COO je $O(3 \cdot nnz)$.
 
 Formát COO je velmi jednoduchý a přímočarý. Při procházení jeho prvků nám stačí jedna iterace přes tři stejně dlouhé pole. Tím je tedy například algoritmus násobení řídké matice ve formátu COO s vektorem velmi jednoduchý:
 
@@ -140,7 +140,7 @@ Násobení dvou CSR matic je stejné jak v případě násobení dvou COO matic 
 	\end{algorithmic}
 \end{algorithm}
 
-Pro uložení matice ve formátu CSR potřebujeme pole o velikost $n + 1$ pro uložení informací o řádcích a $2 * nnz$ pro prvky a jejich sloupce. Paměťová složitost formátu CSR je \bigO($ n+1 + 2*nnz $). 
+Pro uložení matice ve formátu CSR potřebujeme pole o velikost $n + 1$ pro uložení informací o řádcích a $2 \cdot nnz$ pro prvky a jejich sloupce. Paměťová složitost formátu CSR je \bigO($ n+1 + 2 \cdot nnz $). 
 
 Existuje varianta tohoto formátu, nazvaná CSC - compressed sparse columns, která místo ukládání řádku ukládá sloupce.
 
@@ -204,7 +204,7 @@ Pokud vezmeme algoritmus násobení dvou CSR matic respektive CSR matice s vekto
 	\end{algorithmic}
 \end{algorithm}
 
-Paměťová složitost je závislá na počtu bloků $b$, velikosti bloků $block\_size$ a počtu řádek matice $n$. Pole $row\_pointers$ má velikost $n+1$, pole $col\_indices$ má velikost $b$ a pole hodnot $values$ má velikost $b * sm\_size^2$. Celková velikost matice uložené ve formátu BSR je \bigO$(n + b + b * sm\_size^2)$. 
+Paměťová složitost je závislá na počtu bloků $b$, velikosti bloků $block\_size$ a počtu řádek matice $n$. Pole $row\_pointers$ má velikost $n+1$, pole $col\_indices$ má velikost $b$ a pole hodnot $values$ má velikost $b \cdot sm\_size^2$. Celková velikost matice uložené ve formátu BSR je \bigO$(n + b + b \cdot sm\_size^2)$. 
 
 \section{Quadtree}
 
@@ -312,8 +312,8 @@ Pro násobení budeme používat algoritmus rekurzivního násobení popsaného 
 	\end{algorithmic}
 \end{algorithm}
 
-Přesnější asymptotická složitost násobení matic v KAT formátu je vyšší než u předchozích formátů, protože je potřeba připočítat průchod stromem. Pokud převedeme hustou matici do formátu KAT se složitostí násobení dvou listů \bigO($sm\_size^3$), bude asymptotická složitost násobení dvou KAT matic \bigO$((\frac{n^2}{sm\_size}*(height+sm\_size^3))$.
+Přesnější asymptotická složitost násobení matic v KAT formátu je vyšší než u předchozích formátů, protože je potřeba připočítat průchod stromem. Pokud převedeme hustou matici do formátu KAT se složitostí násobení dvou listů \bigO($sm\_size^3$), bude asymptotická složitost násobení dvou KAT matic \bigO$((\frac{n^2}{sm\_size} \cdot (height+sm\_size^3))$.
 
 \subsection{Paměťová složitost}
 
-Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu bez listů. Velikost uzlu je pole $k$ odkazů na syny. Počet vnitřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} * k)$
+Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu bez listů. Velikost uzlu je pole $k$ odkazů na syny. Počet vnitřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} \cdot k)$ po zkrácení \bigO$(k^{h-2}-k-\frac{1}{k})$.

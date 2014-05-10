@@ -18,7 +18,7 @@ Po různých formátech požadujeme stejné operace, proto v programu zavádíme
 	\label{fig:uml}
 \end{figure}
 
-Program běží v příkazovém řádku bez GUI. Program načte jednu, nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit, nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích. Podrobnější popis nastavení programu je v příloze.
+Program běží v příkazovém řádku bez GUI. Program je jedno-vláknový. Program načte jednu, nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit, nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích. Podrobnější popis nastavení programu je v příloze.
 
 %-----------------------------------------------------------------------------
 
@@ -104,7 +104,7 @@ Protože tyto algoritmy jsou velice podobné již popsaným algoritmům \ref{alg
 
 \section{Testování}
 
-Pro ověření správnosti algoritmů je potřeba testovací software. Strategie testování v našem programu spočívá ve výběru testovacích matic, vynásobení v hustém formátu uložení, vynásobení v některém z řídkých formátů uložení a porovnaní výsledků.
+Pro ověření správnosti algoritmů je potřeba testovací software. Strategie testování v našem programu spočívá ve výběru testovacích matic, vynásobení v hustém formátu uložení, vynásobení v některém z řídkých formátů uložení a porovnaní výsledků. Tento proces ukazuje algoritmus \ref{testing}.
 
 \begin{algorithm}[htb]
 	\caption{Testování}\label{testing}
@@ -188,28 +188,40 @@ Generátory z MatrixMarketu běží v internetovém prohlížeči a v jazyce Jav
 
 % \texttt{$ ./tests/bin/matrix_generator -n 8192 -s 0.00001 -i % mdiagonal,150,0,8192,8042,0.95,mdiagonal,200,10,4000,3000,0.75,mblockwh,300,1500,256,256,0.95,mblockwh,700,2000,128,128,0.95,mrblocks,10,128,64,64,0.75 % -o /tmp/matrix2.mtx$}
 
-\begin{figure}[htb]
-	\includegraphics[width=1.0\textwidth]{./images/generated_matrix}
-	\caption{Matice vygenerovaná generátorem}
-	\label{fig:generatedMtx}
-\end{figure}
+%\begin{figure}[htb]
+%	\includegraphics[width=1.0\textwidth]{./images/generated_matrix}
+%	\caption{Matice vygenerovaná generátorem}
+%	\label{fig:generatedMtx}
+%\end{figure}
 
 %\section{Možné optimalizace}
 %TODO: popsat moznosti optimalizace - napisu jak by to slo optimalizovat, ale ze jsem to neudelal, protoze mi slo o porovnani mezi % formaty
 
 
-
-
 \section{Měření}
 
-Měření probíhalo na serveru \texttt{star.fit.cvut.cz}.
+Měření probíhalo na serveru \texttt{star.fit.cvut.cz}. Měřené parametry byly:
+\begin{enumerate}
+  \item Procentuální zrychlení výpočtu oproti formátu CSR
+  \item Počet uzlů ve stromě KAT matice
+  \item Velikost datových struktur matic
+\end{enumerate}
 
-TODO: popsat jak a kde to budu měřit, cas z omp a cachegrind/callgrind/velikost struktur/pocet uzlu ve strome, zrychleni oproti csr*csr>den, mensi velikost oproti den
+
+\begin{table}
+   \begin{tabular}{llllll}
+    Skupina    & Název matice & Řádků & Sloupců & Nenulových prvků            & Druh                  \\
+    \hline
+    GHS\_indef & exdata\_1 \cite{mtxexdata}    & 6001  & 6001    & 2.269500 $\cdot 10^6$ & optimalizační problém \\
+    Norris     & heart1 \cite{mtxheart}       & 3557  & 3557    & 1.385317 $\cdot 10^6$ & 2D/3D problém         \\
+%    ~          & ~            & ~     & ~       & ~                           & ~                     \\
+    \end{tabular}
+\end{table}
 
 \begin{sidewaysfigure}
 \begin{figure}[H]
 	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_nodes}
-	\caption{počet uzlů}
+	\caption{Počet uzlů v matici formátu KAT}
 	\label{fig:generatedMtx}
 \end{figure}
 \end{sidewaysfigure}
@@ -218,19 +230,29 @@ TODO: popsat jak a kde to budu měřit, cas z omp a cachegrind/callgrind/velikos
 \begin{sidewaysfigure}
 \begin{figure}[H]
 	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_speedup}
-	\caption{počet uzlů}
+	\caption{Zrychlení výpočtu při násobení matice maticí}
 	\label{fig:generatedMtx}
 \end{figure}
 \end{sidewaysfigure}
 
+\begin{sidewaysfigure}
+\begin{figure}[H]
+	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_speedupmvm}
+	\caption{Zrychlení výpočtu při násobení matice vektorem}
+	\label{fig:generatedMtx}
+\end{figure}
+\end{sidewaysfigure}
 
 \begin{sidewaysfigure}
 \begin{figure}[H]
 	\includegraphics[width=1.0\textwidth]{./images/measure/exdata_ramup}
-	\caption{počet uzlů}
+	\caption{Velikost datových struktur}
 	\label{fig:generatedMtx}
 \end{figure}
 \end{sidewaysfigure}
 
-\section{Zhodnocení}
+
+
+\section{Zhodnocení výsledků}
+
 
