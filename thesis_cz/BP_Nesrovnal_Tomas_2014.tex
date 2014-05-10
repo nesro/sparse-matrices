@@ -132,8 +132,27 @@ V první kapitole ukážeme některé příklady použití násobení řídkých
 %\chapter{Realizace}
 
 \begin{conclusion}
-	%sem napište závěr Vaší práce
-	Závěr.
+
+Násobení matic je jednoduchá početní úloha, se kterou se setkáme již na střední škole. Pro násobení velkých řídkých matic je pro vyšší výkonnost potřeba  sofistikovanějších algoritmů a rozdělení matic na části.
+
+V této práci jsme popsali základní, ale i pokročilé algoritmy pro násobení matic. Popsali jsme formáty pro uložení řídkých matic COO, CSR, BSR, Quadtree a jeho modifikaci snížením stromu, pojmenovaným KAT. Tyto formáty a algoritmy pro násobení v těchto formátech jsme implementovali a změřili jsme jejich výkonnost na vybraných maticích z praxe.
+
+Měření ukázalo, že násobení matic ve formátu Quadtree a jeho modifikaci do formátu KAT je vhodným formátem, pokud máme dostatek operační paměti a matice buď obsahuje hustší bloky, nebo tolik prvků, že začne využívat cache více než formát CSR.
+
+\section{Další práce}
+
+\subsection{Paralelizace}
+
+Díky paralelizaci by se mohlo u formátu KAT zvýšení rychlosti oproti CSR ještě zvýšit, protože by jednotlivá vlákna řešili jednotlivé bloky a využívali by tak cache efektivněji než CSR. 
+
+\subsection{Strassenův algoritmus}
+
+CSR není vhodný formát pro Strassenův algoritmus. Tento algorimus by ale šel implementovat do formátu Quadtree. Experimentem by mohla být implementace rozbaleného Strassenova algoritmu, tedy místo násobení matic o velikosti $n = 2$ by se násobily rovnou matice o velikosti například $n = 4$. Změněním pořadí operací by mohlo dojít k zefektivnění tohoto algoritmu. 
+
+\subsection{Řídké uzly}
+	
+V naší implementaci byly uzly matice KAT implementovány jako husté matice ukazatelů na syny. Pro velká $k$ by bylo vhodnější, kdyby i uzly tohoto stromu byly řídké matice.	
+	
 \end{conclusion}
 
 \bibliographystyle{csn690}
