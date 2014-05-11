@@ -87,7 +87,7 @@ Binární operace násobení nad množinou matic patří mezi základní operace
 
 Formát uložení řídké matice má vliv na výkonnost násobení řídkých matic. V této práci popíšeme formáty COO, CSR, BSR, Quadtree a navrhneme modifikaci formátu Quadtree snížením výšky stromu. Implementujeme tyto formáty spolu s algoritmy pro násobení matic v těchto formátech a porovnáme teoretické předpoklady s naměřenými hodnotami.
 
-V první kapitole ukážeme některé příklady použití násobení řídkých matic v praxi a definujeme některé pojmy. Ve druhé kapitole ukážeme obecné algoritmy pro násobení matic a ve třetí kapitole popíšeme řídké formáty COO, CSR, BSR, Quadtree a jeho modifikaci a algoritmy pro násobení matic v těchto formátech. Ve čtvrté kapitole ukážeme některé současné programy pro práci s řídkými maticemi. V páté kapitole popíšeme naší implementaci a ukážeme naměřené hodnoty.
+V první kapitole zmíníme některé příklady použití násobení řídkých matic v praxi a definujeme některé pojmy. Ve druhé kapitole představíme obecné algoritmy pro násobení matic a ve třetí kapitole popíšeme řídké formáty COO, CSR, BSR, Quadtree a jeho modifikaci a algoritmy pro násobení matic v těchto formátech. Ve čtvrté kapitole ukážeme některé současné programy pro práci s řídkými maticemi. V páté kapitole popíšeme naší implementaci a ukážeme naměřené hodnoty.
 
 \end{introduction}
 
@@ -143,7 +143,7 @@ Měření ukázalo, že násobení matic ve formátu Quadtree a jeho modifikaci 
 
 \subsection{Paralelizace}
 
-Díky paralelizaci by se mohlo u formátu KAT zvýšení rychlosti oproti CSR ještě zvýšit, protože by jednotlivá vlákna řešili jednotlivé bloky a využívali by tak cache efektivněji než CSR. 
+Díky paralelizaci by se mohlo u formátu KAT zvýšení rychlosti oproti CSR ještě zvýšit, protože by jednotlivá vlákna řešila jednotlivé bloky a využívala by tak cache efektivněji než CSR. 
 
 \subsection{Strassenův algoritmus}
 

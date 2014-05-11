@@ -51,15 +51,86 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 	double start_time;
 	double end_time;
 	int i;
-	int j;
+
 	int k;
 	int blk_i; /* block row */
 	int blk_j; /* block col */
 	int blk_c; /* block count */
-	csr_t *csr = NULL;
 	int *blk_start;
 	datatype_t **blk_vp;
 	start_time = omp_get_wtime();
+
+#if 0 /* COO -> BSR */
+	mm_file_t *mm_file;
+	int row;
+
+	mm_file = mm_load(filename, 1);
+
+	blk_start = malloc((mm_file->width / b_size + 1) * sizeof(int));
+	memset(blk_start, -1, (mm_file->width / b_size + 1) * sizeof(int));
+	blk_c = 0;
+
+	for (i = 0; i < mm_file->nnz;) {
+		blk_i = mm_file->data[i].row / b_size;
+
+		printf(".");
+
+		for (row = mm_file->data[i].row;
+				i < mm_file->nnz && row == mm_file->data[i].row; i++) {
+
+			blk_j = mm_file->data[i].col / b_size;
+
+			if (blk_start[blk_j] != blk_i) {
+				blk_start[blk_j] = blk_i;
+				blk_c++;
+			}
+		}
+	}
+	free(blk_start);
+
+	bsr_init(bsr, mm_file->width, mm_file->height, mm_file->nnz, b_size, blk_c);
+	blk_c = 0;
+	(*bsr)->rp[0] = 0;
+	blk_vp = calloc((mm_file->width / b_size + 1), sizeof(datatype_t *));
+
+	for (i = 0; i < mm_file->nnz;) {
+		blk_i = mm_file->data[i].row / b_size;
+
+		k = i;
+		for (row = mm_file->data[i].row;
+				i < mm_file->nnz && row == mm_file->data[i].row; i++) {
+
+			blk_j = mm_file->data[i].col / b_size;
+
+			if (blk_vp[blk_j] == NULL) {
+				blk_vp[blk_j] = (*bsr)->v + blk_c * b_size * b_size;
+
+				(*bsr)->ci[blk_c] = blk_j;
+				blk_c++;
+			}
+
+			*(blk_vp[blk_j] + (b_size * (mm_file->data[i].row % b_size))
+					+ (mm_file->data[i].col % b_size)) +=
+					mm_file->data[i].value;
+		}
+
+		for (; k < i; k++) {
+			blk_vp[mm_file->data[k].col / b_size] = NULL;
+		}
+
+		(*bsr)->rp[blk_i + 1] = blk_c;
+	}
+	free(blk_vp);
+	mm_free(mm_file);
+
+#else /* CSR -> BSR */
+
+	/* This code has been inspired by
+	 * https://github.com/scipy/scipy/blob/master/scipy/sparse/sparsetools/csr.h
+	 */
+
+	csr_t *csr = NULL;
+	int j;
 
 	/*
 	 * TODO: we are creating BSR from a CSR matrix. We should load COO from
@@ -101,7 +172,7 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 				}
 
 				*(blk_vp[blk_j] + (b_size * j) + (csr->ci[k] % b_size)) +=
-						csr->v[k];
+				csr->v[k];
 			}
 		}
 
@@ -114,6 +185,8 @@ static double bsr_load_mm(bsr_t **bsr, const char *filename, int b_size) {
 
 	free(blk_vp);
 	csr->_.f.free((vm_t*) csr);
+#endif
+
 	end_time = omp_get_wtime();
 	return end_time - start_time;
 }

@@ -92,6 +92,10 @@ static void kat_node_free(kat_node_t *kat_node) {
 	int i;
 	int j;
 
+	/* todo: remove when this will be global */
+	if (kat_node->node_type == KAT_N_DEN)
+		free(kat_node->node.sm.s.den.v);
+
 	if (kat_node->node_type == INNER)
 		for (i = 0; i < KAT_N; i++)
 			for (j = 0; j < KAT_N; j++)
@@ -343,6 +347,7 @@ static void kat_prepare(kat_matrix_t *kat, kat_node_t *kat_node) {
 		switch (kat_node->node_type) {
 		case KAT_N_DEN:
 
+			/* todo: global array for all the tree */
 			kat_node->node.sm.s.den.v = malloc(
 					kat->sm_size * sizeof(datatype_t *));
 

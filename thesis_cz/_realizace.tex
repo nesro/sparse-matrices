@@ -4,13 +4,13 @@
 
 Popsané algoritmy jsme implementovali v jazyce C99[todo: zdroj]. Implementace probíhala v operačním systému Lubuntu[todo: zdroj], v IDE Eclipse CDT[todo: zdroj]. Zdrojový kód byl kompilován pomocí překladače GNU C[todo: zdroj], s optimalizačním přepínačem \texttt{--Ofast}.
 
-K lazení chyb pro práci s pamětí jsme použili nástroj Valgrind[todo: zdroj] s přepínači \texttt{----leak--check=full ----show-reachable=yes}. Běžící program jsme krokovali pomocí nástroje GNU Debugger[todo: zdroj]. Zdrojový kód pro lazení chyb byl kompilován s přepínači \texttt{--Wall --pedantic --Og --ggdb}.
+K ladění chyb pro práci s pamětí jsme použili nástroj Valgrind[todo: zdroj] s přepínači \texttt{----leak--check=full ----show-reachable=yes}. Běžící program jsme krokovali pomocí nástroje GNU Debugger[todo: zdroj]. Zdrojový kód pro ladění chyb byl kompilován s přepínači \texttt{--Wall --pedantic --Og --ggdb}.
 
 %-----------------------------------------------------------------------------
 
 \section{Design implementace}
 
-Po různých formátech požadujeme stejné operace, proto v programu zavádíme abstraktní matici a jednoduchý objektově orientovaný model \cite{schreiner1994objektorientierte}, kde formáty dědí z virtuální matice. Obrázek \ref{fig:uml} ukazuje jednoduchý návrh tříd v UML.
+Po různých formátech požadujeme stejné operace, proto v programu zavádíme abstraktní matici a jednoduchý objektově orientovaný model \cite{schreiner1994objektorientierte}, která formáty dědí z virtuální matice. Obrázek \ref{fig:uml} ukazuje jednoduchý návrh tříd v UML.
 	
 \begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/uml/uml}
@@ -18,7 +18,7 @@ Po různých formátech požadujeme stejné operace, proto v programu zavádíme
 	\label{fig:uml}
 \end{figure}
 
-Program běží v příkazovém řádku bez GUI. Program je jedno-vláknový. Program načte jednu, nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit, nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích. Podrobnější popis nastavení programu je v příloze.
+Program běží v příkazovém řádku bez GUI. Program je jednovláknový. Program načte jednu nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích. Podrobnější popis nastavení programu je v příloze.
 
 %-----------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ V bakalářské práci Rozšíření implementace formátu kvadrantového stromu
 
 \subsection{Tvoření stromu}
 
-Při tvoření matice v KAT formátu, pro každý prvek procházíme strom a hledáme správný list. Protože výška stromu je daná třemi parametry, tedy velikostí matice $n$, velikostí podmatice $sm\_size$ a počtu větvení uzlu $k$, nejefektivnější využití bude, pokud je $n$ bezezbytku dělitelné $k * sm\_size$. Pokud toto neplatí, rodiče listů budou mít část synů nevyužitých i při uložení husté matice. Protože se prvky do matice načítají po řádcích zleva doprava, je velká pravděpodobnost, že další načtený prvek bude patřit do stejného listu. Z tohoto důvodu si pamatujeme poslední list a pokud prvek patří do něj, vrátíme jej. Algoritmus \ref{kat-create} ukazuje, jakým způsobem vyhledáváme list pro prvek.
+Při tvoření matice v KAT formátu pro každý prvek procházíme strom a hledáme správný list. Protože výška stromu je daná třemi parametry, tedy velikostí matice $n$, velikostí podmatice $sm\_size$ a počtu větvení uzlu $k$, nejefektivnější využití bude, pokud je $n$ bezezbytku dělitelné $k * sm\_size$. Pokud toto neplatí, rodiče listů budou mít část synů nevyužitých i při uložení husté matice. Protože se prvky do matice načítají po řádcích zleva doprava, je velká pravděpodobnost, že další načtený prvek bude patřit do stejného listu. Z tohoto důvodu si pamatujeme poslední list a pokud prvek patří do něj, vrátíme jej. Algoritmus \ref{kat-create} ukazuje, jakým způsobem vyhledáváme list pro prvek.
 
 
 \label{alg:kat-create}
@@ -104,7 +104,7 @@ Protože tyto algoritmy jsou velice podobné již popsaným algoritmům \ref{alg
 
 \section{Testování}
 
-Pro ověření správnosti algoritmů je potřeba testovací software. Strategie testování v našem programu spočívá ve výběru testovacích matic, vynásobení v hustém formátu uložení, vynásobení v některém z řídkých formátů uložení a porovnaní výsledků. Tento proces ukazuje algoritmus \ref{testing}.
+Pro ověření správnosti algoritmů je potřeba testovací software. Strategie testování v našem programu spočívá ve výběru testovacích matic, vynásobení v hustém formátu uložení, vynásobení v některém z řídkých formátů uložení a porovnání výsledků. Tento proces ukazuje algoritmus \ref{testing}.
 
 \begin{algorithm}[htb]
 	\caption{Testování}\label{testing}
@@ -129,16 +129,16 @@ Pro ověření správnosti algoritmů je potřeba testovací software. Strategie
 
 Pro přehled o nefungujících konfiguracích jsme použili testovací framework Cassertion [todo: zdroj].
 
-Při testování jsme i na relativně malých maticích narazili na problém s numerickou stabilitou. Část z testovacích matic má velký desetinný rozvoj a protože čísla jsou v různých formátech násobena v jiném pořadí, dochází k rozdílu mezi výsledky. Při kompilaci programu lze nastavit přesnost výpočtu pomocí typu proměnné pro uchovaní hodnot buď na \texttt{float}, \texttt{double} nebo \texttt{long double}. Při porovnávání dvou matic neporovnáváme hodnoty přímo, ale sledujeme velikost jejich rozdíl. V defaultní konfiguraci je povolená odchylka 0.001, při kompilaci lze změnit. Pokud spustíme testy  pouze s přesností \texttt{float}, část testů selže právě kvůli numerické stabilitě. 
+Při testování jsme i na relativně malých maticích narazili na problém s numerickou stabilitou. Část z testovacích matic má velký desetinný rozvoj a protože čísla jsou v různých formátech násobena v jiném pořadí, dochází k rozdílu mezi výsledky. Při kompilaci programu lze nastavit přesnost výpočtu pomocí typu proměnné pro uchování hodnot buď na \texttt{float}, \texttt{double} nebo \texttt{long double}. Při porovnávání dvou matic neporovnáváme hodnoty přímo, ale sledujeme velikost jejich rozdílu. V defaultní konfiguraci je povolená odchylka 0.001, při kompilaci ji lze změnit. Pokud spustíme testy  pouze s přesností \texttt{float}, část testů selže právě kvůli numerické stabilitě. 
 
 %-----------------------------------------------------------------------------
 
 \section{Práce s formátem MatrixMarket}
 \label{MM}
 
-Náš program pracuje s formátem \texttt{.mtx} \ref{mtxsubsect}. Podporujeme více druhů tohoto formátu. Nesymetrický, s banerem \texttt{\%\%MatrixMarket matrix coordinate real symmetric} a symetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real general}. Místo reálných čísel podporujeme i druh \texttt{pattern}, kdy nenulové prvky nabývají pouze hodnoty jedna.
+Náš program pracuje s formátem \texttt{.mtx} \ref{mtxsubsect}. Podporujeme více druhů tohoto formátu. Nesymetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real symmetric} a symetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real general}. Místo reálných čísel podporujeme i druh \texttt{pattern}, kdy nenulové prvky nabývají pouze hodnoty jedna.
 
-Přestože náš program neumí pracovat s komprimovanými soubory, v prostředí unixového systému předáváme programu pojmenovanou rouru do které komprimovanou matici rozbalujeme příkazem \texttt{ <(gzip -cd matrix.mtx.gz) }.
+Přestože náš program neumí pracovat s komprimovanými soubory, v prostředí unixového systému předáváme programu pojmenovanou rouru, do které komprimovanou matici rozbalujeme příkazem \texttt{ <(gzip -cd matrix.mtx.gz) }.
 
 \subsection{Generátor řídkých matic}
 
@@ -297,12 +297,12 @@ Grafy \ref{fig:mtxsizeEX6} \ref{fig:mtxsizeexdata} \ref{fig:mtxsizefp} \ref{fig:
 
 \section{Zhodnocení výsledků}
 
-Matice ve formátu BSR dosahovaly velmi špatných výsledků, protože	 její bloky jsou pouze husté. V případě větších bloků s menším počtem nulových prvků tak dochází jak k ukládání těchto nulových prvků zbytečně, tak se tím zpomalí výpočet.
+Matice ve formátu BSR dosahovaly velmi špatných výsledků, protože	 jejich bloky jsou pouze husté. V případě větších bloků s menším počtem nulových prvků tak dochází jak k ukládání těchto nulových prvků zbytečně, tak se tím zpomalí výpočet.
 
 Největším zlepšením byla matice KAT pro matici exdata-1 \cite{mtxexdata}, kde se výpočet zrychlil o více než dvojnásobek. Důvodem bylo efektivní rozdělení matice na husté a řídké části. I paměťová velikost byla srovnatelná s formátem CSR.
 
-U matic, kde není nějaký vzor ve formě bloků, například u matice EX6 \cite{mtxex}, byl formát CSR rychlejší ve všech případech. K za povšimnutí také stojí, že v základním nastavení programu nebyl v matici KAT zvolen pro tuto matici ani jeden hustý list.
+U matic, kde není nějaký vzor ve formě bloků, například u matice EX6 \cite{mtxex}, byl formát CSR rychlejší ve všech případech. K povšimnutí také stojí, v základním nastavení programu nebyl v matici KAT zvolen pro tuto matici ani jeden hustý list.
 
-Ani jeden hustý list nebyl nebyl zvolen ani pro matici human\_gene2 \cite{mtxhuman}. Vzhledem k její hustotě a velikosti ale pro velké CSR bloky 128 a 256 díky časové a prostorové lokalitě \cite{cachelocal} výsledky lepší než v obyčejném CSR.
+Ani jeden hustý list nebyl zvolen ani pro matici human\_gene2 \cite{mtxhuman}. Vzhledem k její hustotě a velikosti ale pro velké CSR bloky 128 a 256 díky časové a prostorové lokalitě \cite{cachelocal} výsledky lepší než v obyčejném CSR.
 
-Přestože se s větším $k$ u KAT matic výrazně snížil počet vnitřních uzlů, tak se celková datová velikost matice výrazně zvýšila. Důvodem je velikost uzlu, která obsauje $k^2$ ukazatelů na syny. 
+Přestože se s větším $k$ u KAT matic výrazně snížil počet vnitřních uzlů, tak se celková datová velikost matice výrazně zvýšila. Důvodem je velikost uzlu, která obsahuje $k^2$ ukazatelů na syny. 

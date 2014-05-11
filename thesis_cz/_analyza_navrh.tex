@@ -8,21 +8,21 @@ Pokud potřebujeme rychle vynásobit dvě malé matice, můžeme použít obecn�
 
 \subsection{SciPy.sparse}
 
-SciPy je knihovna skriptovacího jazyka Python \cite{Python}. Obsahuje modul pro základní práci s řídkými maticemi, nazvaný sparse \cite{scipy}. Samotné výpočty nad řídkými maticemi jsou v této knihovně z důvodu rychlosti napsány v jazyce C++.
+SciPy je knihovna skriptovacího jazyka Python \cite{Python}. Obsahuje modul pro základní práci s řídkými maticemi nazvaný sparse \cite{scipy}. Samotné výpočty nad řídkými maticemi jsou v této knihovně z důvodu rychlosti napsány v jazyce C++.
 
 \subsection{Boost}
 
-Pro práci s řídkými maticemi v jazyce C++ je možné použít knihovnu uBLAS\cite{ublas} ze sady knihoven Boost\cite{boost}. Knihovna uBLAS obsahuje algoritmy pro řešení základních ukolů z lineálrní algebry. Protože je kód napsaný pomocí C++ šablon, je vygenerovaný kód výkonný.
+Pro práci s řídkými maticemi v jazyce C++ je možné použít knihovnu uBLAS \cite{ublas} ze sady knihoven Boost\cite{boost}. Knihovna uBLAS obsahuje algoritmy pro řešení základních úkolů z lineární algebry. Protože je kód napsaný pomocí C++ šablon, je vygenerovaný kód výkonný.
 
 \subsection{ATLAS}
 
-ATLAS \cite{atlas} je v překladu zkratkou pro automatické generování vylazeného kódu pro software řešící úlohy z lineární algebry. Je tak dosaženo pomocí jak obecných optimalizací kódu, tak optimalizací pro konkrétní architektury.
+ATLAS \cite{atlas} je v překladu zkratkou pro automatické generování vyladěného kódu pro software řešící úlohy z lineární algebry. Je tak dosaženo pomocí jak obecných optimalizací kódu, tak optimalizací pro konkrétní architektury.
 
-Podobných projektů je více, konkrétně pro násobení matice s vektorem je to například Sparsity \cite{sparsity}, nebo pro násobení matice s maticí je to například PHiPAC \cite{PHiPAC}\cite{bilmes96a}.
+Podobných projektů je více, konkrétně pro násobení matice s vektorem je to například Sparsity \cite{sparsity} nebo pro násobení matice s maticí je to například PHiPAC \cite{PHiPAC}\cite{bilmes96a}.
 
 \subsection{Wolfram Mathematica}
 
-Wolfram Mathematica \cite{mathematica} je mocný výpočetní software. Práce v tomto software je snadná, interaktivní a přitom dokáže efektivně rozdělovat práci nejen na více procesorových jader, ale taky využít i grafické karty. Nechybí tedy ani implementace operací pro řídké matice.
+Wolfram Mathematica \cite{mathematica} je mocný výpočetní software. Práce v tomto software je snadná, interaktivní a přitom dokáže efektivně rozdělovat práci nejen na více procesorových jader, ale také využít grafické karty. Nechybí tedy ani implementace operací pro řídké matice.
 
 V této práci pomocí Wolfram Mathematicy vizualizujeme řídké matice z formátu \texttt{.mtx} \ref{mtxsubsect}. Mathematica umí pracovat i s maticemi v souborech \texttt{.mtx.gz}, tedy komprimovanými soubory. Příkaz pro importování řídké matice a její vizualizaci je \texttt{Import["/var/tmp/matrix.mtx", "Graphics"]}, následné uložení matice lze provést například příkazem \\ \texttt{Export["/var/tmp/matrix.pdf", \%]} \cite{mathematicaMTX}.
 

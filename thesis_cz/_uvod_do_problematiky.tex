@@ -4,7 +4,7 @@
 
 % see: https://www.youtube.com/watch?v=jECBfI52hk8
 
-Pro výstavu v roce 2011 s názvem Art in Enginnering v Harnově Muzeu představila floridská univerzita kolekci ilustrací řídkých matic s názvem The Beauty of Mathematics: As Illustrated by the University of Florida Sparse Matrix Collection \cite{Davis:2011:UFS:2049662.2049663}. Pro estetické zobrazení řídkých matic byla provedena simulace\cite{simul}. Každému uzlu byl přiřazen elektrický náboj a každá hrana představovala pružinu. V simulaci byla celá tato konstrukce položena na tvrdou podložku. Simulace byla zastavena v okamžiku, když se konstrukce přestala hýbat. Pro ilustraci přikládáme výsledek simulace \ref{fig:commanche} na modelu helikoptéry, tedy neorientovaném 3D grafu uloženém v řídké matici.
+Pro výstavu v roce 2011 s názvem Art in Enginnering v Harnově Muzeu představila floridská univerzita kolekci ilustrací řídkých matic s názvem The Beauty of Mathematics: As Illustrated by the University of Florida Sparse Matrix Collection \cite{Davis:2011:UFS:2049662.2049663}. Pro estetické zobrazení řídkých matic byla provedena simulace \cite{simul}. Každému uzlu byl přiřazen elektrický náboj a každá hrana představovala pružinu. V simulaci byla celá tato konstrukce položena na tvrdou podložku. Simulace byla zastavena v okamžiku, kdy se konstrukce přestala hýbat. Pro ilustraci přikládáme výsledek simulace \ref{fig:commanche} na modelu helikoptéry, tedy neorientovaném 3D grafu uloženém v řídké matici.
 
 \begin{figure}
 	\includegraphics[width=1.0\textwidth]{./images/commanche/commanche}
@@ -12,7 +12,7 @@ Pro výstavu v roce 2011 s názvem Art in Enginnering v Harnově Muzeu představ
 	\label{fig:commanche}
 \end{figure}
 
-Řídké matice jsou používané ve velké škále oblastí\cite{sparsesw}, například výpočty diferenciálních rovnic, Google page rank, 3D grafika, statistika, těžení z dat, kryptografie a další.
+Řídké matice jsou používané ve velké škále oblastí \cite{sparsesw}, například výpočty diferenciálních rovnic, Google page rank, 3D grafika, statistika, těžení z dat, kryptografie a další.
 
 % Použití řídkých matic najdeme 2D/3D grafice, simulaci fyzikálních jevů ať už řešení úloh proudění tekutin, elektrické či meteorologické, statistice, počítání pageranku % a další.
 % TODO přeložit: computational fluid dynamics, finite-element methods, statistics, time/frequency 
@@ -69,6 +69,7 @@ O~matici typu ($m$, $n$) budeme říkat, že je $m$~široká a~$n$~vysoká. Poku
 Matici \textbf{V} typu (1, n) nazveme vektorem.
 
 \section{Definice násobení matice maticí}
+\label{defmmm}
 
 Buď \textbf{A} matice typu ($m$,$n$) s prvky $a_{i,j}$ a \textbf{B} matice typu ($n$,$p$) s prvky $b_{j,k}$. Definujeme součin matic $\mathbf{A} \cdot \mathbf{B}$ jako matici \textbf{C} typu ($m$,$p$) s prvky $c_{i,k}$ které vypočteme jako:
 
@@ -88,15 +89,15 @@ Násobení matice vektorem je pouze případem násobení matice typu ($m$,$n$) 
 
 \section{Složitosti}
 
-K označení složitostí, ať již časových nebo prostorových (paměťových) používáme \bigO-notaci, která označuje množinu funkcí, asymptoticky rostoucí řádově stejně rychle, nebo rychleji.
+K označení složitostí, ať již časových nebo prostorových (paměťových) používáme \bigO-notaci, která označuje množinu funkcí, asymptoticky rostoucí řádově stejně rychle nebo rychleji.
 \begin{align}
 \bigO(g(n)) = \left\{ f(n) : \exists c \in R^+ \exists n_0 \in N \forall n \geq n_0 : 0 \leq f(n) \leq cg(n) \right\}
 \end{align}
-\bigO\texttt{ }notací budeme popisovat nejhorší možný případ. Obdobně $\Theta$ značí funkce rostoucí stejně rychle a $\Omega$ stejně rychle, nebo pomaleji.
+\bigO\texttt{ }notací budeme popisovat nejhorší možný případ. Obdobně $\Theta$ značí funkce rostoucí stejně rychle a $\Omega$ stejně rychle nebo pomaleji.
 
 % IntroductionToAlgoritms 3.1 asymptotic notations 43-97 (1217, 1222).
 
-Pro výpočet složitostí rekurzivních algoritmu používáme Mistrovskou metodu \cite{Cormen:2001:IA:580470}. Pokud $a \geq 1, b > 0$ jsou konstanty a $f(n)$ je funkce o jedné proměnné, tak rekurence
+Pro výpočet složitostí rekurzivních algoritmů používáme mistrovskou metodu \cite{Cormen:2001:IA:580470}. Pokud $a \geq 1, b > 0$ jsou konstanty a $f(n)$ je funkce o jedné proměnné, tak rekurence
 
 \begin{align}
 t(n) = at(n/b)+f(n)

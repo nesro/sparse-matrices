@@ -2,13 +2,13 @@
 
 % http://www.cs.colostate.edu/~mroberts/toolbox/c++/sparseMatrix/sparse_matrix_compression.html
 
-Formáty uložení řídkých matic obecně ukládají jednotlivé prvky zvlášť a tedy nemusí ukládat ty nulové. To ale přináší řadu nevýhod. Za prvé se musí ukládat informace o souřadnicích. Za druhé, ztrácíme možnost přístupu k prvku na libovolných souřadnicích v čase $\Theta(1)$, protože prvky nemáme přímo indexované podle jejich umístění v řádku a sloupci.
+Formáty uložení řídkých matic obecně ukládají jednotlivé prvky zvlášť, a tedy nemusí ukládat ty nulové. To ale přináší řadu nevýhod. Za prvé se musí ukládat informace o souřadnicích a za druhé, ztrácíme možnost přístupu k prvku na libovolných souřadnicích v čase $\Theta(1)$, protože prvky nemáme přímo indexované podle jejich umístění v řádku a sloupci.
 
 Protože řídké matice můžeme rozdělit do mnoha kategorií a provádět nad nimi mnoho operací, existuje mnoho formátů, jak řídkou matici efektivně uložit a pracovat s ní. Formáty uložení řídkých matic můžeme také rozdělit podle toho, zda-li je možné do nich přidávat nebo odebírat prvky.
 
-Při násobení matic $C = A \cdot B$ se matice $A$ ani $B$ nemění. V této práci budeme předpokládat, že matice $C$ bude hustá a formáty umožňujícími přidávání nebo odebírání prvků nebudou součástí práce. Stejně tak při násobení matice $A$ vektorem $B$ je výsledek $C$ vektor.
+Při násobení matic $C = A \cdot B$ se matice $A$ ani $B$ nemění. V této práci budeme předpokládat, že matice $C$ bude hustá a formáty umožňující přidávání nebo odebírání prvků nebudou součástí práce. Stejně tak při násobení matice $A$ vektorem $B$ je výsledek $C$ vektor.
 
-Dalším kritériem pro rozdělení formátů je uspořádanost nenulových prvků v řídké matici. Pro uspořádané matice bude efektivnější takový formát, který využije určitý vzor, v jakým jsou prvky matice uloženy. V řídkých maticích takovým vzorem může být například diagonála, nebo blok prvků. Efektivně lze za vzor považovat i prvky v řádku, nebo ve sloupci.
+Dalším kritériem pro rozdělení formátů je uspořádanost nenulových prvků v řídké matici. Pro uspořádané matice bude efektivnější takový formát, který využije určitý vzor, v jakém jsou prvky matice uloženy. V řídkých maticích takovým vzorem může být například diagonála nebo blok prvků. Efektivně lze za vzor považovat i prvky v řádku nebo ve sloupci.
 
 Uspořádáním může být také symetrie matice, kdy nám stačí uložit pouze polovinu matice. Často řídké matice bývají symetrické podle hlavní diagonály.
 
@@ -44,7 +44,7 @@ Jak můžeme vidět, délka polí je závislá pouze na $nnz$. Pro velké matice
 
 Paměťová náročnost formátu COO je $O(3 \cdot nnz)$.
 
-Formát COO je velmi jednoduchý a přímočarý. Při procházení jeho prvků nám stačí jedna iterace přes tři stejně dlouhé pole. Tím je tedy například algoritmus násobení řídké matice ve formátu COO s vektorem velmi jednoduchý:
+Formát COO je velmi jednoduchý a přímočarý. Při procházení jeho prvků nám stačí jedna iterace přes tři stejně dlouhá pole. Tím je tedy například algoritmus násobení řídké matice ve formátu COO s vektorem velmi jednoduchý:
 
 \begin{algorithm}[htb]
 	\caption{Násobení matice COO s vektorem}\label{coo-mvm}
@@ -105,7 +105,7 @@ Problém efektivnosti formátu COO pro větší množství prvků řeší formá
 	\label{fig:CSR}
 \end{figure}
 
-Jak je vidět z ilustrace \ref{fig:CSR}, řádek s více prvky je uložen efektivně. Kvůli mnoho prázdným řádkům se ale pole $row\_pointers$ nezdá rozumně využité.
+Jak je vidět z ilustrace \ref{fig:CSR}, řádek s více prvky je uložen efektivně. Kvůli mnoha prázdným řádkům se ale pole $row\_pointers$ nezdá rozumně využité.
 
 Při násobení matice CSR s vektorem potřebujeme o jeden for cyklus více než v případě násobení matice COO s vektorem. Důvodem je ztráta informace o řádku prvku.
 
@@ -122,7 +122,7 @@ Při násobení matice CSR s vektorem potřebujeme o jeden for cyklus více než
 	\end{algorithmic}
 \end{algorithm}
 
-Násobení dvou CSR matic je stejné jak v případě násobení dvou COO matic \ref{fig:CSR}. Jediný rozdíl je, že předpočíné začátky a konce řádků jsou součástí formátu.
+Násobení dvou CSR matic je stejné jako v případě násobení dvou COO matic \ref{fig:CSR}. Jediný rozdíl je, že předpočítané začátky a konce řádků jsou součástí formátu.
 
 \label{alg:csr-mmm}
 \begin{algorithm}[htb]
@@ -146,11 +146,11 @@ Existuje varianta tohoto formátu, nazvaná CSC - compressed sparse columns, kte
 
 \section{BSR - Block Sparse Row}
 
-Jako formát CSR využívá uložení prvků v řádku, formát BSR\cite{bsrscipy}\cite{bsrintel} ještě navíc detekuje a ukládá prvky v blocích.
+Jako formát CSR využívá uložení prvků v řádku, formát BSR \cite{bsrscipy}\cite{bsrintel} ještě navíc detekuje a ukládá prvky v blocích.
 
 Protože při násobení matic násobíme každý prvek dvakrát, bylo by dobré tyto dvě operace provést co nejdříve po sobě, abychom při druhém znovu-načtení prvku mohli sáhnout pro prvek do cache. Pokud jsou prvky procházené po menších blocích, dostaneme se k prvku podruhé dříve, než jej z cache přemaže jiný prvek.
 
-Matici $A$ ve formátu BSR ukládáme, velice podobně jako u formátu CSR, pomocí tří polí. Je potřeba i jedna proměnná, která uchovává velikost bloku. Tuto proměnnou nazveme $block\_size$. Pole $col\_indices$ označuje sloupec, ve kterém se blok nachází. Sloupcem rozumíme blok prvků o šířce \\ $A.width / A.block\_size$.
+Matici $A$ ve formátu BSR ukládáme velice podobně jako u formátu CSR pomocí tří polí. Je potřeba i jedna proměnná, která uchovává velikost bloku. Tuto proměnnou nazveme $block\_size$. Pole $col\_indices$ označuje sloupec, ve kterém se blok nachází. Sloupcem rozumíme blok prvků o šířce \\ $A.width / A.block\_size$.
 
 \begin{figure}[htb]\centering
 	\includegraphics[width=\textwidth]{./images/bsr/bsr}
@@ -208,9 +208,16 @@ Paměťová složitost je závislá na počtu bloků $b$, velikosti bloků $bloc
 
 \section{Quadtree}
 
-Předchozí popsáné formáty uložení řídkých matic jsou velmi přímočaré. Neumožňují rekurzivní přístup, který potřebný například pro Strassenův algoritmus. Tento problém řeší formát Quadtree \cite{JA_SNA_08_QUAD}\cite{qdtsf}. Jedná se o matici uloženou v 4-árním stromě.
+Předchozí popsané formáty uložení řídkých matic jsou velmi přímočaré. Neumožňují rekurzivní přístup, který je potřebný například pro Strassenův algoritmus. Tento problém řeší formát Quadtree \cite{JA_SNA_08_QUAD}\cite{qdtsf}. Jedná se o matici uloženou v 4-árním stromě.
 
 Tento formát dělí matici na čtvrtiny do té doby, než se dosáhne velikosti podmatice $sm\_size$. Pokud je celá čtvrtina prázdná, je uzel označen jako prázdný, $E$. Pokud obsahuje nějaké prvky, je list označen jako hustý, $D$. Vnitřní uzly jsou označeny jako smíšené, $M$.
+
+\begin{figure}[htb]\centering
+	\includegraphics[width=\textwidth]{./images/quadtree_sourceforge/quad2a.eps}
+	\caption{Rozdělení matice}
+	\label{fig:quad1}
+\end{figure}
+
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/quadtree_sourceforge/figure4}
@@ -256,7 +263,7 @@ Pokud to bude z kontextu jasné, budeme výšku KAT stromu značit pouze $height
 
 \subsection{Typy listů}
 
-KAT matice obsahuje proměnnou $KAT.dense\_treshold$, která udává maximální počet prvků, aby se s listem pracovalo některým z řídkých formátů, tedy COO, CSR, BSR. Při překročení této hranice je list uložen ve formátu husté matice, tedy bude obsahovat i nulové prvky.
+KAT matice obsahuje proměnnou $KAT.dense\_treshold$, která udává maximální počet prvků, aby se s listem pracovalo jako s některým z řídkých formátů, tedy COO, CSR, BSR. Při překročení této hranice je list uložen ve formátu husté matice, tedy bude obsahovat i nulové prvky.
 
 [TODO: ilustrace kat matrix]
 
@@ -316,4 +323,4 @@ Přesnější asymptotická složitost násobení matic v KAT formátu je vyšš
 
 \subsection{Paměťová složitost}
 
-Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu bez listů. Velikost uzlu je pole $k$ odkazů na syny. Počet vnitřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} \cdot k)$ po zkrácení \bigO$(k^{h-2}-k-\frac{1}{k})$.
+Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu bez listů. Velikost uzlu je pole $k$ ukazatelů na syny. Počet vnitřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} \cdot k)$ po zkrácení \bigO$(k^{h-2}-k-\frac{1}{k})$.
