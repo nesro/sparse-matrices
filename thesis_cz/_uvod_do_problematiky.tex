@@ -62,7 +62,7 @@ a_{m,1} & a_{m,2} & \cdots & a_{m,n}
 
 Matici \textbf{M} typu ($m$, $n$), kde všechny její prvky jsou rovny nule, nazýváme \textit{nulovou maticí.}
 
-O~matici typu ($m$, $n$) budeme říkat, že je $m$~široká a~$n$~vysoká. Pokud o~matici řekneme že má velikost $n$, myslíme tím, že je typu ($n$, $n$).
+O~matici typu ($m$, $n$) budeme říkat, že je $m$~široká a~$n$~vysoká. Pokud o~matici řekneme, že má velikost $n$, myslíme tím, že je typu ($n$, $n$).
 
 \section{Vektor}
 
@@ -71,7 +71,7 @@ Matici \textbf{V} typu (1, n) nazveme vektorem.
 \section{Definice násobení matice maticí}
 \label{defmmm}
 
-Buď \textbf{A} matice typu ($m$,$n$) s prvky $a_{i,j}$ a \textbf{B} matice typu ($n$,$p$) s prvky $b_{j,k}$. Definujeme součin matic $\mathbf{A} \cdot \mathbf{B}$ jako matici \textbf{C} typu ($m$,$p$) s prvky $c_{i,k}$ které vypočteme jako:
+Buď \textbf{A} matice typu ($m$,$n$) s prvky $a_{i,j}$ a \textbf{B} matice typu ($n$,$p$) s prvky $b_{j,k}$. Definujeme součin matic $\mathbf{A} \cdot \mathbf{B}$ jako matici \textbf{C} typu ($m$,$p$) s prvky $c_{i,k}$, které vypočteme jako:
 
 \begin{align}
 c_{row,col}=\sum_{k=1}^{N} a_{row,k} \cdot b_{k,col}
@@ -89,7 +89,7 @@ Násobení matice vektorem je pouze případem násobení matice typu ($m$,$n$) 
 
 \section{Složitosti}
 
-K označení složitostí, ať již časových nebo prostorových (paměťových) používáme \bigO-notaci, která označuje množinu funkcí, asymptoticky rostoucí řádově stejně rychle nebo rychleji.
+K označení složitostí, ať již časových nebo prostorových (paměťových), používáme \bigO-notaci, která označuje množinu funkcí, asymptoticky rostoucí řádově stejně rychle nebo rychleji.
 \begin{align}
 \bigO(g(n)) = \left\{ f(n) : \exists c \in R^+ \exists n_0 \in N \forall n \geq n_0 : 0 \leq f(n) \leq cg(n) \right\}
 \end{align}

@@ -27,18 +27,27 @@ tmpdir=$_
 
 #prepare headers
 echo -n "format " >$tmpdir/mmm-speedup.txt
+echo -n "format " >$tmpdir/mmm-speedtime.txt
 echo -n "format " >$tmpdir/mvm-speedup.txt
+echo -n "format " >$tmpdir/mvm-speedtime.txt
 echo -n "format " >$tmpdir/ram-up.txt
+echo -n "format " >$tmpdir/ram-size.txt
 
 for matrix in $matrices; do
 	echo -n "$matrix " >>$tmpdir/mmm-speedup.txt
+	echo -n "$matrix " >>$tmpdir/mmm-speedtime.txt
 	echo -n "$matrix " >>$tmpdir/mvm-speedup.txt
+	echo -n "$matrix " >>$tmpdir/mvm-speedtime.txt
 	echo -n "$matrix " >>$tmpdir/ram-up.txt
+	echo -n "$matrix " >>$tmpdir/ram-size.txt
 done
 
 echo " " >>$tmpdir/mmm-speedup.txt
+echo " " >>$tmpdir/mmm-speedtime.txt
 echo " " >>$tmpdir/mvm-speedup.txt
+echo " " >>$tmpdir/mvm-speedtime.txt
 echo " " >>$tmpdir/ram-up.txt
+echo " " >>$tmpdir/ram-size.txt
 
 #-------------------------------------------------------------------------------
 
@@ -46,10 +55,17 @@ echo " " >>$tmpdir/ram-up.txt
 for f in coo csr; do
 
 	echo -n "\"$f\" " >>$tmpdir/ram-up.txt
+	echo -n "\"$f\" " >>$tmpdir/ram-size.txt
 	
 	if [[ "$f" != "csr" ]]; then
 	echo -n "\"$f\" " >>$tmpdir/mvm-speedup.txt
 	fi
+	
+	if [[ "$f" != "coo" ]]; then
+	echo -n "\"$f\" " >>$tmpdir/mmm-speedtime.txt
+	fi
+	
+	echo -n "\"$f\" " >>$tmpdir/mvm-speedtime.txt
 	
 	for matrix in $matrices; do
 
@@ -62,23 +78,39 @@ for f in coo csr; do
 		den_size=$(  ls $data_dir/*mvm*$matrix*$f* | xargs -i grep a_n {} | awk '{ print $2 }' | tr -d '\n' )
 		this_size=$( ls $data_dir/*mvm*$matrix*$f* | xargs -i grep a_size {} | awk '{ print $2 }' | tr -d '\n' )
 		echo -n "$( bc <<< "scale=20; (${this_size}/(${den_size}*${den_size}*8))" ) " >>$tmpdir/ram-up.txt
-		
-		# Let's skip CSR
-		if [[ "$f" == "csr" ]]; then
-			continue;
-		fi
+		echo -n "$this_size " >>$tmpdir/ram-size.txt
 		
 		echo "mvm"
 		
 		#mvm
 		csr_mvm_speed=$(  ls $data_dir/*mvm*$matrix*csr* | xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
 		this_mvm_speed=$( ls $data_dir/*mvm*$matrix*$f*  | xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
-		echo -n "$( bc <<< "scale=20; ${csr_mvm_speed}/${this_mvm_speed}" ) " >>$tmpdir/mvm-speedup.txt
+		
+		if [[ "$f" == "coo" ]]; then
+			coo_mvm_speed=$( ls $data_dir/*mvm*$matrix*coo*  | xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
+			echo -n "$coo_mvm_speed " >>$tmpdir/mvm-speedtime.txt
+		fi
+		#csr mmm
 
+
+		if [[ "$f" == "csr" ]]; then
+			echo -n "$this_mvm_speed " >>$tmpdir/mvm-speedtime.txt
+			csr_mvm_speed=$(  ls $data_dir/*mmm*$matrix*csr* | xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
+			echo -n "$csr_mvm_speed " >>$tmpdir/mmm-speedtime.txt
+		fi		
+		
+		# Let's skip CSR
+		if [[ "$f" == "csr" ]]; then
+			continue;
+		fi
+		echo -n "$( bc <<< "scale=20; ${csr_mvm_speed}/${this_mvm_speed}" ) " >>$tmpdir/mvm-speedup.txt
 	done
 	
 	echo " " >>$tmpdir/mvm-speedup.txt
+	echo " " >>$tmpdir/mvm-speedtime.txt
+	echo " " >>$tmpdir/mmm-speedtime.txt
 	echo " " >>$tmpdir/ram-up.txt
+	echo " " >>$tmpdir/ram-size.txt
 done
 
 	
@@ -88,19 +120,24 @@ for bs in 32 64 128 256; do
 	for f in bsr; do
 	
 		echo -n "\"${f}-${bs}\" " >>$tmpdir/ram-up.txt
+		echo -n "\"${f}-${bs}\" " >>$tmpdir/ram-size.txt
 		echo -n "\"${f}-${bs}\" " >>$tmpdir/mvm-speedup.txt
 		echo -n "\"${f}-${bs}\" " >>$tmpdir/mmm-speedup.txt
+		echo -n "\"${f}-${bs}\" " >>$tmpdir/mmm-speedtime.txt
+		echo -n "\"${f}-${bs}\" " >>$tmpdir/mvm-speedtime.txt
 	
 		for matrix in $matrices; do
 			#ram
 			den_size=$(  ls $data_dir/*mvm*$matrix*${f}_${bs}* | xargs -i grep a_n {} | awk '{ print $2 }' | tr -d '\n' )
 			this_size=$( ls $data_dir/*mvm*$matrix*${f}_${bs}* | xargs -i grep a_size {} | awk '{ print $2 }' | tr -d '\n' )
 			echo -n "$( bc <<< "scale=20; (${this_size}/(${den_size}*${den_size}*8))" ) " >>$tmpdir/ram-up.txt
+			echo -n "$this_size " >>$tmpdir/ram-size.txt
 	
 			#mvm
 			csr_mvm_speed=$(  ls $data_dir/*mvm*$matrix*csr*        | xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
 			this_mvm_speed=$( ls $data_dir/*mvm*$matrix*${f}_${bs}* | xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
 			echo -n "$( bc <<< "scale=20; ${csr_mvm_speed}/${this_mvm_speed}" ) " >>$tmpdir/mvm-speedup.txt
+			echo -n "$this_mvm_speed " >>$tmpdir/mvm-speedtime.txt
 			
 			#mmm
 			csr_mvm_speed=$(  ls $data_dir/*mmm*$matrix*csr*        | xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
@@ -111,12 +148,16 @@ for bs in 32 64 128 256; do
 			fi
 			
 			echo -n "$( bc <<< "scale=20; ${csr_mvm_speed}/${this_mvm_speed}" ) " >>$tmpdir/mmm-speedup.txt
+			echo -n "$this_mvm_speed " >>$tmpdir/mmm-speedtime.txt
 	
 		done
 		
 		echo " " >>$tmpdir/ram-up.txt
+		echo " " >>$tmpdir/ram-size.txt
 		echo " " >>$tmpdir/mvm-speedup.txt
 		echo " " >>$tmpdir/mmm-speedup.txt
+		echo " " >>$tmpdir/mmm-speedtime.txt
+		echo " " >>$tmpdir/mvm-speedtime.txt
 		
 	done
 	for f in kat; do
@@ -124,8 +165,11 @@ for bs in 32 64 128 256; do
 		for k in 2 4 8; do
 		
 			echo -n "\"${k}${f}-${bs}\" " >>$tmpdir/ram-up.txt
+			echo -n "\"${k}${f}-${bs}\" " >>$tmpdir/ram-size.txt
 			echo -n "\"${k}${f}-${bs}\" " >>$tmpdir/mvm-speedup.txt
+			echo -n "\"${k}${f}-${bs}\" " >>$tmpdir/mvm-speedtime.txt
 			echo -n "\"${k}${f}-${bs}\" " >>$tmpdir/mmm-speedup.txt
+			echo -n "\"${k}${f}-${bs}\" " >>$tmpdir/mmm-speedtime.txt
 			echo -n "\"${k}${f}-${bs}\" " >>$tmpdir/kat-nodes.txt
 	
 			for matrix in $matrices; do
@@ -133,6 +177,7 @@ for bs in 32 64 128 256; do
 				den_size=$(  ls $data_dir/*mvm*$matrix*${f}_${bs}_${k}* | xargs -i grep a_n {} | awk '{ print $2 }' | tr -d '\n' )
 				this_size=$( ls $data_dir/*mvm*$matrix*${f}_${bs}_${k}* | xargs -i grep a_size {} | awk '{ print $2 }' | tr -d '\n' )
 				echo -n "$( bc <<< "scale=20; (${this_size}/(${den_size}*${den_size}*8))" ) " >>$tmpdir/ram-up.txt
+				echo -n "$this_size " >>$tmpdir/ram-size.txt
 		
 				#mvm
 				csr_mvm_speed=$(  ls $data_dir/*mvm*$matrix*csr*             | \
@@ -140,7 +185,7 @@ for bs in 32 64 128 256; do
 				this_mvm_speed=$( ls $data_dir/*mvm*$matrix*${f}_${bs}_${k}* | \
 					xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
 				echo -n "$( bc <<< "scale=20; ${csr_mvm_speed}/${this_mvm_speed}" ) " >>$tmpdir/mvm-speedup.txt
-			
+				echo -n "$this_mvm_speed " >>$tmpdir/mvm-speedtime.txt
 				#mmm
 				csr_mvm_speed=$(  ls $data_dir/*mmm*$matrix*csr*             | \
 					xargs -i grep time_mul {} | awk '{ print $2 }' | tr -d '\n' )
@@ -152,7 +197,7 @@ for bs in 32 64 128 256; do
 				fi
 					
 				echo -n "$( bc <<< "scale=20; ${csr_mvm_speed}/${this_mvm_speed}" ) " >>$tmpdir/mmm-speedup.txt
-	
+				echo -n "$this_mvm_speed " >>$tmpdir/mmm-speedtime.txt
 				#kat_nodes
 	
 	
@@ -165,9 +210,12 @@ for bs in 32 64 128 256; do
 	
 			done
 		
+			echo " " >>$tmpdir/ram-size.txt
 			echo " " >>$tmpdir/ram-up.txt
 			echo " " >>$tmpdir/mvm-speedup.txt
+			echo " " >>$tmpdir/mvm-speedtime.txt
 			echo " " >>$tmpdir/mmm-speedup.txt
+			echo " " >>$tmpdir/mmm-speedtime.txt
 		done
 	done
 done
@@ -178,7 +226,10 @@ done
 
  ./tests/scripts/gnuplot.sh $tmpdir/mmm-speedup.txt 8 0 "formát matice" "zrychlení oproti CSR"
  ./tests/scripts/gnuplot.sh $tmpdir/mvm-speedup.txt 8 0 "formát matice" "zrychlení oproti CSR" 1
+ ./tests/scripts/gnuplot.sh $tmpdir/mvm-speedtime.txt 8 1 "formát matice" "čas [s]"
+ ./tests/scripts/gnuplot.sh $tmpdir/mmm-speedtime.txt 8 1 "formát matice" "čas [s]"
  ./tests/scripts/gnuplot.sh $tmpdir/ram-up.txt 8 1 "formát matice" "% velikost husté matice" 1
+ ./tests/scripts/gnuplot.sh $tmpdir/ram-size.txt 8 1 "formát matice" "velikost [B]"
  
  ls  $tmpdir/kat_nodes* | xargs -i ./tests/scripts/gnuplot.sh {} 8 1 "formát matice" "počet uzlů"
  

@@ -3,6 +3,13 @@
 # https://github.com/nesro/sparse-matrices
 
 #-------------------------------------------------------------------------------
+# parse the configuration.txt file
+#-------------------------------------------------------------------------------
+
+
+todo:
+
+
 
 export username=nesrotom
 

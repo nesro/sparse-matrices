@@ -44,7 +44,6 @@ void den_mm_save(den_matrix_t *den, const char *output) {
 
 	den->_.nnz = den_count_nnz(den);
 
-	/* FIXME: w h ? */
 	fprintf(f, "%%MatrixMarket matrix coordinate real general\n"
 			"%d %d %d\n", den->_.w, den->_.h, den->_.nnz);
 
@@ -74,8 +73,6 @@ int den_compare(den_matrix_t *a, vm_t *b) {
 
 	for (i = 0; i < a->_.h; i++) {
 		for (j = 0; j < a->_.w; j++) {
-			/* we need some tolerance */
-
 			if (a->v[i][j] > ((den_matrix_t *) tmp)->v[i][j])
 				d = a->v[i][j] - ((den_matrix_t *) tmp)->v[i][j];
 			else
@@ -241,12 +238,10 @@ void den_matrix_print(den_matrix_t *den) {
 
 	for (i = 0; i < den->_.h; i++) {
 		for (j = 0; j < den->_.w; j++) {
-//			printf(DPF ", ", den->v[i][j]);
 			if (den->v[i][j] != 0)
 				printf("%.lf,", den->v[i][j]);
 			else
 				printf(",");
-//			printf("%.lf, ", den->v[i][j]);
 		}
 
 		printf("\n");
@@ -321,11 +316,6 @@ void den_matrix_print(den_matrix_t *den) {
  return (omp_get_wtime() - start_time);
  }*/
 
-double den_mul_unrolled_parallel(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c) {
-	return 0.;
-}
-
 double den_mul_unrolled(const den_matrix_t *a, const den_matrix_t *b,
 		den_matrix_t *c) {
 
@@ -360,26 +350,6 @@ double den_mul_unrolled(const den_matrix_t *a, const den_matrix_t *b,
 	}
 
 	return (omp_get_wtime() - start_time);
-}
-
-double den_mul_parallel(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c) {
-	return 0.;
-}
-
-double den_mul_strassen_unrolled_parallel(const den_matrix_t *a,
-		const den_matrix_t *b, den_matrix_t *c) {
-	return 0.;
-}
-
-double den_mul_strassen_unrolled(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c) {
-	return 0.;
-}
-
-double den_mul_strassen_parallel(const den_matrix_t *a, const den_matrix_t *b,
-		den_matrix_t *c) {
-	return 0.;
 }
 
 double den_mul_naive(const den_matrix_t *a, const den_matrix_t *b,
@@ -660,9 +630,6 @@ double den_mul_strassen(const den_matrix_t *a, const den_matrix_t *b,
 
 /******************************************************************************/
 
-/*
- * [BI-BAP: Dense matrix x vector]
- */
 static double mul_den_vec(const den_matrix_t *a, vec_t *b, vec_t *c) {
 
 	int row;

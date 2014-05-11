@@ -115,12 +115,7 @@ void mat_vec() {
 	vm_t *kc = NULL;
 
 	vm_load_mm(&ka, KAT, "tests/matrices/generated/64x64.mtx", 8);
-
-	printf("------------------ vec----- %d ----\n", ka->w);
-
 	vm_load_mm(&kb, VEC, "tests/matrices/vector_64.mtx", ka->w);
-
-	printf("------------------ asdfassadf\n");
 
 	printf("kat_a_inner %d\n", ((kat_matrix_t*) ka)->nodes_inner);
 	printf("kat_a_dense %d\n", ((kat_matrix_t*) ka)->nodes_den);
@@ -134,15 +129,7 @@ void mat_vec() {
 
 }
 
-void another() {
-	vm_t *ka = NULL;
-	vm_load_mm(&ka, KAT, "/var/tmp/1024.mtx", 64);
-//	vm_load_mm(&ka, KAT, "tests/matrices/8x8_6nnz_01.mtx", 2);
 
-	kat_print_node(((kat_matrix_t*)ka)->root,0);
-
-	ka->f.free(ka);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -152,7 +139,6 @@ int main(int argc, char *argv[]) {
 
 	run();
 	mat_vec();
-	another();
 
 	CASSERTION_RESULTS();
 

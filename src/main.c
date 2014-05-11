@@ -178,6 +178,10 @@ int main(int argc, char *argv[]) {
 		matrix_a = matrix_b;
 		matrix_b = NULL;
 	}
+
+	/*
+	 * TODO: don't load the same matrix again. do a copy of it
+	 */
 	if (matrix_b != NULL && matrix_a == NULL)
 		matrix_b = matrix_a;
 

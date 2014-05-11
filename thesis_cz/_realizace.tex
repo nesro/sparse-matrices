@@ -2,9 +2,9 @@
 
 \section{Prostředí}
 
-Popsané algoritmy jsme implementovali v jazyce C99[todo: zdroj]. Implementace probíhala v operačním systému Lubuntu[todo: zdroj], v IDE Eclipse CDT[todo: zdroj]. Zdrojový kód byl kompilován pomocí překladače GNU C[todo: zdroj], s optimalizačním přepínačem \texttt{--Ofast}.
+Popsané algoritmy jsme implementovali v jazyce C99 \cite{ISO:C99}. Implementace probíhala v operačním systému Lubuntu \cite{lubuntu}, v IDE Eclipse CDT \cite{cdt}. Zdrojový kód byl kompilován pomocí překladače GNU C \cite{gcc}, s optimalizačním přepínačem \texttt{--Ofast}.
 
-K ladění chyb pro práci s pamětí jsme použili nástroj Valgrind[todo: zdroj] s přepínači \texttt{----leak--check=full ----show-reachable=yes}. Běžící program jsme krokovali pomocí nástroje GNU Debugger[todo: zdroj]. Zdrojový kód pro ladění chyb byl kompilován s přepínači \texttt{--Wall --pedantic --Og --ggdb}.
+K ladění chyb pro práci s pamětí jsme použili nástroj Valgrind \cite{valgrind} s přepínači \texttt{----leak--check=full ----show-reachable=yes}. Běžící program jsme krokovali pomocí nástroje GNU Debugger \cite{gdb}. Zdrojový kód pro ladění chyb byl kompilován s přepínači \texttt{--Wall --pedantic --Og --ggdb}.
 
 %-----------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ U formátů COO, CSR, BSR je implementace přímočará podle pseudokódů. U im
 
 Jeden z důležitých parametrů je $k$, tedy maximální počet synů vnitřních uzlů. V naší implementaci je tento parametr uložen v konstantě \texttt{KAT.n}, pro připomenutí $KAT.n = sqrt(k)$. Překladač poté cykly, kde iterujeme do této konstanty, rozbalí. Překladači i explicitně sdělujeme, ať cykly rozbalí přes atribut \texttt{\_\_attribute\_\_((optimize("unroll-loops")))}.
 
-V bakalářské práci Rozšíření implementace formátu kvadrantového stromu od Tomáše Karabely[todo: zdroj] je Quadtree implementován jako strom, jehož listy tvoří virtuální matice podobným těm v naší práci. Protože jeho formát byl určený pro algoritmus LU rozklad, jeho virtuální matice musely umět přijímat i další prvky. Protože v naší práci se s formáty uložení řídké matice zachází jako s konstantami, rozhodli jsme se hodnoty prvků a informace v polích \texttt{row\_pointers} a \texttt{col\_indices} uložit mimo listy stromu. V listech se nachází ukazatel do velkého pole na příslušné místo pro daný list. Ušetříme tak práci knihovně libc s mnohonásobným volání funkce \texttt{malloc}
+V bakalářské práci Rozšíření implementace formátu kvadrantového stromu od Tomáše Karabely \cite{karabela} je Quadtree implementován jako strom, jehož listy tvoří virtuální matice podobným těm v naší práci. Protože jeho formát byl určený pro algoritmus LU rozklad, jeho virtuální matice musely umět přijímat i další prvky. Protože v naší práci se s formáty uložení řídké matice zachází jako s konstantami, rozhodli jsme se hodnoty prvků a informace v polích \texttt{row\_pointers} a \texttt{col\_indices} uložit mimo listy stromu. V listech se nachází ukazatel do velkého pole na příslušné místo pro daný list. Ušetříme tak práci knihovně libc s mnohonásobným volání funkce \texttt{malloc}
 
 \subsection{Tvoření stromu}
 
@@ -127,75 +127,11 @@ Pro ověření správnosti algoritmů je potřeba testovací software. Strategie
 	\end{algorithmic}
 \end{algorithm}
 
-Pro přehled o nefungujících konfiguracích jsme použili testovací framework Cassertion [todo: zdroj].
-
 Při testování jsme i na relativně malých maticích narazili na problém s numerickou stabilitou. Část z testovacích matic má velký desetinný rozvoj a protože čísla jsou v různých formátech násobena v jiném pořadí, dochází k rozdílu mezi výsledky. Při kompilaci programu lze nastavit přesnost výpočtu pomocí typu proměnné pro uchování hodnot buď na \texttt{float}, \texttt{double} nebo \texttt{long double}. Při porovnávání dvou matic neporovnáváme hodnoty přímo, ale sledujeme velikost jejich rozdílu. V defaultní konfiguraci je povolená odchylka 0.001, při kompilaci ji lze změnit. Pokud spustíme testy  pouze s přesností \texttt{float}, část testů selže právě kvůli numerické stabilitě. 
 
 %-----------------------------------------------------------------------------
 
-\section{Práce s formátem MatrixMarket}
-\label{MM}
 
-Náš program pracuje s formátem \texttt{.mtx} \ref{mtxsubsect}. Podporujeme více druhů tohoto formátu. Nesymetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real symmetric} a symetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real general}. Místo reálných čísel podporujeme i druh \texttt{pattern}, kdy nenulové prvky nabývají pouze hodnoty jedna.
-
-Přestože náš program neumí pracovat s komprimovanými soubory, v prostředí unixového systému předáváme programu pojmenovanou rouru, do které komprimovanou matici rozbalujeme příkazem \texttt{ <(gzip -cd matrix.mtx.gz) }.
-
-\subsection{Generátor řídkých matic}
-
-Generátory z MatrixMarketu běží v internetovém prohlížeči a v jazyce Java. Protože takto není jednoduché matice generovat ve skriptu, abychom při distribuci našeho programu nemuseli přikládat velké testovací matice, implementovali jsme jednoduchý generátor řídkých matic. Parametry předáváme programu informace o výsledné matici a seznam objektů, tedy buď podmatic nebo diagonál, které mají být do matice zahrnuty. Manuál ke generátoru je možné vypsat zavoláním \texttt{./tests/bin/matrix\_generator -h}.    
-
-\begin{algorithm}[htb]
-	\caption{Generování řídkých matic}\label{mmm-recursive}
-	\begin{algorithmic}[1]
-		\Procedure{SparseMatrixGenerator}{$file,width,height,ItemList$}
-		\State \texttt{$MtxWrapper \gets InitMtxWrapper();$}
-		\State \texttt{$MtxWrapper.PositionVector \gets InitVector();$}	
-		\ForAll{\texttt{$Item \in ItemList$}}
-			\State \texttt{$MtxWrapper.addItem(Item.y, Item.x, Item.properties);$}
-			\If{$Item.type == Mirrored$}
-				\State \texttt{$MtxWrapper.addItem(Item.x, Item.y, Item.properties);$}
-			\EndIf
-		\EndFor
-		\State \texttt{$MtxWrapper.PositionVector.sort();$}
-		\State \texttt{$MtxWrapper.PositionVector.removeDuplicates();$}
-		\State \texttt{$MtxWrapper.write(file);$}
-		\EndProcedure
-	\end{algorithmic}
-\end{algorithm}
-
-% Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět s následujícími parametry:
-
-% \begin{itemize}
-% 	\item \texttt{-c} matice bude obsahovat hlavní diagonálu
-% 	\item \texttt{-H <celé číslo>} výška matice
-% 	\item \texttt{-i <typ,a,b,c,d,...>} seznam objektů, které se do matice přidají
-% 	\begin{itemize}
-% 	\item \texttt{diagonal,ay,ax,by,bx,sparsity} prvky v přímce od bodu \texttt{[ax,ay]} do bodu \texttt{[bx,by]} s řídkostí % \texttt{sparsity}
-% 	\item \texttt{block,ay,ax,by,bx,sparsity} blok prvků v obdelníku ohraničiného body \texttt{[ax,ay]} a \texttt{[bx,by]} s % řídkostí \texttt{sparsity}
-% 	\end{itemize}
-% 	\item \texttt{-n <celé číslo>} velikost matice
-% 	\item \texttt{-o <soubor>} cílový soubor (lze použít i stdout)
-% 	\item \texttt{-s <desetinné číslo>} řídkost matice (\texttt{sparsity})
-% 	\item \texttt{-S <desetine číslo>} startovací číslo
-% 	\item \texttt{-W <celé číslo>} šířka matice
-% \end{itemize}
-% 
-% \begin{itemize}
-% 	\item \texttt{-h} zobraz nápovědu
-% 	\item \texttt{-o <soubor>} cílový soubor (lze použít i \texttt{stdout}) 
-% 	\item \texttt{-v} vypisuj průběh generování (\texttt{verbose})
-% \end{itemize}
-
-% \texttt{$ ./tests/bin/matrix_generator -n 8192 -s 0.00001 -i % mdiagonal,150,0,8192,8042,0.95,mdiagonal,200,10,4000,3000,0.75,mblockwh,300,1500,256,256,0.95,mblockwh,700,2000,128,128,0.95,mrblocks,10,128,64,64,0.75 % -o /tmp/matrix2.mtx$}
-
-%\begin{figure}[htb]
-%	\includegraphics[width=1.0\textwidth]{./images/generated_matrix}
-%	\caption{Matice vygenerovaná generátorem}
-%	\label{fig:generatedMtx}
-%\end{figure}
-
-%\section{Možné optimalizace}
-%TODO: popsat moznosti optimalizace - napisu jak by to slo optimalizovat, ale ze jsem to neudelal, protoze mi slo o porovnani mezi % formaty
 
 
 \section{Měření}
@@ -293,6 +229,30 @@ Grafy \ref{fig:mtxsizeEX6} \ref{fig:mtxsizeexdata} \ref{fig:mtxsizefp} \ref{fig:
 
 % \begin{sidewaysfigure}
 % \end{sidewaysfigure}
+
+\section{Porovnání výkonnosti s předpoklady}
+
+Protože při násobení řídkých matic velmi záleží na rozložení jejich prvků, tak abychom porovnali teoretické předpoklady s naměřenými hodnotami, provedeme měření na hustých maticích o velikosti 256, 512, 1024 a 2048. Protože jsme použili pouze základní algoritmy  násobení, časová složitost by měla být \bigO$(n^3)$. Paměťová složitost by měla být nejmenší u CSR a BSR, kde ukládáme u prvků pouze jejich hodnoty a sloupce. U formátu KAT by měla být paměťová složitost velká z důvodu ukládání struktury stromu.
+
+\begin{figure}[htb]
+	\includegraphics[width=1.0\textwidth]{./images/dense/mmm-speedtime}
+	\caption{Čas násobení husté matice s hustou maticí v řídkém formátu}
+	\label{fig:denmmm}
+\end{figure}
+
+\begin{figure}[htb]
+	\includegraphics[width=1.0\textwidth]{./images/dense/mvm-speedtime}
+	\caption{Čas násobení husté matice s vektorem v řídkém formátu}
+	\label{fig:denmvm}
+\end{figure}
+
+\begin{figure}[htb]
+	\includegraphics[width=1.0\textwidth]{./images/dense/ram-size}
+	\caption{Datová velikost hustých matic v řídkých formátech}
+	\label{fig:denram}
+\end{figure}
+
+Z měření vyplývá, že se teoretické předpoklady střetly s naměřenými hodnotami. Graf pro násobení matice maticí \ref{fig:denmmm} ukazuje kubickou závislost mezi velikostí matice a časem. Graf pro násobení matice vektorem \ref{fig:denmvm} ukazuje kvadratickou závislost. Velikost datových struktur ukazuje graf \ref{fig:denram}. Lze z něj vyčíst, že COO potřebuje více paměti než CSR, protože ukládá o každém prvku i řádek, kdežto CSR si pro každý řádek pamatuje rozsah prvků a tedy pro každý prvek lze dopočítat, v jakém je řádku. Formát BSR má nejmenší datovou velikost, jelikož bloky ukládá jako husté matice. Formát KAT ukazuje, že uložení stromu sice zvýší celkovou velikost matice, ale ne tak výrazně, aby byl formát nepoužitelný.
 
 
 \section{Zhodnocení výsledků}

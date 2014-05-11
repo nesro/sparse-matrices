@@ -81,13 +81,13 @@
 
 \begin{introduction}
 
-Při řešení problémů často hledáme způsob, jak interpretovat data v takovém formátu, se kterým již umíme pracovat. Jedním z takových základních prvků je matice. V některých případech takové matice obsahují nemalý počet nulových prvků. Takové matice obecně nazýváme řídké a při práci s nimi této vlastnost využíváme.
+Při řešení problémů často hledáme způsob, jak interpretovat data v takovém formátu, se kterým již umíme pracovat. Jedním z takových základních prvků jsou matice. V některých případech matice obsahují nemalý počet nulových prvků. Takové matice obecně nazýváme řídké a při práci s nimi této vlastnosti využíváme.
 
 Binární operace násobení nad množinou matic patří mezi základní operace z lineární algebry. Pomocí násobení matic lze skládat lineární transformace. Tato operace najde uplatnění v mnohých vědeckých disciplínách.
 
 Formát uložení řídké matice má vliv na výkonnost násobení řídkých matic. V této práci popíšeme formáty COO, CSR, BSR, Quadtree a navrhneme modifikaci formátu Quadtree snížením výšky stromu. Implementujeme tyto formáty spolu s algoritmy pro násobení matic v těchto formátech a porovnáme teoretické předpoklady s naměřenými hodnotami.
 
-V první kapitole zmíníme některé příklady použití násobení řídkých matic v praxi a definujeme některé pojmy. Ve druhé kapitole představíme obecné algoritmy pro násobení matic a ve třetí kapitole popíšeme řídké formáty COO, CSR, BSR, Quadtree a jeho modifikaci a algoritmy pro násobení matic v těchto formátech. Ve čtvrté kapitole ukážeme některé současné programy pro práci s řídkými maticemi. V páté kapitole popíšeme naší implementaci a ukážeme naměřené hodnoty.
+V první kapitole zmíníme některé příklady použití násobení řídkých matic v praxi a definujeme některé pojmy. Ve druhé kapitole představíme obecné algoritmy pro násobení matic a ve třetí kapitole popíšeme řídké formáty COO, CSR, BSR, Quadtree a jeho modifikaci a algoritmy pro násobení matic v těchto formátech. Ve čtvrté kapitole ukážeme některé současné programy pro práci s řídkými maticemi. V páté kapitole popíšeme naši implementaci a ukážeme naměřené hodnoty.
 
 \end{introduction}
 
@@ -137,7 +137,7 @@ Násobení matic je jednoduchá početní úloha, se kterou se setkáme již na 
 
 V této práci jsme popsali základní, ale i pokročilé algoritmy pro násobení matic. Popsali jsme formáty pro uložení řídkých matic COO, CSR, BSR, Quadtree a jeho modifikaci snížením stromu, pojmenovaným KAT. Tyto formáty a algoritmy pro násobení v těchto formátech jsme implementovali a změřili jsme jejich výkonnost na vybraných maticích z praxe.
 
-Měření ukázalo, že násobení matic ve formátu Quadtree a jeho modifikaci do formátu KAT je vhodným formátem, pokud máme dostatek operační paměti a matice buď obsahuje hustší bloky, nebo tolik prvků, že začne využívat cache více než formát CSR.
+Měření ukázalo, že násobení matic ve formátu Quadtree a jeho modifikaci do formátu KAT je vhodným formátem, pokud máme dostatek operační paměti a matice buď obsahuje hustší bloky nebo tolik prvků, že začne využívat cache více než formát CSR.
 
 \section{Další práce}
 
@@ -149,16 +149,132 @@ Díky paralelizaci by se mohlo u formátu KAT zvýšení rychlosti oproti CSR je
 
 CSR není vhodný formát pro Strassenův algoritmus. Tento algorimus by ale šel implementovat do formátu Quadtree. Experimentem by mohla být implementace rozbaleného Strassenova algoritmu, tedy místo násobení matic o velikosti $n = 2$ by se násobily rovnou matice o velikosti například $n = 4$. Změněním pořadí operací by mohlo dojít k zefektivnění tohoto algoritmu. 
 
-\subsection{Řídké uzly}
+\subsection{Řídké vnitřní uzly}
 	
 V naší implementaci byly uzly matice KAT implementovány jako husté matice ukazatelů na syny. Pro velká $k$ by bylo vhodnější, kdyby i uzly tohoto stromu byly řídké matice.	
-	
+
+\subsection{Další typy listů}
+
+Dělit listy na husté a řídké se ukázalo jako správné řešení. Přítěží bylo, pokud blok obsahoval pouze diagonálu, kde formát CSR není příliš efektivní. Řešením by bylo podporovat listy, které budou ukládat prvky v diagonálách.
+
 \end{conclusion}
 
 \bibliographystyle{csn690}
 \bibliography{mybibliographyfile}
 
 \appendix
+
+\chapter{Přílohy}
+
+\section{Překlad programu}
+
+Překlad řídí nástroj GNU Make \cite{make}. Pro kompilaci pouze hlavní části programu je potřeba spustit příkaz \texttt{make}. Pro překlad i testů a generátoru matic je nutné zavolat \texttt{make tests}. Pro nastavení kompilace se předávají proměnné z příkazového řádku: \texttt{make PROMENNA=HODNOTA tests}. Zde je seznam nastavitelných hodnot:
+
+
+\begin{itemize}
+	\item \texttt{KAT\_DENSE\_TRESHOLD} kolik procent z maximálního počtu prvků musí list stromu matice KAT obsahovat, aby s ním bylo zacházeno jako s hustým. Například pro \texttt{make KAT\_DENSE\_TRESHOLD=0.5 tests} a velikost $sm\_size = 10$ bude potřeba alespoň 50 prvků, aby byl list hustý. Defaultní hodnota je $0.75$.
+	\item \texttt{KAT\_N} tímto nastavíme $k$ v KAT matici. Například pro \texttt{make KAT\_N=8} bude $k=64$. Defaultní hodnota je 2, tedy Quadtree.
+
+	\item \texttt{PRECISION} Nastavení přesnosti výpočtu, tedy v jaké proměnné budou uloženy prvky.
+	\begin{itemize}
+		\item \texttt{1} - float (4B)
+		\item \texttt{2} - double (8B)
+		\item \texttt{3} - long double (alespoň 8B)
+	\end{itemize}
+	
+	\item \texttt{DIFF\_TRESHOLD} Tolerance odchylky u testů při porovnávání dvou hodnot. Defaultní hodnota je 0.001.
+	
+	\item \texttt{DEBUG} Pokud je tato hodnota nastavena, program je zkompilován pomocí přepínačů \texttt{--Og --ggdb}, tedy zapnou se optimalizace, které neohrozí ladění a přidají se do binárního výstupu debugovací symboly.
+\end{itemize}
+
+Díky přísným závislostem se pokaždé překládají všechny zdrojové kódy. Je tomu tak z důvodu, aby se vždy promítly tyto nastavení do překladu.
+
+\section{Práce s programem}
+
+Binární soubor se jmenuje \texttt{main} a má následující přepínače:
+
+\begin{itemize}
+	\item \texttt{--f [coo|csr|bsr|kat]} Volba formátu.
+	\item \texttt{--a <matice .mtx>} Nastavení matice A.
+	\item \texttt{--b <matice .mtx>} Nastavení matice B.
+	\item \texttt{--o [<soubor>|stdout]} Nastavení výstupu výsledné matice. Buď do souboru, nebo na standardní výstup.
+	\item \texttt{--s <velikost bloku>} Pro matice BSR a KAT nastavení $sm\_size$.
+	\item \texttt{--v} Vypíše informace o výpočtu. Hlavně dobu násobení a velikost matice v bytech.
+	\item \texttt{--V} Matice B je vektor.
+\end{itemize}
+
+Pokud je zadána pouze matice A, program vynásobí matici A s maticí A.
+
+\section{Práce s formátem MatrixMarket}
+\label{MM}
+
+Náš program pracuje s formátem \texttt{.mtx} \ref{mtxsubsect}. Podporujeme více druhů tohoto formátu. Nesymetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real symmetric} a symetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real general}. Místo reálných čísel podporujeme i druh \texttt{pattern}, kdy nenulové prvky nabývají pouze hodnoty jedna.
+
+Přestože náš program neumí pracovat s komprimovanými soubory, v prostředí unixového systému předáváme programu pojmenovanou rouru, do které komprimovanou matici rozbalujeme příkazem \texttt{ <(gzip -cd matrix.mtx.gz) }.
+
+\section{Generátor řídkých matic}
+
+Generátory z MatrixMarketu běží v internetovém prohlížeči a v jazyce Java. Protože takto není jednoduché matice generovat ve skriptu, abychom při distribuci našeho programu nemuseli přikládat velké testovací matice, implementovali jsme jednoduchý generátor řídkých matic. Parametry předáváme programu informace o výsledné matici a seznam objektů, tedy buď podmatic nebo diagonál, které mají být do matice zahrnuty, jak ukazuje algoritmus \ref{mtx-generator}. Manuál ke generátoru je možné vypsat zavoláním \texttt{./tests/bin/matrix\_generator -h}.    
+
+\begin{algorithm}[H]
+	\caption{Generování řídkých matic}\label{mtx-generator}
+	\begin{algorithmic}[1]
+		\Procedure{SparseMatrixGenerator}{$file,width,height,ItemList$}
+		\State \texttt{$MtxWrapper \gets InitMtxWrapper();$}
+		\State \texttt{$MtxWrapper.PositionVector \gets InitVector();$}	
+		\ForAll{\texttt{$Item \in ItemList$}}
+			\State \texttt{$MtxWrapper.addItem(Item.y, Item.x, Item.properties);$}
+			\If{$Item.type == Mirrored$}
+				\State \texttt{$MtxWrapper.addItem(Item.x, Item.y, Item.properties);$}
+			\EndIf
+		\EndFor
+		\State \texttt{$MtxWrapper.PositionVector.sort();$}
+		\State \texttt{$MtxWrapper.PositionVector.removeDuplicates();$}
+		\State \texttt{$MtxWrapper.write(file);$}
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět s následujícími parametry:
+
+\begin{itemize}
+	\item \texttt{-c} matice nebude obsahovat hlavní diagonálu
+ 	\item \texttt{-H <celé číslo>} výška matice
+ 	\item \texttt{-i <typ,a,b,c,d,...>} seznam objektů, které se do matice přidají
+ 	\begin{itemize}
+ 	\item \texttt{diagonal,ay,ax,by,bx,sparsity} prvky v přímce od bodu \texttt{[ax,ay]} do bodu \texttt{[bx,by]} s řídkostí \texttt{sparsity}
+ 	\item \texttt{block,ay,ax,by,bx,sparsity} blok prvků v obdelníku ohraničiného body \texttt{[ax,ay]} a \texttt{[bx,by]} s  řídkostí \texttt{sparsity}
+ 	\item \texttt{mblock, rblocks, diablocks, mdiagonal} varianty bloků a diagonál. \texttt{r} znamená náhodný a \texttt{m} zrcadlový
+ 	\end{itemize}
+ 	\item \texttt{-n <celé číslo>} velikost matice
+ 	\item \texttt{-o <soubor>} cílový soubor (lze použít i stdout)
+ 	\item \texttt{-s <desetinné číslo>} řídkost matice (\texttt{sparsity})
+ 	\item \texttt{-S <desetinné číslo>} startovací číslo
+ 	\item \texttt{-W <celé číslo>} šířka matice
+ \end{itemize}
+ 
+ \begin{itemize}
+ 	\item \texttt{-h} zobraz nápovědu
+ 	\item \texttt{-o <soubor>} cílový soubor (lze použít i \texttt{stdout}) 
+ 	\item \texttt{-v} vypisuj průběh generování (\texttt{verbose})
+ \end{itemize}
+
+ Například \ref{fig:generatedMtx} byla vygenerována následujícím příkazem: \\
+ \texttt{./tests/bin/matrix\_generator --n 8192 --s 0.00001 \\
+ --i mdiagonal,150,0,8192,8042,0.95, \\
+ mdiagonal,200,10,4000,3000,0.75, \\
+ mblockwh,300,1500,256,256,0.95, \\
+ mblockwh,700,2000,128,128,0.95, \\
+ mrblocks,10,128,64,64,0.75 --o \/tmp\/matrix2.mtx}
+
+\begin{figure}[htb]
+	\includegraphics[width=1.0\textwidth]{./images/generated_matrix}
+	\caption{Matice vygenerovaná generátorem}
+	\label{fig:generatedMtx}
+\end{figure}
+
+
+
 
 \chapter{Seznam použitých zkratek}
 % \printglossaries
@@ -168,6 +284,7 @@ V naší implementaci byly uzly matice KAT implementovány jako husté matice uk
 	\item[CSC] Column sparse column
 	\item[CSR] Column sparse row
 	\item[KAT] k-ary tree
+	\item[GNU] GNU is not UNIX
 \end{description}
 
 \nopagebreak[4]

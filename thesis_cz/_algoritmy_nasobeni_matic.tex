@@ -1,7 +1,7 @@
 \chapter{Algoritmy násobení matic}
 \label{algo}
 
-V této kapitole představíme některé základní a pokročilejší algoritmy pro násobení matic. Základní algoritmy mají stejnou asymptotickou složitost $\bigO(n^3)$ a liší se pouze přístupům k prvkům, což je důležité pro řídké formáty. Pokročilejší algoritmy jsou sice asymptoticky rychlejší, ale přinášejí nevýhodu ve formě numerické stability a velké skryté konstanty.
+V této kapitole představíme některé základní a pokročilejší algoritmy pro násobení matic. Základní algoritmy mají stejnou asymptotickou složitost $\bigO(n^3)$ a liší se pouze přístupem k prvkům, což je důležité pro řídké formáty. Pokročilejší algoritmy jsou sice asymptoticky rychlejší, ale přinášejí nevýhodu ve formě numerické stability a velké skryté konstanty.
 
 \subsection{Pseudokódy}
 
@@ -87,7 +87,7 @@ Nevýhodou tohoto řešení je velký počet náhodných přístupů do pole C. 
 
 \section{Rekurzivní násobení}
 
-Pro matice A i B o stejné velikosti $ {2^\mathbf{N}} $ můžeme použít rekurzivní přístup. Tedy programovací techniku rozděl a panuj, kdy rozdělíme větší problémy na menší podproblémy.
+Pro matice A i B o stejné velikosti $ {2^\mathbf{N}} $ můžeme použít rekurzivní přístup, tedy programovací techniku rozděl a panuj, kdy rozdělíme větší problémy na menší podproblémy.
 
 Každou z matic rozdělíme na čtvrtiny a jednotlivé podmatice násobíme algoritmem podle definice, tedy jako matice o velikosti dva.
 
@@ -286,7 +286,7 @@ V pseudokódu používáme procedury \texttt{offset-add}, respektive \texttt{off
 	\end{algorithmic}
 \end{algorithm}
 
-Výpočet asymptotické složitosti vypočteme podobně jako u \texttt{MMM-recursive}, tedy mistrovskou metodou. 
+Výpočet asymptotické složitosti provedeme podobně jako u \texttt{MMM-recursive}, tedy mistrovskou metodou. 
 
 V každém kroku rekurze počítáme $\Theta(n^2)$ operací na vytvoření pomocných matic.
 
@@ -346,7 +346,7 @@ M_{7} = (0.5678 - 10.456) \cdot (0.7891 + 9.999) = -106.67 \notag\\
 
 Jak můžeme vidět, zatímco u algoritmu podle definice jsme pouze ztratili desetinnou přesnost, výsledek Strassenova algoritmu se lišil už v prvním desetinném čísle. 
 
-Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na velikost 1024) algoritmem podle definice a Strassenovým algoritmem s různými prahy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojité desetinné přesnosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu \ref{fig:StrassenStability} je vidět exponenciální závislost mezi velikostí prahu a ce	lkovou chybou.
+Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment, ve kterém jsme vynásobili dvě stejné matice (matice orsirr\_1, oříznuta na velikost 1024) algoritmem podle definice a Strassenovým algoritmem s různými prahy a sečetli všechny rozdíly mezi výsledky. Násobení probíhalo ve dvojité desetinné přesnosti, tedy v datovém typu \texttt{double} jazyka C99. Z grafu \ref{fig:StrassenStability} je vidět exponenciální závislost mezi velikostí prahu a celkovou chybou.
 
 \begin{figure}[H]\centering
 	\includegraphics[width=\textwidth]{./images/strassen_stability}
@@ -354,11 +354,11 @@ Pro reálnou představu stability Strassenova algoritmu jsme provedli experiment
 	\label{fig:StrassenStability}
 \end{figure}
 
-Strassenův algorimus lze ještě vylepšit. Algoritmům na stejném principu se říká Strassen-like \cite{DBLP:journals/iacr/CenkH13}. Pro sedm operací násobení je možné snížit počet sčítání a odečítání. Pro jednoduchost zde uvádíme pouze originální algoritmus.
+Strassenův algoritmus lze ještě vylepšit. Algoritmům na stejném principu se říká Strassen-like \cite{DBLP:journals/iacr/CenkH13}. Pro sedm operací násobení je možné snížit počet sčítání a odečítání. Pro jednoduchost zde uvádíme pouze originální algoritmus.
 
 \section{Rychlé algoritmy}
 
-Po tom, co Strassen ukázal, že existují rychlejší algoritmy než $\bigO(n^3)$, ještě rychlejší algoritmy než ten jeho na sebe nenechaly dlouho čekat. Složitost násobení matic pro jednoduchost označíme jako $\bigO(n^\omega)$.
+Potom, co Strassen ukázal, že existují rychlejší algoritmy než $\bigO(n^3)$, ještě rychlejší algoritmy než ten jeho na sebe nenechaly dlouho čekat. Složitost násobení matic pro jednoduchost označíme jako $\bigO(n^\omega)$.
 
 Nejpomalejší algoritmus s $\omega=3$ je podle definice. Strassenův algoritmus se sedmi násobeními má $\omega\approx2.807354$. Jeden z nejrychlejších algoritmů je algoritmus Virginie Williamsové \cite{DBLP:conf/stoc/Williams12}\cite{BreakigCWB}, pro který je $\omega<2.3727$. 
 
@@ -391,7 +391,7 @@ Pro reálnou představu demonstrujeme násobení dvou stejných matic. Opět se 
 	\label{fig:aftOrsirr1}
 \end{figure}
 
-Kdyby nastal nejhorší možný případ, počet operací násobení při použití algoritmu podle definice pro řídké matice by byl $1030 \times 6858 = 7.063740\e{6}$. Pro tento případ ovšem stačí $4.6976\e{4}$ operací násobení. Oproti nejhoršímu možnému případu nastalo $7.063740\e{6} - 4.6976\e{4} = 7.016764\e{6}$ situací, kdy jeden ze dvou prvků byl nulový a operace násobení nemusela být provedena. Při násobení algoritmem podle definice pro husté matice by v $1.092680024\e{9}$ případech operace násobení nemusela být provedena, protože alespoň jeden ze dvou prvků by byl nula. Po vynásobení matice orsirr\_1 sama se sebou, stoupl její počet nnz z $6858$ na $23532$. V tomto případě to bylo především z důvodu, že všechny prvky z diagonály matice jsou nenulové, každý prvek se tedy započítá.
+Kdyby nastal nejhorší možný případ, počet operací násobení při použití algoritmu podle definice pro řídké matice by byl $1030 \times 6858 = 7.063740\e{6}$. Pro tento případ ovšem stačí $4.6976\e{4}$ operací násobení. Oproti nejhoršímu možnému případu nastalo $7.063740\e{6} - 4.6976\e{4} = 7.016764\e{6}$ situací, kdy jeden ze dvou prvků byl nulový a operace násobení nemusela být provedena. Při násobení algoritmem podle definice pro husté matice by v $1.092680024\e{9}$ případech operace násobení nemusela být provedena, protože alespoň jeden ze dvou prvků by byl nula. Po vynásobení matice orsirr\_1 sama se sebou stoupl její počet nnz z $6858$ na $23532$. V tomto případě to bylo především z důvodu, že všechny prvky z diagonály matice jsou nenulové, každý prvek se tedy započítá.
 
 \label{fast-sparse}
 \section{Rychlé násobení řídkých matic}
