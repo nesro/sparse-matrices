@@ -116,7 +116,7 @@ done
 	
 
 #16 512
-for bs in 32 64 128 256; do
+for bs in 16 32 64 128 256; do
 	for f in bsr; do
 	
 		echo -n "\"${f}-${bs}\" " >>$tmpdir/ram-up.txt

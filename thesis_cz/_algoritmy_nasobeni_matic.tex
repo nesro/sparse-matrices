@@ -368,7 +368,7 @@ Hranicí nejlepší možné složitosti může být $\omega=2$, protože každý
 
 Pokud násobíme řídké matice $A$ a $B$ o velikosti $N$, můžeme vynechat násobení takových dvou prvků, z nichž je alespoň jeden nulový. Označme $nnzr_{M,i}$ jako počet nenulových prvků v i-tém řádku matice M a $nnzc_{M,i}$ jako počet nenulových prvků v i-tém sloupci matice M. Protože násobíme každý řádek s každým sloupcem, bude celkový počet operací násobení dán vzorcem:
 
-\begin{figure}[htb]
+\begin{figure}[htb]\label{csrmmm}
 \begin{align}
 \sum_{i=1}^{n} nnzr_{A,i} \cdot nnzc_{B,i}
 \end{align}

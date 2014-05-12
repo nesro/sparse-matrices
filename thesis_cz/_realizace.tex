@@ -18,7 +18,7 @@ Po různých formátech požadujeme stejné operace, proto v programu zavádíme
 	\label{fig:uml}
 \end{figure}
 
-Program běží v příkazovém řádku bez GUI. Program je jednovláknový. Program načte jednu nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích. Podrobnější popis nastavení programu je v příloze.
+Program běží v příkazovém řádku bez GUI a je jednovláknový. Načte jednu nebo dvě matice v určitém formátu a vynásobí je. Pomocí přepínačů lze zobrazit nebo uložit výslednou matici, popřípadě vypsat některé údaje o načtených maticích. Podrobnější popis nastavení programu je v příloze.
 
 %-----------------------------------------------------------------------------
 
@@ -28,11 +28,11 @@ U formátů COO, CSR, BSR je implementace přímočará podle pseudokódů. U im
 
 Jeden z důležitých parametrů je $k$, tedy maximální počet synů vnitřních uzlů. V naší implementaci je tento parametr uložen v konstantě \texttt{KAT.n}, pro připomenutí $KAT.n = sqrt(k)$. Překladač poté cykly, kde iterujeme do této konstanty, rozbalí. Překladači i explicitně sdělujeme, ať cykly rozbalí přes atribut \texttt{\_\_attribute\_\_((optimize("unroll-loops")))}.
 
-V bakalářské práci Rozšíření implementace formátu kvadrantového stromu od Tomáše Karabely \cite{karabela} je Quadtree implementován jako strom, jehož listy tvoří virtuální matice podobným těm v naší práci. Protože jeho formát byl určený pro algoritmus LU rozklad, jeho virtuální matice musely umět přijímat i další prvky. Protože v naší práci se s formáty uložení řídké matice zachází jako s konstantami, rozhodli jsme se hodnoty prvků a informace v polích \texttt{row\_pointers} a \texttt{col\_indices} uložit mimo listy stromu. V listech se nachází ukazatel do velkého pole na příslušné místo pro daný list. Ušetříme tak práci knihovně libc s mnohonásobným volání funkce \texttt{malloc}
+V bakalářské práci Rozšíření implementace formátu kvadrantového stromu od Tomáše Karabely \cite{karabela} je Quadtree implementován jako strom, jehož listy tvoří virtuální matice podobným těm v naší práci. Protože jeho formát byl určený pro algoritmus LU rozklad, jeho virtuální matice musely umět přijímat i další prvky. Protože v naší práci se s formáty uložení řídké matice zachází jako s konstantami, rozhodli jsme se hodnoty prvků a informace v polích \texttt{row\_pointers} a \texttt{col\_indices} uložit mimo listy stromu. V listech se nachází ukazatel do velkého pole na příslušné místo pro daný list. Ušetříme tak práci knihovně libc s mnohonásobným volání funkce \texttt{malloc}.
 
 \subsection{Tvoření stromu}
 
-Při tvoření matice v KAT formátu pro každý prvek procházíme strom a hledáme správný list. Protože výška stromu je daná třemi parametry, tedy velikostí matice $n$, velikostí podmatice $sm\_size$ a počtu větvení uzlu $k$, nejefektivnější využití bude, pokud je $n$ bezezbytku dělitelné $k * sm\_size$. Pokud toto neplatí, rodiče listů budou mít část synů nevyužitých i při uložení husté matice. Protože se prvky do matice načítají po řádcích zleva doprava, je velká pravděpodobnost, že další načtený prvek bude patřit do stejného listu. Z tohoto důvodu si pamatujeme poslední list a pokud prvek patří do něj, vrátíme jej. Algoritmus \ref{kat-create} ukazuje, jakým způsobem vyhledáváme list pro prvek.
+Při tvoření matice v KAT formátu pro každý prvek procházíme strom a hledáme správný list. Protože výška stromu je daná třemi parametry, tedy velikostí matice $n$, velikostí podmatice $sm\_size$ a počtem větvení uzlu $k$, nejefektivnější využití bude, pokud je $n$ bezezbytku dělitelné $k * sm\_size$. Pokud toto neplatí, rodiče listů budou mít část synů nevyužitých i při uložení husté matice. Protože se prvky do matice načítají po řádcích zleva doprava, je velká pravděpodobnost, že další načtený prvek bude patřit do stejného listu. Z tohoto důvodu si pamatujeme poslední list, a pokud prvek patří do něj, vrátíme jej. Algoritmus \ref{kat-create} ukazuje, jakým způsobem vyhledáváme list pro prvek.
 
 
 \label{alg:kat-create}
@@ -127,7 +127,7 @@ Pro ověření správnosti algoritmů je potřeba testovací software. Strategie
 	\end{algorithmic}
 \end{algorithm}
 
-Při testování jsme i na relativně malých maticích narazili na problém s numerickou stabilitou. Část z testovacích matic má velký desetinný rozvoj a protože čísla jsou v různých formátech násobena v jiném pořadí, dochází k rozdílu mezi výsledky. Při kompilaci programu lze nastavit přesnost výpočtu pomocí typu proměnné pro uchování hodnot buď na \texttt{float}, \texttt{double} nebo \texttt{long double}. Při porovnávání dvou matic neporovnáváme hodnoty přímo, ale sledujeme velikost jejich rozdílu. V defaultní konfiguraci je povolená odchylka 0.001, při kompilaci ji lze změnit. Pokud spustíme testy  pouze s přesností \texttt{float}, část testů selže právě kvůli numerické stabilitě. 
+Při testování jsme i na relativně malých maticích narazili na problém s numerickou stabilitou. Část z testovacích matic má velký desetinný rozvoj, a protože čísla jsou v různých formátech násobena v jiném pořadí, dochází k rozdílu mezi výsledky. Při kompilaci programu lze nastavit přesnost výpočtu pomocí typu proměnné pro uchování hodnot buď na \texttt{float}, \texttt{double} nebo \texttt{long double}. Při porovnávání dvou matic neporovnáváme hodnoty přímo, ale sledujeme velikost jejich rozdílu. V defaultní konfiguraci je povolená odchylka 0.001, při kompilaci ji lze změnit. Pokud spustíme testy  pouze s přesností \texttt{float}, část testů selže právě kvůli numerické stabilitě. 
 
 %-----------------------------------------------------------------------------
 
@@ -162,7 +162,7 @@ Pro měření výsledků byly použity následující matice:
 
 \subsection{Rychlost výpočtu}
 
-Graf \ref{fig:mmmspeed} ukazuje zrychlení výpočtu na ukázkových matic oproti násobení ve formátu CSR. Graf \ref{fig:mvmspeed} ukazuje stejný případ pro operaci násobení matice vektorem.
+Graf \ref{fig:mmmspeed} ukazuje zrychlení výpočtu na ukázkových maticích oproti násobení ve formátu CSR. Graf \ref{fig:mvmspeed} ukazuje stejný případ pro operaci násobení matice vektorem.
 
 \begin{figure}[H]
 	\includegraphics[width=1.0\textwidth]{./images/measure1/mmm-speedup}
@@ -232,7 +232,7 @@ Grafy \ref{fig:mtxsizeEX6} \ref{fig:mtxsizeexdata} \ref{fig:mtxsizefp} \ref{fig:
 
 \section{Porovnání výkonnosti s předpoklady}
 
-Protože při násobení řídkých matic velmi záleží na rozložení jejich prvků, tak abychom porovnali teoretické předpoklady s naměřenými hodnotami, provedeme měření na hustých maticích o velikosti 256, 512, 1024 a 2048. Protože jsme použili pouze základní algoritmy  násobení, časová složitost by měla být \bigO$(n^3)$. Paměťová složitost by měla být nejmenší u CSR a BSR, kde ukládáme u prvků pouze jejich hodnoty a sloupce. U formátu KAT by měla být paměťová složitost velká z důvodu ukládání struktury stromu.
+Protože při násobení řídkých matic velmi záleží na rozložení jejich prvků, tak abychom porovnali teoretické předpoklady s naměřenými hodnotami, provedeme měření na hustých maticích o velikosti 256, 512, 1024 a 2048. Protože jsme použili pouze základní algoritmy  násobení, časová složitost by měla být \bigO$(n^3)$ pro násobení matice s maticí a \bigO$(n^2)$ pro násobení matice s vektorem. Paměťová složitost by měla být nejmenší u CSR a BSR, kde ukládáme u prvků pouze jejich hodnoty a sloupce. U formátu KAT by měla být paměťová složitost velká z důvodu ukládání struktury stromu.
 
 \begin{figure}[htb]
 	\includegraphics[width=1.0\textwidth]{./images/dense/mmm-speedtime}
@@ -254,6 +254,32 @@ Protože při násobení řídkých matic velmi záleží na rozložení jejich 
 
 Z měření vyplývá, že se teoretické předpoklady střetly s naměřenými hodnotami. Graf pro násobení matice maticí \ref{fig:denmmm} ukazuje kubickou závislost mezi velikostí matice a časem. Graf pro násobení matice vektorem \ref{fig:denmvm} ukazuje kvadratickou závislost. Velikost datových struktur ukazuje graf \ref{fig:denram}. Lze z něj vyčíst, že COO potřebuje více paměti než CSR, protože ukládá o každém prvku i řádek, kdežto CSR si pro každý řádek pamatuje rozsah prvků a tedy pro každý prvek lze dopočítat, v jakém je řádku. Formát BSR má nejmenší datovou velikost, jelikož bloky ukládá jako husté matice. Formát KAT ukazuje, že uložení stromu sice zvýší celkovou velikost matice, ale ne tak výrazně, aby byl formát nepoužitelný.
 
+Tabulka \ref{overspeed} shrnuje časové a tabulka \ref{overram} paměťové složitosti.
+
+\begin{table}[htb]\label{overspeed}
+    \begin{tabular}{r|l|l}
+    Formát & Časová složitost MMM    & Časová složitost MVM \\
+     \hline
+    COO    & jako CSR                                                 & \bigO$(nnz)$                                \\
+    CSR    & \bigO($\sum_{i=1}^{n} nnzr_{A,i} \cdot nnzc_{B,i}$) \ref{csrmmm}     & \bigO$(nnz)$                                \\
+    BSR    & \bigO($blks \cdot sm\_size^3$)                           & \bigO($blks \cdot sm\_size^2$)              \\
+    KAT    & \bigO$(\frac{n^2}{sm\_size} \cdot (height+sm\_size^3)$ & \bigO$(\frac{n^2}{sm\_size} \cdot (height+sm\_size^2)$                                           \\
+    \end{tabular} 
+    \caption{Přehled časových složitostí násobení matic}
+\end{table}
+
+
+\begin{table}[htb]\label{overram}
+    \begin{tabular}{r|l}
+    Formát & Paměťová složitost \\
+     \hline
+    COO    & \bigO($nnz \cdot 3$)                     \\
+    CSR    & \bigO($nnz \cdot 2 + m + 1$)               \\
+    BSR    & \bigO($blks \cdot sm\_size^2$)                                    \\
+    KAT    & \bigO$(k^{height-2}-k-\frac{1}{k})$  \\
+    \end{tabular}
+    \caption{Přehled paměťových složitostí násobení matic}
+\end{table}
 
 \section{Zhodnocení výsledků}
 
@@ -261,8 +287,8 @@ Matice ve formátu BSR dosahovaly velmi špatných výsledků, protože	 jejich 
 
 Největším zlepšením byla matice KAT pro matici exdata-1 \cite{mtxexdata}, kde se výpočet zrychlil o více než dvojnásobek. Důvodem bylo efektivní rozdělení matice na husté a řídké části. I paměťová velikost byla srovnatelná s formátem CSR.
 
-U matic, kde není nějaký vzor ve formě bloků, například u matice EX6 \cite{mtxex}, byl formát CSR rychlejší ve všech případech. K povšimnutí také stojí, v základním nastavení programu nebyl v matici KAT zvolen pro tuto matici ani jeden hustý list.
+U matic, kde není nějaký vzor ve formě bloků, například u matice EX6 \cite{mtxex}, byl formát CSR rychlejší ve všech případech. Za  povšimnutí také stojí to, že v základním nastavení programu nebyl v matici KAT zvolen pro tuto matici ani jeden hustý list.
 
-Ani jeden hustý list nebyl zvolen ani pro matici human\_gene2 \cite{mtxhuman}. Vzhledem k její hustotě a velikosti ale pro velké CSR bloky 128 a 256 díky časové a prostorové lokalitě \cite{cachelocal} výsledky lepší než v obyčejném CSR.
+Také ani jeden hustý list nebyl zvolen pro matici human\_gene2 \cite{mtxhuman}. Vzhledem k její hustotě a velikosti ale pro velké CSR bloky 128 a 256 díky časové a prostorové lokalitě \cite{cachelocal} byly výsledky lepší než v obyčejném CSR.
 
 Přestože se s větším $k$ u KAT matic výrazně snížil počet vnitřních uzlů, tak se celková datová velikost matice výrazně zvýšila. Důvodem je velikost uzlu, která obsahuje $k^2$ ukazatelů na syny. 

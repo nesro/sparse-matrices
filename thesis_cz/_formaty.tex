@@ -158,9 +158,9 @@ Matici $A$ ve formátu BSR ukládáme velice podobně jako u formátu CSR pomoc�
 	\label{fig:BSR}
 \end{figure}
 
-Uložení matice ve formátu BSR ilustruje obrázek \ref{fig:BSR}. Pole $row\_pointers$ obsahuje informace o tom, na kterém řádku je kolik bloků. Na řádku $i$ je $row\_pointers[i+1] - row\_pointers[i]$ bloků. Ve kterém sloupci se blok prvků nachází udává pole $col\_indices$. První blok z řádku $i$ je ve sloupci $col\_indices[$ $row\_pointers[i]]$ a poslední blok je ve sloupci $col\_indices[ row\_pointers[i+1] ]$. Pole $values$ obsahuje prvky v blocích, včetně nulových prvků.
+Uložení matice ve formátu BSR ilustruje obrázek \ref{fig:BSR}. Pole $row\_pointers$ obsahuje informace o tom, na kterém řádku je kolik bloků. Na řádku $i$ je $row\_pointers[i+1] - row\_pointers[i]$ bloků. Ve kterém sloupci se blok prvků nachází, udává pole $col\_indices$. První blok z řádku $i$ je ve sloupci $col\_indices[$ $row\_pointers[i]]$ a poslední blok je ve sloupci $col\_indices[ row\_pointers[i+1] ]$. Pole $values$ obsahuje prvky v blocích, včetně nulových prvků.
 
-Pokud vezmeme algoritmus násobení dvou CSR matic respektive CSR matice s vektorem, jen místo prvků násobíme bloky, vznikne nám algoritmus pro násobení dvou BSR matric respektive BSR matice s vektorem. Za povšimnutí stojí větší počet for cyklů s menším rozsahem iterace než u CSR. To nám v nejvnitřnějších cyklech dovoluje lépe využívat cache. Jedná se tedy o přístup podobný optimalizační technice loop tiling\cite{Wolf:1991:DLO:113445.113449}.
+Pokud vezmeme algoritmus násobení dvou CSR matic respektive CSR matice s vektorem, jen místo prvků násobíme bloky, vznikne nám algoritmus pro násobení dvou BSR matric, respektive BSR matice s vektorem. Za povšimnutí stojí větší počet for cyklů s menším rozsahem iterace než u CSR. To nám v nejvnitřnějších cyklech dovoluje lépe využívat cache. Jedná se tedy o přístup podobný optimalizační technice loop tiling\cite{Wolf:1991:DLO:113445.113449}.
 
 \label{alg:bsr-mvm}
 \begin{algorithm}[H]
@@ -325,4 +325,4 @@ Přesnější asymptotická složitost násobení matic v KAT formátu je vyšš
 
 \subsection{Paměťová složitost}
 
-Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu bez listů. Velikost uzlu je pole $k$ ukazatelů na syny. Počet vnitřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} \cdot k)$ po zkrácení \bigO$(k^{h-2}-k-\frac{1}{k})$.
+Paměťová složitost celé KAT matice záleží na typu a hustotě uložení dat. Uvedeme zde pouze paměťovou složitost stromu bez listů. Velikost uzlu je pole $k$ ukazatelů na syny. Počet vnitřních uzlů spočítáme pomocí geometrické posloupnosti. Paměťová složitost stromu KAT matice tedy je \bigO$(\frac{k^{height-1}-1}{k - 1} \cdot k)$ po zkrácení \bigO$(k^{height-2}-k-\frac{1}{k})$.

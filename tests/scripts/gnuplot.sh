@@ -32,7 +32,8 @@ for (( i=3; i<$to; i++ )); do
 done  
 
 	gnuplot <<__EOF__
-set term pdf monochrome
+set term pdf
+#set term pdf monochrome
 set output '${file}.pdf'
 set boxwidth 0.9 absolute
 set style fill solid 1.00 border lt -1
@@ -41,7 +42,7 @@ set style fill solid 1.00 border lt -1
 #set key out vert center top Left noreverse noenhanced autotitles nobox
 #set style histogram clustered gap 1 title  offset character 0, 0, 0
 $key_str
-set style fill pattern
+#set style fill pattern
 set datafile missing '-'
 set style data histograms
 set xlabel "$xlabel"

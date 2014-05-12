@@ -16,7 +16,7 @@ Pro práci s řídkými maticemi v jazyce C++ je možné použít knihovnu uBLAS
 
 \subsection{ATLAS}
 
-ATLAS \cite{atlas} je v překladu zkratkou pro automatické generování vyladěného kódu pro software řešící úlohy z lineární algebry. Je tak dosaženo pomocí jak obecných optimalizací kódu, tak optimalizací pro konkrétní architektury.
+ATLAS \cite{atlas} je v překladu zkratkou pro automatické generování vyladěného kódu pro software řešící úlohy z lineární algebry. Tohoto je dosaženo jak pomocí obecných optimalizací kódu, tak optimalizací pro konkrétní architektury.
 
 Podobných projektů je více, konkrétně pro násobení matice s vektorem je to například Sparsity \cite{sparsity} nebo pro násobení matice s maticí je to například PHiPAC \cite{PHiPAC}\cite{bilmes96a}.
 
@@ -28,6 +28,6 @@ V této práci pomocí Wolfram Mathematicy vizualizujeme řídké matice z form�
 
 \section{Řešení implementace}
 
-Jedna z možných variant pro porovnání všech zvolených formátů byla doimplementovat formát Quadtree, respektive KAT do knihovny SciPy.sparse. Další možnost byla pokračovat v semestrální práci z předmětu Efektivní implementace algoritmů s tématem násobení matic ve formátu CSR.
+Jednou z možných variant bylo pro porovnání všech zvolených formátů byla doimplementovat formát Quadtree, respektive KAT do knihovny SciPy.sparse. Další možností bylo pokračovat v semestrální práci z předmětu Efektivní implementace algoritmů s tématem násobení matic ve formátu CSR.
 
 Protože se v této práci zabýváme pouze vlivem uložení řídké matice pro operaci násobení, rozhodli jsme se vytvořit program pouze pro tuto operaci. Obecná knihovna pro práci s řídkými maticemi, jakým například SciPy.sparse je, nemůže využít některých vlastností matic při jejich násobení. Hlavně zacházení s násobenými maticemi jako s konstantami. Navíc pokud nebudou použity žádné jiné implementace, budou všechny algoritmy stejně optimalizované. Navážeme tedy na semestrální práci. Pro každý formát vytvoříme ve zdrojovém kódu třídu, v níž implementujeme operaci násobení s maticí a násobení s vektorem.

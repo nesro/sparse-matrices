@@ -143,11 +143,11 @@ Měření ukázalo, že násobení matic ve formátu Quadtree a jeho modifikaci 
 
 \subsection{Paralelizace}
 
-Díky paralelizaci by se mohlo u formátu KAT zvýšení rychlosti oproti CSR ještě zvýšit, protože by jednotlivá vlákna řešila jednotlivé bloky a využívala by tak cache efektivněji než CSR. 
+Díky paralelizaci by se mohlo u formátu KAT zvýšení rychlosti oproti CSR ještě umocnit, protože by jednotlivá vlákna řešila jednotlivé bloky a využívala by tak cache efektivněji než CSR. 
 
 \subsection{Strassenův algoritmus}
 
-CSR není vhodný formát pro Strassenův algoritmus. Tento algorimus by ale šel implementovat do formátu Quadtree. Experimentem by mohla být implementace rozbaleného Strassenova algoritmu, tedy místo násobení matic o velikosti $n = 2$ by se násobily rovnou matice o velikosti například $n = 4$. Změněním pořadí operací by mohlo dojít k zefektivnění tohoto algoritmu. 
+CSR není vhodný formát pro Strassenův algoritmus. Tento algoritmus by bylo možné implementovat do formátu Quadtree. Experimentem by mohla být implementace rozbaleného Strassenova algoritmu, tedy místo násobení matic o velikosti $n = 2$ by se násobily rovnou matice o velikosti například $n = 4$. Změněním pořadí operací by mohlo dojít k zefektivnění tohoto algoritmu. 
 
 \subsection{Řídké vnitřní uzly}
 	
@@ -187,7 +187,11 @@ Překlad řídí nástroj GNU Make \cite{make}. Pro kompilaci pouze hlavní čá
 	\item \texttt{DEBUG} Pokud je tato hodnota nastavena, program je zkompilován pomocí přepínačů \texttt{--Og --ggdb}, tedy zapnou se optimalizace, které neohrozí ladění a přidají se do binárního výstupu debugovací symboly.
 \end{itemize}
 
-Díky přísným závislostem se pokaždé překládají všechny zdrojové kódy. Je tomu tak z důvodu, aby se vždy promítly tyto nastavení do překladu.
+Díky přísným závislostem se pokaždé překládají všechny zdrojové kódy. Je tomu tak z důvodu, aby se vždy promítla tato nastavení do překladu.
+
+\section{Překlad textu práce}
+
+Překlad práce do formátu pdf se provede příkazem \texttt{make thesis}. Potřebné balíčky pro překlad jsou \texttt{latexmk, texlive-lang-czechslovak, texlive-generic-extra, texlive-science}.
 
 \section{Práce s programem}
 
@@ -210,7 +214,7 @@ Pokud je zadána pouze matice A, program vynásobí matici A s maticí A.
 
 Náš program pracuje s formátem \texttt{.mtx} \ref{mtxsubsect}. Podporujeme více druhů tohoto formátu. Nesymetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real symmetric} a symetrický s banerem \texttt{\%\%MatrixMarket matrix coordinate real general}. Místo reálných čísel podporujeme i druh \texttt{pattern}, kdy nenulové prvky nabývají pouze hodnoty jedna.
 
-Přestože náš program neumí pracovat s komprimovanými soubory, v prostředí unixového systému předáváme programu pojmenovanou rouru, do které komprimovanou matici rozbalujeme příkazem \texttt{ <(gzip -cd matrix.mtx.gz) }.
+Přestože náš program neumí pracovat s komprimovanými soubory, v prostředí unixového systému předáváme programu pojmenovanou rouru, do které komprimovanou matici rozbalujeme příkazem: \texttt{ <(gzip -cd matrix.mtx.gz) }
 
 \section{Generátor řídkých matic}
 
@@ -235,7 +239,7 @@ Generátory z MatrixMarketu běží v internetovém prohlížeči a v jazyce Jav
 	\end{algorithmic}
 \end{algorithm}
 
-Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět s následujícími parametry:
+Generátor řídkých matic byl implementován v jednom souboru. Lze ho spouštět s následujícími parametry:
 
 \begin{itemize}
 	\item \texttt{-c} matice nebude obsahovat hlavní diagonálu
@@ -273,7 +277,13 @@ Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět 
 	\label{fig:generatedMtx}
 \end{figure}
 
+\section{Spuštění testů}
 
+Po překladu \texttt{make tests} je hlavní testovací spustitelný soubor \texttt{./tests/bin/test\_mat\_vec}.
+
+\section{Práce se serverem star}
+
+Příkazem \texttt{nohup sh -c "time ./tests/graphs/measure_program/create_jobs.sh 0 <složka> \\"<matice>\\"" &} je možné spustit měření na maticích z určité složky. Pro násobení vektorem je potřeba mít soubor s vektorem \texttt{vector_<matice>.mtx.gz}
 
 
 \chapter{Seznam použitých zkratek}
@@ -285,6 +295,9 @@ Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět 
 	\item[CSR] Column sparse row
 	\item[KAT] k-ary tree
 	\item[GNU] GNU is not UNIX
+	\item[GUI] Graphical User Interface
+	\item[MMM] Matrix-Matrix Mulitplication
+	\item[MVM] Matrix-Vector Mulitplication
 \end{description}
 
 \nopagebreak[4]
@@ -415,13 +428,13 @@ Generátor řídkých matic byl implementován v jednom souboru. Lze spouštět 
 \begin{figure}
 	\dirtree{%
 		.1 readme.txt\DTcomment{stručný popis obsahu CD}.
-		.1 exe\DTcomment{adresář se spustitelnou formou implementace}.
-		.1 src.
-		.2 impl\DTcomment{zdrojové kódy implementace}.
-		.2 thesis\DTcomment{zdrojová forma práce ve formátu \LaTeX{}}.
-		.1 text\DTcomment{text práce}.
-		.2 thesis.pdf\DTcomment{text práce ve formátu PDF}.
-		.2 thesis.ps\DTcomment{text práce ve formátu PS}.
+		.1 barevne\_grafy\DTcomment{barevné grafy použité v práci}.
+		.1 test\_matrices\DTcomment{soubor testovacích matic}.
+		.1 sparse-matices\DTcomment{zdrojové kódy}.
+		.2 src\DTcomment{zdrojové kódy implementace}.
+		.2 tests\DTcomment{zdrojové kódy testů}.
+		.2 thesis\_cz\DTcomment{zdrojová forma práce ve formátu \LaTeX{}}.
+		.3 BP\_Nesrovnal\_Tomas.pdf\DTcomment{text práce}.
 	}
 \end{figure}
 

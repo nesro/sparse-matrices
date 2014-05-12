@@ -3,6 +3,14 @@
 # https://github.com/nesro/sparse-matrices
 # 
 
+#-------------------------------------------------------------------------------
+# read configuration files
+#-------------------------------------------------------------------------------
+
+USERNAME=$(shell cat USERNAME.txt)
+
+#-------------------------------------------------------------------------------
+
 # make DEBUG=1 tests && make BIN=./tests/bin/test_kat_matrix valgrind
 
 # make DEBUG=1 tests && nice -n 19 valgrind --leak-check=full --show-reachable=yes ./tests/bin/matrix_generator -n 512 -s 0.1 -i block,50,100,75,150,0.9,block,100,100,150,150,0.8,diagonal,200,200,300,300 -o /tmp/matrix2.mtx 2> >(while read l; do echo -e "\e[01;31m$l\e[0m" >&2; done)
@@ -293,17 +301,15 @@ $(SRC)/virtual_matrix.h $(SRC)/bsr_matrix.h $(SRC)/coo_matrix.h \
 	$(CC) $(CFLAGS) -c -o $(TEST_BUILD)/$@ $< $(CLIBS)
 
 #-------------------------------------------------------------------------------
-# These things are just for the author. Feel free to ignore it.
+# Some unrelated stuff. Mostly just for FIT CTU
 #-------------------------------------------------------------------------------
 
 # Tunel for licencing Wolram Mathematica. It can visualize .mtx files.
 matunel:
-	echo "ssh nesrotom@fray1.fit.cvut.cz -L 16286:leibniz.feld.cvut.cz:16286"
+	ssh $(USERNAME)@fray1.fit.cvut.cz -L 16286:leibniz.feld.cvut.cz:16286
 
 #-------------------------------------------------------------------------------
 # STAR.fit.cvut.cz helpers
-
-USERNAME=nesrotom
 
 # Deploy files from local to STAR
 star-deploy: clean
