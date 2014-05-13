@@ -164,7 +164,6 @@ clean:
 		$(TEST_BIN) \
 		./cachegrind* \
 		./*.png \
-		./*.txt \
 		./*.html \
 		./queue*sh.e \
 		./queue*sh.o \

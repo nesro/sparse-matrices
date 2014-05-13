@@ -12,5 +12,4 @@
 #    2 - do not run this test
 #    3 - exit after this test
 #
-./tests/bin/test_den_matrix:0:0
-./tests/bin/test_qdt_matrix:1:0
+./tests/bin/test_mat_vec:0:0

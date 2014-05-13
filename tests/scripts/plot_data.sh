@@ -7,17 +7,8 @@
 data_dir=${1:-../measured_data/create_graphs}
 matrices=${2:-"EX6 fp gupta3 exdata-1 heart1  human-gene2"}
 
-#gupta3
-
 #-------------------------------------------------------------------------------
-# warning: this script is ridiculously NOT efficient
-#-------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------
-# outputs:
-#  - tree_nodes.pdf
-#  - mtx_sizes.pdf
-#  - mul_speed.pdf
+# TODO: refactor me
 #-------------------------------------------------------------------------------
 
 mkdir -p _plots_$$

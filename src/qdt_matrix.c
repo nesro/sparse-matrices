@@ -3,6 +3,14 @@
  * https://github.com/nesro/sparse-matrices
  */
 
+/*
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
+ * THIS FILE IS OUTDATED. USE KAT MATIX WITH KAT.n = 2
+ *
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>

@@ -276,7 +276,7 @@ Tabulka \ref{overspeed} shrnuje časové a tabulka \ref{overram} paměťové slo
     COO    & \bigO($nnz \cdot 3$)                     \\
     CSR    & \bigO($nnz \cdot 2 + m + 1$)               \\
     BSR    & \bigO($blks \cdot sm\_size^2$)                                    \\
-    KAT    & \bigO$(k^{height-2}-k-\frac{1}{k})$  \\
+    KAT    & \bigO$(k^{height-2}-k-\frac{1}{k} + item\_data)$  \\
     \end{tabular}
     \caption{Přehled paměťových složitostí násobení matic}
 \end{table}

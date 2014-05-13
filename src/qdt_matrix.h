@@ -3,6 +3,15 @@
  * https://github.com/nesro/sparse-matrices
  */
 
+/*
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
+ * THIS FILE IS OUTDATED. USE KAT MATIX WITH KAT.n = 2
+ *
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+
+
 #ifndef QT_MATRIX_H_
 #define QT_MATRIX_H_
 

@@ -279,12 +279,15 @@ Generátor řídkých matic byl implementován v jednom souboru. Lze ho spoušt�
 
 \section{Spuštění testů}
 
-Po překladu \texttt{make tests} je hlavní testovací spustitelný soubor \texttt{./tests/bin/test\_mat\_vec}.
+Pro spuštění testů je příkaz \texttt{make cassertion}.
 
 \section{Práce se serverem star}
 
-Příkazem \texttt{nohup sh -c "time ./tests/graphs/measure_program/create_jobs.sh 0 <složka> \\"<matice>\\"" &} je možné spustit měření na maticích z určité složky. Pro násobení vektorem je potřeba mít soubor s vektorem \texttt{vector_<matice>.mtx.gz}
+Příkazem \texttt{nohup sh -c "time ./tests/graphs/measure\_program/create\_jobs.sh 0 <složka> <list matic>" \&} je možné spustit měření na maticích z určité složky. Pro násobení vektorem je potřeba mít soubor s vektorem \\ \texttt{vector\_<matice>.mtx.gz}.
 
+Je potřeba nastavit uživatelské jméno do souboru \texttt{USERNAME.txt}. Nahrát repozitář na server je možné i příkazem \texttt{make star-deploy}. Aby nedošlo k zahlcení fronty na serveru, skript čeká, až  bude ve frontě pouze jedna práce, až poté spustí další.
+
+Vygenerovat grafy z naměřených hodnot je možné skriptem \texttt{./tests/scripts/plot\_data.sh <složka> <list matic>}.
 
 \chapter{Seznam použitých zkratek}
 % \printglossaries
