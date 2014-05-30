@@ -102,23 +102,6 @@ struct vm {
 	size_t object_size;
 };
 
-typedef enum action {
-	MUL, /**/
-}action_t;
-
-typedef enum setting_tokens {
-	MATRIX_A, /**/
-	MATRIX_B, /**/
-	LEAF_SIZE, /**/
-}setting_tokens_t;
-
-typedef union setting_values {
-	int i;
-	float f;
-	double d;
-	char *s;
-}setting_values_t;
-
 /***************************************************************************/
 
 void vm_create(vm_t **, vm_type_t, ...);
@@ -126,9 +109,6 @@ void vm_load_mm(vm_t **, vm_type_t, const char *, ...);
 void vm_print(vm_t *);
 
 int vm_has_blocks(vm_type_t type);
-
-void vm_exec(action_t action, vm_type_t type_a, vm_type_t type_b,
-	const char *file_a, const char *file_b, vm_t **c, char flag, ...);
 
 /***************************************************************************/
 

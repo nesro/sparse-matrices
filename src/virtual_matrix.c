@@ -132,26 +132,3 @@ int vm_has_blocks(vm_type_t type) {
 	}
 }
 
-void vm_exec(action_t action, vm_type_t type_a, vm_type_t type_b,
-		const char *file_a, const char *file_b, vm_t **c, char flag, ...) {
-
-//	vm_exec(MUL, CSR, DEN, "file1.mtx", "file2.mtx", c, MATRIX_A, LEAF_SIZE, 12);
-
-	vm_t *a;
-	vm_t *b;
-	va_list va_list_a;
-	va_list va_list_b;
-
-	/* is va empty */
-
-	/* is MATRIX_A */
-	/* while token != MATRIX_A_END */
-
-	/* is MATRIX_B */
-	/* while token != MATRIX_B_END */
-
-	vm_load_mm(&a, type_a, file_a, va_list_a);
-	vm_load_mm(&b, type_b, file_b, va_list_b);
-
-	a->f.mul(a, b, c, flag);
-}
