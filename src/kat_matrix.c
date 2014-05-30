@@ -267,10 +267,10 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x, int may_add) {
 
 	if (*tmp_node == NULL) {
 
-		if (may_add) {
-			printf("fatal err 2\n");
-			exit(1);
-		}
+		/*
+		 * If we cannot add new blocks, stop.
+		 */
+		assert(may_add == 0);
 
 		_s_debugf(KAT_DEBUG,
 				"creating a LAST inner node knp[%d][%d] when block_start_y=%d, block_start_x=%d, block_size=%d\n",
