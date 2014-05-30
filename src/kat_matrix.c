@@ -293,10 +293,10 @@ static kat_node_t *kat_get_node(kat_matrix_t *kat, int y, int x, int may_add) {
 
 	if (*tmp_node == NULL) {
 
-		if (may_add) {
-			printf("fatal err 3\n");
-			exit(1);
-		}
+		/*
+		 * If we cannot add new blocks, stop.
+		 */
+		assert(may_add == 0);
 
 #if KAT_DEBUG
 		if (is_uniq_pos(kat, kat->root, sm_y, sm_x) == 1) {
