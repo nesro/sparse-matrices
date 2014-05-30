@@ -89,10 +89,7 @@ typedef struct kat_node {
 			int n_nnz;
 
 			/*
-			 * Sparse components of submatrix. If the matrix is dense, this
-			 * union is unused.
-			 *
-			 * XXX: For now, only the CSR format is supported.
+			 * Sparse components of submatrix.
 			 */
 			union {
 				struct {
