@@ -52,7 +52,7 @@ for mul_vector in 0 1; do
 			$script $matrix_dir $matrix $mul_vector $f 0 2
 			wait_for_slot
 		done
-		for bs in 16 32 64 128 256; do
+		for bs in 2 4 8 16 32 64; do
 			for f in bsr; do
 				$script $matrix_dir $matrix $mul_vector $f $bs 2
 				wait_for_slot
